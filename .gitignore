@@ -1,0 +1,91 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+*.cert
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-wheel-metadata/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.xml
+
+# Editors
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Datasets — never commit raw or processed data
+datasets/raw/
+datasets/interim/
+datasets/processed/
+datasets/canonical/
+*.pcap
+*.pcapng
+*.csv.gz
+*.nfcapd
+
+# Model artifacts — never commit large binaries
+artifacts/
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+mlruns/
+
+# SQLite dev/test databases
+*.db
+*.db-shm
+*.db-wal
+mlruns.db
+
+# Logs
+logs/
+*.log
+
+# Node / React frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Docker
+*.env.docker
+
+# Reports (generated)
+reports/generated/
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
