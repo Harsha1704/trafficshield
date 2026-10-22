@@ -14,8 +14,8 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 |-----------|-------------|--------|
 | M1 | Flask app factory, config, health API, tests | ✅ Complete |
 | M2 | UGR'16 adapter, canonical schema, acquisition tooling | ✅ Complete |
-| M3 | Feature policy, one-way engineering, preprocessing, leakage tests (231 tests) | ✅ Complete |
-| M4 | Statistical baseline + Isolation Forest | ⬜ Planned |
+| M3 | Feature policy, one-way engineering, preprocessing, leakage tests | ✅ Complete |
+| M4 | Robust statistical detector & Isolation Forest (258 tests) | ✅ Complete |
 | M5 | Evaluation framework | ⬜ Planned |
 | M6 | Temporal features, LOF, HDBSCAN | ⬜ Planned |
 | M7 | Autoencoder, ensemble | ⬜ Planned |
