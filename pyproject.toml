@@ -39,6 +39,7 @@ ignore = ["E501", "N803"]
 
 [tool.ruff.lint.per-file-ignores]
 "scripts/*" = ["T201"]
+"evaluation/cli.py" = ["T201"]
 "tests/*" = ["T201", "C408", "N806"]
 
 [tool.mypy]

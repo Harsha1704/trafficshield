@@ -134,19 +134,36 @@ def load_detector(
     manifest_path = target_path.with_suffix(".json")
     manifest_data: dict[str, Any] = {}
 
-    if manifest_path.exists():
-        manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if verify_checksum:
+        if not manifest_path.exists():
+            raise ValueError(
+                f"Checksum verification failed: companion manifest not found for {target_path.name} "
+                f"at {manifest_path}. Cannot verify artifact integrity without manifest."
+            )
+        try:
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            raise ValueError(
+                f"Failed to read companion manifest for {target_path.name}: {exc}"
+            ) from exc
 
-        if verify_checksum and "sha256" in manifest_data:
-            actual_hash = compute_sha256(target_path)
-            expected_hash = manifest_data["sha256"]
-            if actual_hash != expected_hash:
-                raise ValueError(
-                    f"Detector artifact integrity check failed for {target_path.name}!\n"
-                    f"  Expected SHA-256: {expected_hash}\n"
-                    f"  Actual SHA-256:   {actual_hash}\n"
-                    "File may have been corrupted or tampered."
-                )
+        if "sha256" not in manifest_data:
+            raise ValueError(
+                f"Checksum verification failed: 'sha256' field missing in manifest {manifest_path.name}."
+            )
+
+        actual_hash = compute_sha256(target_path)
+        expected_hash = manifest_data["sha256"]
+        if actual_hash != expected_hash:
+            raise ValueError(
+                f"Detector artifact integrity check failed for {target_path.name}!\n"
+                f"  Expected SHA-256: {expected_hash}\n"
+                f"  Actual SHA-256:   {actual_hash}\n"
+                "File may have been corrupted or tampered."
+            )
+    else:
+        if manifest_path.exists():
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     detector = joblib.load(target_path)
     if not isinstance(detector, BaseDetector):

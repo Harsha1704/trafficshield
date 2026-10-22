@@ -84,6 +84,8 @@ frontend/.vite/
 
 # Reports (generated)
 reports/generated/
+reports/m5_demo/
+reports/evaluation/
 
 # OS
 Thumbs.db

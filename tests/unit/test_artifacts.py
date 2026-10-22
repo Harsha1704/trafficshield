@@ -77,3 +77,32 @@ def test_save_unfitted_raises(tmp_path: Path):
 def test_load_nonexistent_raises(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         load_preprocessor(tmp_path / "does_not_exist.joblib")
+
+
+def test_missing_manifest_rejected_when_checksum_enabled(fitted_preprocessor, tmp_path: Path):
+    prep, _ = fitted_preprocessor
+    artifact_path = tmp_path / "prep_no_manifest.joblib"
+    joblib_p, json_p = save_preprocessor(prep, artifact_path)
+
+    # Delete manifest
+    json_p.unlink()
+
+    with pytest.raises(ValueError) as exc:
+        load_preprocessor(joblib_p, verify_checksum=True)
+    assert "companion manifest not found" in str(exc.value)
+
+    # When verify_checksum=False, loads cleanly
+    loaded_prep, _ = load_preprocessor(joblib_p, verify_checksum=False)
+    assert loaded_prep.is_fitted_
+
+
+def test_missing_sha256_in_manifest_rejected(fitted_preprocessor, tmp_path: Path):
+    prep, _ = fitted_preprocessor
+    artifact_path = tmp_path / "prep_bad_manifest.joblib"
+    joblib_p, json_p = save_preprocessor(prep, artifact_path)
+
+    json_p.write_text('{"format_version": "1.0"}', encoding="utf-8")
+
+    with pytest.raises(ValueError) as exc:
+        load_preprocessor(joblib_p, verify_checksum=True)
+    assert "'sha256' field missing" in str(exc.value)

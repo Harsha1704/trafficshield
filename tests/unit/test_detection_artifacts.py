@@ -86,3 +86,35 @@ def test_save_unfitted_detector_raises(tmp_path: Path):
     with pytest.raises(ValueError) as exc:
         save_detector(det, tmp_path / "unfitted.joblib")
     assert "Cannot save an unfitted" in str(exc.value)
+
+
+def test_missing_manifest_rejected_when_checksum_enabled(sample_features, tmp_path: Path):
+    det = RobustStatisticalDetector()
+    det.fit(sample_features)
+    art_path = tmp_path / "detector_no_manifest.joblib"
+    joblib_p, json_p = save_detector(det, art_path)
+
+    # Delete manifest
+    json_p.unlink()
+
+    with pytest.raises(ValueError) as exc:
+        load_detector(joblib_p, verify_checksum=True)
+    assert "companion manifest not found" in str(exc.value)
+
+    # When verify_checksum=False, it loads successfully
+    loaded_det, _ = load_detector(joblib_p, verify_checksum=False)
+    assert loaded_det.is_fitted_
+
+
+def test_missing_sha256_in_manifest_rejected(sample_features, tmp_path: Path):
+    det = RobustStatisticalDetector()
+    det.fit(sample_features)
+    art_path = tmp_path / "detector_bad_manifest.joblib"
+    joblib_p, json_p = save_detector(det, art_path)
+
+    # Overwrite manifest without sha256
+    json_p.write_text('{"format_version": "1.0"}', encoding="utf-8")
+
+    with pytest.raises(ValueError) as exc:
+        load_detector(joblib_p, verify_checksum=True)
+    assert "'sha256' field missing" in str(exc.value)
