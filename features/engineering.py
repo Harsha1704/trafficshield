@@ -23,7 +23,7 @@ from collections.abc import Iterable
 import numpy as np
 import pandas as pd
 
-from features.policy import FieldRole, get_field_spec
+from features.policy import FieldRole, get_field_spec, is_eligible_feature
 from ingestion.schema.canonical_flow import CanonicalFlow
 
 
@@ -209,6 +209,11 @@ class FeatureEngineer:
             out["cos_hour"] = 1.0
             out["sin_day_of_week"] = 0.0
             out["cos_day_of_week"] = 1.0
+
+        # Pass through any pre-existing eligible feature columns (e.g. temporal behavioural features)
+        for col in df.columns:
+            if col not in out.columns and is_eligible_feature(col):
+                out[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
         # Replace any remaining NaNs or Infs
         out = out.replace([np.inf, -np.inf], np.nan).fillna(0.0)

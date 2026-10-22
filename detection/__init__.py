@@ -5,7 +5,9 @@ Version: 1.0 (Milestone 4)
 """
 from detection.artifacts import load_detector, save_detector
 from detection.base import BaseDetector
+from detection.hdbscan_detector import HDBSCANDetector
 from detection.isolation_forest import IsolationForestDetector
+from detection.lof import LOFDetector
 from detection.statistical import RobustStatisticalDetector
 from detection.threshold import (
     ThresholdConfig,
@@ -18,6 +20,8 @@ __all__ = [
     "BaseDetector",
     "RobustStatisticalDetector",
     "IsolationForestDetector",
+    "LOFDetector",
+    "HDBSCANDetector",
     "ThresholdStrategy",
     "ThresholdConfig",
     "compute_quantile_threshold",

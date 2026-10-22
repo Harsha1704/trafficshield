@@ -25,6 +25,7 @@ from features.policy import (
     is_eligible_feature,
     validate_feature_columns,
 )
+from features.temporal import TemporalFeatureEngineer
 
 __all__ = [
     "FEATURE_POLICY_VERSION",
@@ -41,6 +42,7 @@ __all__ = [
     "audit_columns",
     "validate_feature_columns",
     "FeatureEngineer",
+    "TemporalFeatureEngineer",
     "parse_tcp_flags",
     "categorize_port",
     "categorize_protocol",

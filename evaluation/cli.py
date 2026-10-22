@@ -32,10 +32,13 @@ import numpy as np
 import pandas as pd
 
 from detection.base import BaseDetector
+from detection.hdbscan_detector import HDBSCANDetector
 from detection.isolation_forest import IsolationForestDetector
+from detection.lof import LOFDetector
 from detection.statistical import RobustStatisticalDetector
 from evaluation.evaluator import ModelEvaluator
 from evaluation.partitioning import chronological_three_way_split
+from features.temporal import TemporalFeatureEngineer
 from preprocessing.pipeline import TrafficShieldPreprocessor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -108,6 +111,19 @@ def run_evaluation(args: argparse.Namespace) -> int:
         logger.error("Label column '%s' not found in dataset.", args.label_col)
         return 1
 
+    # Extract temporal features if requested
+    if args.use_temporal_features:
+        logger.info("Deriving causal temporal features...")
+        t_eng = TemporalFeatureEngineer(
+            window_seconds=args.temporal_window,
+            timestamp_col=args.timestamp_col,
+        )
+        temp_df = t_eng.transform_dataframe(df)
+        # Concat temporal features into df
+        for col in temp_df.columns:
+            if col not in df.columns:
+                df[col] = temp_df[col]
+
     # Chronological 3-way partition
     logger.info("Partitioning dataset chronologically (train=60%%, cal=20%%, test=20%%)...")
     partition = chronological_three_way_split(
@@ -128,6 +144,10 @@ def run_evaluation(args: argparse.Namespace) -> int:
         detector = RobustStatisticalDetector(aggregation=args.stat_agg)
     elif args.detector.lower() in ("iforest", "isolation_forest"):
         detector = IsolationForestDetector(n_estimators=args.if_estimators, random_state=args.seed)
+    elif args.detector.lower() == "lof":
+        detector = LOFDetector(n_neighbors=args.lof_neighbors)
+    elif args.detector.lower() == "hdbscan":
+        detector = HDBSCANDetector(min_cluster_size=args.hdbscan_min_cluster_size)
     else:
         logger.error("Unknown detector: %s", args.detector)
         return 1
@@ -187,8 +207,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--demo", action="store_true", help="Run fast synthetic evaluation demo")
     parser.add_argument("--data", help="Path to prepared dataset CSV file")
-    parser.add_argument("--detector", default="statistical", choices=["statistical", "iforest"],
-                        help="Detector to evaluate: 'statistical' or 'iforest'")
+    parser.add_argument("--detector", default="statistical", choices=["statistical", "iforest", "lof", "hdbscan"],
+                        help="Detector to evaluate: 'statistical', 'iforest', 'lof', or 'hdbscan'")
+    parser.add_argument("--use-temporal-features", action="store_true", help="Derive causal temporal rolling features")
+    parser.add_argument("--temporal-window", type=float, default=300.0, help="Rolling window seconds (default: 300.0)")
+    parser.add_argument("--lof-neighbors", type=int, default=20, help="Number of neighbors for LOF (default: 20)")
+    parser.add_argument("--hdbscan-min-cluster-size", type=int, default=5, help="Min cluster size for HDBSCAN (default: 5)")
     parser.add_argument("--timestamp-col", default="flow_end_ts", help="Timestamp column name")
     parser.add_argument("--label-col", default="eval_label", help="Ground-truth label column")
     parser.add_argument("--benign-label", default="background", help="Label value indicating normal traffic")
@@ -203,11 +227,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args()
-    sys.exit(run_evaluation(args))
+    args = parser.parse_args(argv)
+    return run_evaluation(args)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
