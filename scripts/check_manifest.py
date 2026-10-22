@@ -7,6 +7,7 @@ Usage:
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import logging
@@ -33,7 +34,7 @@ def validate_manifest(manifest_path: Path) -> bool:
         logger.error("Manifest not found: %s", manifest_path)
         return False
 
-    with open(manifest_path) as f:
+    with open(manifest_path, encoding="utf-8") as f:
         manifest = json.load(f)
 
     missing_keys = REQUIRED_MANIFEST_KEYS - set(manifest.keys())
@@ -92,13 +93,20 @@ def validate_manifest(manifest_path: Path) -> bool:
     return all_ok
 
 
-def main() -> None:
-    if len(sys.argv) < 2:
-        print("Usage: python scripts/check_manifest.py <manifest.json>")
-        sys.exit(1)
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Validate a dataset manifest JSON file.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument("manifest", type=Path, help="Path to manifest.json")
+    return parser
 
-    manifest_path = Path(sys.argv[1])
-    ok = validate_manifest(manifest_path)
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+    ok = validate_manifest(args.manifest)
     sys.exit(0 if ok else 1)
 
 
