@@ -75,6 +75,7 @@ class TestProductionSettings:
 
     def test_weak_secret_key_is_rejected(self):
         from pydantic import ValidationError
+
         from config.settings import ProductionSettings
         with pytest.raises((ValidationError, ValueError)):
             ProductionSettings(
@@ -84,6 +85,7 @@ class TestProductionSettings:
 
     def test_short_secret_key_is_rejected(self):
         from pydantic import ValidationError
+
         from config.settings import ProductionSettings
         with pytest.raises((ValidationError, ValueError)):
             ProductionSettings(
@@ -93,6 +95,7 @@ class TestProductionSettings:
 
     def test_sqlite_db_url_is_rejected_in_production(self):
         from pydantic import ValidationError
+
         from config.settings import ProductionSettings
         with pytest.raises((ValidationError, ValueError)):
             ProductionSettings(
@@ -120,6 +123,7 @@ class TestSettingsHelpers:
 
     def test_invalid_log_level_raises(self):
         from pydantic import ValidationError
+
         from config.settings import DevelopmentSettings
         with pytest.raises((ValidationError, ValueError)):
             DevelopmentSettings(log_level="VERBOSE")

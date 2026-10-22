@@ -63,9 +63,14 @@ UGR'16 records are NetFlow v9 records collected at ISP router interfaces. Each r
 3. Once credentials are received, use the acquisition script:
 
 ```bash
-# Install the script's dependencies first (already in requirements.txt)
-# Then run explicitly — this does NOT download automatically:
-python scripts/acquire_dataset.py ugr16 \
+# Install dependencies from requirements.txt:
+pip install -r requirements.txt
+
+# Inspect dataset metadata without downloading:
+python scripts/acquire_dataset.py info ugr16
+
+# Explicit download command (with credentials and resume support):
+python scripts/acquire_dataset.py download ugr16 \
     --dest datasets/raw/ugr16 \
     --username YOUR_USERNAME \
     --password-env NESG_PASSWORD \
@@ -106,7 +111,7 @@ python scripts/check_manifest.py datasets/interim/ugr16/manifest.json
 - Note: Contains explicit bidirectional flow features. TrafficShield filters out reverse-direction features before use.
 
 ```bash
-python scripts/acquire_dataset.py cicids2017 --dest datasets/raw/cicids2017
+python scripts/acquire_dataset.py download cicids2017 --dest datasets/raw/cicids2017
 ```
 
 ---
@@ -119,7 +124,7 @@ python scripts/acquire_dataset.py cicids2017 --dest datasets/raw/cicids2017
 - Size: ~100 MB CSV
 
 ```bash
-python scripts/acquire_dataset.py unswnb15 --dest datasets/raw/unswnb15
+python scripts/acquire_dataset.py download unswnb15 --dest datasets/raw/unswnb15
 ```
 
 ---

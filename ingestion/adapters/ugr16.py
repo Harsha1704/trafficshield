@@ -41,18 +41,18 @@ import csv
 import gzip
 import io
 import logging
-from datetime import datetime, timezone
+from collections.abc import Generator
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Generator, Iterator, Optional
 
 from pydantic import ValidationError
 
 from ingestion.schema.canonical_flow import (
+    UGR16_ATTACK_LABELS,
+    UGR16_BENIGN_LABEL,
     CanonicalFlow,
     IngestionResult,
     SourceDataset,
-    UGR16_ATTACK_LABELS,
-    UGR16_BENIGN_LABEL,
 )
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ UGR16_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 UGR16_TIMESTAMP_FORMAT_NOSUB = "%Y-%m-%d %H:%M:%S"
 
 
-def _parse_ugr16_timestamp(raw: str) -> Optional[datetime]:
+def _parse_ugr16_timestamp(raw: str) -> datetime | None:
     """
     Parse a UGR'16 timestamp string to a timezone-aware UTC datetime.
 
@@ -88,31 +88,35 @@ def _parse_ugr16_timestamp(raw: str) -> Optional[datetime]:
     for fmt in (UGR16_TIMESTAMP_FORMAT, UGR16_TIMESTAMP_FORMAT_NOSUB):
         try:
             dt = datetime.strptime(raw, fmt)
-            return dt.replace(tzinfo=timezone.utc)
+            return dt.replace(tzinfo=UTC)
         except ValueError:
             continue
     return None
 
 
-def _parse_optional_int(raw: str, field: str, row_idx: int) -> Optional[int]:
+def _parse_optional_int(raw: str | None, field: str, row_idx: int) -> int | None:
     """Parse an integer field; return None on blank or invalid input."""
-    raw = raw.strip()
-    if not raw:
+    if raw is None:
+        return None
+    cleaned = str(raw).strip()
+    if not cleaned:
         return None
     try:
-        return int(raw)
+        return int(cleaned)
     except ValueError:
         logger.debug("Row %d: cannot parse %r as int for field %s", row_idx, raw, field)
         return None
 
 
-def _parse_optional_float(raw: str, field: str, row_idx: int) -> Optional[float]:
+def _parse_optional_float(raw: str | None, field: str, row_idx: int) -> float | None:
     """Parse a float field; return None on blank or invalid input."""
-    raw = raw.strip()
-    if not raw:
+    if raw is None:
+        return None
+    cleaned = str(raw).strip()
+    if not cleaned:
         return None
     try:
-        return float(raw)
+        return float(cleaned)
     except ValueError:
         logger.debug("Row %d: cannot parse %r as float for field %s", row_idx, raw, field)
         return None
@@ -182,7 +186,7 @@ class UGR16Adapter:
         Raises UGR16ValidationError if required columns are missing.
         Logs a warning (not an error) for unexpected extra columns.
         """
-        col_set = set(c.strip().lower() for c in columns)
+        col_set = {c.strip().lower() for c in columns}
 
         # Strict mode: exact match
         if self.strict_columns:
@@ -223,7 +227,7 @@ class UGR16Adapter:
     def iter_records(
         self,
         filepath: Path,
-    ) -> Generator[tuple[Optional[CanonicalFlow], Optional[str]], None, None]:
+    ) -> Generator[tuple[CanonicalFlow | None, str | None], None, None]:
         """
         Yield (CanonicalFlow | None, rejection_reason | None) for every data row.
 
@@ -251,15 +255,46 @@ class UGR16Adapter:
 
             for raw_row in reader:
                 row_index += 1
-                # Strip whitespace from keys and values
-                row = {k.strip(): v.strip() for k, v in raw_row.items() if k}
+                try:
+                    # Check if entire row is empty/whitespace (including trailing None columns from blank lines)
+                    has_any_content = any(
+                        str(v).strip() for v in raw_row.values() if v is not None and str(v).strip()
+                    )
+                    if not has_any_content:
+                        yield None, "empty_row"
+                        continue
 
-                result = self._parse_row(row, row_index, str(filepath))
-                if isinstance(result, CanonicalFlow):
-                    yield result, None
-                else:
-                    # result is a rejection reason string
-                    yield None, result
+                    # Check for short rows where columns were missing in CSV
+                    if None in raw_row.values():
+                        yield None, "short_row:missing_columns"
+                        continue
+
+                    # Safely extract and strip keys and string values
+                    row: dict[str, str] = {}
+                    for k, v in raw_row.items():
+                        if k is None:
+                            continue
+                        clean_k = str(k).strip()
+                        if not clean_k:
+                            continue
+                        if v is None:
+                            clean_v = ""
+                        elif isinstance(v, str):
+                            clean_v = v.strip()
+                        else:
+                            clean_v = str(v).strip()
+                        row[clean_k] = clean_v
+
+                    result = self._parse_row(row, row_index, str(filepath))
+                    if isinstance(result, CanonicalFlow):
+                        yield result, None
+                    else:
+                        yield None, result
+                except Exception as exc:
+                    logger.debug("Row %d parsing failed: %s", row_index, exc, exc_info=True)
+                    if not self.skip_invalid_rows:
+                        raise
+                    yield None, f"row_exception:{type(exc).__name__}"
 
     def process_file(
         self,
@@ -324,7 +359,7 @@ class UGR16Adapter:
         Returns CanonicalFlow on success, or a rejection reason string on failure.
         """
         # ── Timestamp (required) ──────────────────────────────────────────────
-        raw_te = row.get("te", "").strip()
+        raw_te = (row.get("te") or "").strip()
         if not raw_te:
             return "missing_timestamp"
 
@@ -333,21 +368,21 @@ class UGR16Adapter:
             return f"unparseable_timestamp:{raw_te[:40]}"
 
         # ── Source / destination IP (required) ────────────────────────────────
-        src_ip = row.get("sa", "").strip()
-        dst_ip = row.get("da", "").strip()
+        src_ip = (row.get("sa") or "").strip()
+        dst_ip = (row.get("da") or "").strip()
         if not src_ip:
             return "missing_src_ip"
         if not dst_ip:
             return "missing_dst_ip"
 
         # ── Protocol (required) ───────────────────────────────────────────────
-        protocol_name = row.get("pr", "").strip()
+        protocol_name = (row.get("pr") or "").strip()
         if not protocol_name:
             return "missing_protocol"
 
         # ── Traffic counts (required) ─────────────────────────────────────────
-        raw_pkt = row.get("pkt", "").strip()
-        raw_byt = row.get("byt", "").strip()
+        raw_pkt = (row.get("pkt") or "").strip()
+        raw_byt = (row.get("byt") or "").strip()
         if not raw_pkt:
             return "missing_pkt"
         if not raw_byt:
@@ -366,15 +401,15 @@ class UGR16Adapter:
             return "negative_byt"
 
         # ── Optional fields ───────────────────────────────────────────────────
-        td_val = _parse_optional_float(row.get("td", ""), "td", row_index)
+        td_val = _parse_optional_float(row.get("td"), "td", row_index)
         if td_val is not None and td_val < 0:
             logger.debug("Row %d: negative duration %r — setting to None", row_index, td_val)
             td_val = None
 
-        sp_val = _parse_optional_int(row.get("sp", ""), "sp", row_index)
-        dp_val = _parse_optional_int(row.get("dp", ""), "dp", row_index)
-        fwd_status = _parse_optional_int(row.get("fwd", ""), "fwd", row_index)
-        ip_tos = _parse_optional_int(row.get("stos", ""), "stos", row_index)
+        sp_val = _parse_optional_int(row.get("sp"), "sp", row_index)
+        dp_val = _parse_optional_int(row.get("dp"), "dp", row_index)
+        fwd_status = _parse_optional_int(row.get("fwd"), "fwd", row_index)
+        ip_tos = _parse_optional_int(row.get("stos"), "stos", row_index)
 
         # Validate port ranges
         if sp_val is not None and not (0 <= sp_val <= 65535):
@@ -385,16 +420,16 @@ class UGR16Adapter:
             dp_val = None
 
         # ── TCP flags ─────────────────────────────────────────────────────────
-        raw_flg = row.get("flg", "").strip() or None
+        raw_flg = (row.get("flg") or "").strip() or None
         # Skip if it's just '0' or empty
         if raw_flg in ("0", ""):
             raw_flg = None
 
         # ── Evaluation label (EVAL_ONLY — not a feature) ──────────────────────
-        raw_class = row.get("class", "").strip()
-        eval_label_raw: Optional[str] = raw_class if raw_class else None
-        eval_label: Optional[str] = None
-        is_attack: Optional[bool] = None
+        raw_class = (row.get("class") or "").strip()
+        eval_label_raw: str | None = raw_class if raw_class else None
+        eval_label: str | None = None
+        is_attack: bool | None = None
         if eval_label_raw:
             eval_label, is_attack = _normalise_label(eval_label_raw)
 

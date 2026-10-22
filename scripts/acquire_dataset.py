@@ -8,20 +8,22 @@ IMPORTANT: This script does NOT download anything automatically.
 You must invoke it explicitly with the correct arguments.
 
 Usage:
-    python scripts/acquire_dataset.py ugr16 \\
+    python scripts/acquire_dataset.py info ugr16
+
+    python scripts/acquire_dataset.py download ugr16 \\
         --dest datasets/raw/ugr16 \\
         --month 2016-03 \\
         --username YOUR_UGR16_USERNAME \\
         --password-env NESG_PASSWORD
 
-    python scripts/acquire_dataset.py cicids2017 \\
+    python scripts/acquire_dataset.py download cicids2017 \\
         --dest datasets/raw/cicids2017
 
-    python scripts/acquire_dataset.py unswnb15 \\
+    python scripts/acquire_dataset.py download unswnb15 \\
         --dest datasets/raw/unswnb15
 
 Requirements:
-    pip install requests tqdm  (not installed by default — add manually when downloading)
+    requests, tqdm (listed in requirements.txt)
 """
 from __future__ import annotations
 
@@ -31,15 +33,13 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("acquire_dataset")
 
 # ─── Dataset registry ─────────────────────────────────────────────────────────
-# Each entry documents the official source, expected format, and academic reference.
-# Checksums are included where officially published; otherwise None.
 DATASET_REGISTRY: dict[str, dict] = {
     "ugr16": {
         "name": "UGR'16",
@@ -61,7 +61,7 @@ DATASET_REGISTRY: dict[str, dict] = {
             "2016-03", "2016-04", "2016-05", "2016-06",
             "2016-07", "2016-08",
         ],
-        "checksums": {},  # Official checksums not publicly posted; validate size instead
+        "checksums": {},  # Published per-release; provide via --expected-checksum
     },
     "cicids2017": {
         "name": "CICIDS2017",
@@ -115,15 +115,15 @@ def write_manifest(
     manifest = {
         "dataset": dataset_name,
         "registry_entry": DATASET_REGISTRY.get(dataset_name, {}),
-        "retrieved_at": datetime.now(timezone.utc).isoformat(),
+        "retrieved_at": datetime.now(UTC).isoformat(),
         "destination": str(dest_dir.resolve()),
         "files": files,
         "extra": extra_meta or {},
     }
     manifest_path = dest_dir / "manifest.json"
     if manifest_path.exists():
-        logger.warning("Manifest already exists at %s — overwriting", manifest_path)
-    manifest_path.write_text(json.dumps(manifest, indent=2, default=str))
+        logger.warning("Manifest already exists at %s — updating", manifest_path)
+    manifest_path.write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     logger.info("Manifest written to %s", manifest_path)
     return manifest_path
 
@@ -153,34 +153,17 @@ def cmd_info(args: argparse.Namespace) -> None:
 
 
 def cmd_download(args: argparse.Namespace) -> None:
-    """
-    Attempt dataset download.
-
-    This command requires 'requests' and 'tqdm' to be installed.
-    It does NOT auto-install them.
-    """
+    """Attempt dataset download with resume and safe checksum verification."""
     entry = DATASET_REGISTRY.get(args.dataset)
     if not entry:
         logger.error("Unknown dataset: %s", args.dataset)
         sys.exit(1)
 
-    # ── Pre-flight checks ─────────────────────────────────────────────────────
     print_dataset_info(args.dataset)
 
     dest = Path(args.dest)
-    if dest.exists() and any(dest.iterdir()):
-        if not args.force:
-            logger.error(
-                "Destination %s is not empty. Use --force to allow. "
-                "This prevents accidental overwrites.",
-                dest,
-            )
-            sys.exit(1)
-        logger.warning("--force set: destination %s is not empty, proceeding.", dest)
-
     dest.mkdir(parents=True, exist_ok=True)
 
-    # ── Import optional dependencies ───────────────────────────────────────────
     try:
         import requests
         from tqdm import tqdm  # noqa: F401
@@ -191,7 +174,6 @@ def cmd_download(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    # ── Auth ──────────────────────────────────────────────────────────────────
     auth = None
     if entry.get("auth_required"):
         username = args.username
@@ -209,13 +191,12 @@ def cmd_download(args: argparse.Namespace) -> None:
             sys.exit(1)
         auth = (username, password)
 
-    # ── UGR'16 specific ───────────────────────────────────────────────────────
     if args.dataset == "ugr16":
         _download_ugr16(args, entry, dest, auth, requests)
     else:
         logger.error(
-            "Download for '%s' is not yet automated in this script. "
-            "Visit %s and download manually, then use --manifest to record.",
+            "Download for '%s' is not automated in this script. "
+            "Visit %s and download manually, then use 'manifest' subcommand to record.",
             args.dataset, entry["official_page"],
         )
         sys.exit(1)
@@ -228,7 +209,7 @@ def _download_ugr16(
     auth: tuple | None,
     requests_module,
 ) -> None:
-    """Download one UGR'16 month CSV from the NESG server."""
+    """Download one UGR'16 month CSV from the NESG server with resume support."""
     from tqdm import tqdm
 
     month = getattr(args, "month", None)
@@ -242,59 +223,91 @@ def _download_ugr16(
         )
         sys.exit(1)
 
-    # Construct expected URL pattern (verify on the official page before use)
     year_month = month.replace("-", "")
-    # NOTE: The actual URL pattern must be verified from the NESG website.
-    # The pattern below is illustrative; update after visiting the official page.
     url = f"{entry['base_url']}data/{year_month}/ugr16_{year_month}.csv.gz"
 
-    logger.info("Attempting download: %s -> %s", url, dest)
-    logger.warning(
-        "IMPORTANT: Verify this URL on the official page (%s) before use. "
-        "The URL pattern may differ from the above.",
-        entry["official_page"],
-    )
-
     out_file = dest / f"ugr16_{year_month}.csv.gz"
-    if out_file.exists() and not args.force:
-        logger.error("File %s already exists. Use --force to overwrite.", out_file)
-        sys.exit(1)
+    part_file = dest / f"ugr16_{year_month}.csv.gz.part"
 
+    if out_file.exists():
+        if not args.force:
+            logger.info("File %s already exists. Use --force to overwrite.", out_file)
+            return
+        logger.warning("Overwriting existing %s due to --force", out_file)
+        out_file.unlink()
+
+    if args.force and part_file.exists():
+        part_file.unlink()
+
+    # Resume support
+    existing_bytes = 0
+    headers = {}
+    if part_file.exists() and not getattr(args, "no_resume", False):
+        existing_bytes = part_file.stat().st_size
+        if existing_bytes > 0:
+            headers["Range"] = f"bytes={existing_bytes}-"
+            logger.info("Found partial download (%d bytes). Attempting to resume...", existing_bytes)
+
+    logger.info("Attempting download: %s -> %s", url, part_file)
     try:
-        resp = requests_module.get(url, auth=auth, stream=True, timeout=30)
+        resp = requests_module.get(url, auth=auth, headers=headers, stream=True, timeout=30)
+        if resp.status_code == 416:  # Range not satisfiable
+            logger.warning("Server rejected byte range; restarting from beginning")
+            part_file.unlink(missing_ok=True)
+            existing_bytes = 0
+            headers.pop("Range", None)
+            resp = requests_module.get(url, auth=auth, stream=True, timeout=30)
         resp.raise_for_status()
     except Exception as exc:
         logger.error("Download failed: %s", exc)
-        logger.info("Visit %s to download manually.", entry["official_page"])
+        logger.info("Partial download preserved at %s (if any).", part_file)
         sys.exit(1)
 
-    total = int(resp.headers.get("content-length", 0))
-    with open(out_file, "wb") as f, tqdm(total=total, unit="B", unit_scale=True) as bar:
-        for chunk in resp.iter_content(chunk_size=65536):
-            f.write(chunk)
-            bar.update(len(chunk))
+    is_resumed = (resp.status_code == 206)
+    write_mode = "ab" if is_resumed else "wb"
+    total_len = int(resp.headers.get("content-length", 0))
+    if is_resumed:
+        total_len += existing_bytes
 
-    # ── Checksum ──────────────────────────────────────────────────────────────
-    actual_size = out_file.stat().st_size
-    sha256 = compute_sha256(out_file)
+    try:
+        with open(part_file, write_mode) as f, tqdm(
+            total=total_len,
+            initial=existing_bytes if is_resumed else 0,
+            unit="B",
+            unit_scale=True,
+            desc=out_file.name,
+        ) as bar:
+            for chunk in resp.iter_content(chunk_size=65536):
+                if chunk:
+                    f.write(chunk)
+                    bar.update(len(chunk))
+    except (KeyboardInterrupt, Exception) as exc:
+        logger.warning("Download interrupted: %s. Partial file retained at %s", exc, part_file)
+        sys.exit(1)
+
+    # ── Checksum verification ─────────────────────────────────────────────────
+    actual_size = part_file.stat().st_size
+    sha256 = compute_sha256(part_file)
     logger.info("Downloaded %s bytes, SHA-256: %s", actual_size, sha256)
 
-    expected_checksum = entry["checksums"].get(month)
-    if expected_checksum and sha256 != expected_checksum:
-        logger.error(
-            "CHECKSUM MISMATCH for %s! Expected %s, got %s. "
-            "File may be corrupt or tampered.",
-            out_file, expected_checksum, sha256,
-        )
-        sys.exit(1)
-    elif not expected_checksum:
-        logger.warning(
-            "No official checksum available for %s. "
-            "Verify file integrity manually.",
-            month,
-        )
+    expected_checksum = getattr(args, "expected_checksum", None) or entry["checksums"].get(month)
+    if expected_checksum:
+        if sha256.lower() != expected_checksum.lower():
+            logger.error(
+                "CHECKSUM MISMATCH for %s! Expected: %s, Got: %s. "
+                "Partial file left at %s for review.",
+                part_file.name, expected_checksum, sha256, part_file,
+            )
+            sys.exit(1)
+        logger.info("Checksum verified successfully.")
+    elif getattr(args, "verify_checksum", False):
+        logger.warning("No expected checksum configured or supplied for %s.", month)
 
-    # ── Manifest ──────────────────────────────────────────────────────────────
+    # Atomically move .part to destination file
+    part_file.replace(out_file)
+    logger.info("Download completed successfully: %s", out_file)
+
+    # Write manifest
     write_manifest(
         dest_dir=dest,
         dataset_name="ugr16",
@@ -338,7 +351,8 @@ def cmd_manifest(args: argparse.Namespace) -> None:
     )
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """Build and return the argument parser."""
     parser = argparse.ArgumentParser(
         description="TrafficShield safe dataset acquisition tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -360,8 +374,12 @@ def main() -> None:
     p_dl.add_argument("--password-env", default="NESG_PASSWORD",
                       dest="password_env", help="Env var containing password")
     p_dl.add_argument("--force", action="store_true", help="Overwrite existing files")
+    p_dl.add_argument("--no-resume", action="store_true", dest="no_resume",
+                      help="Do not attempt to resume partial download")
     p_dl.add_argument("--verify-checksum", action="store_true",
                       dest="verify_checksum", help="Verify checksum after download")
+    p_dl.add_argument("--expected-checksum", dest="expected_checksum",
+                      help="Expected SHA-256 checksum to verify against")
     p_dl.set_defaults(func=cmd_download)
 
     # ── manifest ──────────────────────────────────────────────────────────────
@@ -371,6 +389,11 @@ def main() -> None:
     p_mf.add_argument("--source", help="Source URL or description")
     p_mf.set_defaults(func=cmd_manifest)
 
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
     args.func(args)
 

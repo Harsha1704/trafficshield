@@ -54,15 +54,17 @@ class TestDatabaseSetup:
     """Tests that database tables are created at startup."""
 
     def test_system_events_table_exists(self, app_context):
-        from app.extensions import db
         from sqlalchemy import inspect
+
+        from app.extensions import db
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()
         assert "system_events" in tables
 
     def test_system_events_has_expected_columns(self, app_context):
-        from app.extensions import db
         from sqlalchemy import inspect
+
+        from app.extensions import db
         inspector = inspect(db.engine)
         cols = {c["name"] for c in inspector.get_columns("system_events")}
         assert "id" in cols
@@ -71,8 +73,8 @@ class TestDatabaseSetup:
         assert "updated_at" in cols
 
     def test_can_insert_and_retrieve_system_event(self, app_context):
-        from app.extensions import db
         from app.database.models import SystemEvent
+        from app.extensions import db
         event = SystemEvent(event_type="test", description="M1 smoke test")
         db.session.add(event)
         db.session.commit()

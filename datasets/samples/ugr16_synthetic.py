@@ -11,9 +11,7 @@ but are invented for testing purposes.
 """
 from __future__ import annotations
 
-import csv
 import io
-import textwrap
 from pathlib import Path
 
 # ─── Column header ────────────────────────────────────────────────────────────

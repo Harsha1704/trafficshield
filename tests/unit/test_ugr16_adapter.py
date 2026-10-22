@@ -14,10 +14,8 @@ All tests use synthetic in-memory fixtures — NO actual UGR'16 download require
 """
 from __future__ import annotations
 
-import csv
-import io
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -25,31 +23,27 @@ import pytest
 from datasets.samples.ugr16_synthetic import (
     EMPTY_CSV,
     EXTRA_COLUMNS_CSV,
-    MALFORMED_ROWS,
     SYNTHETIC_UGR16_ROWS,
-    WRONG_HEADER_CSV,
     UGR16_HEADER,
+    WRONG_HEADER_CSV,
     make_ugr16_csv_content,
-    make_ugr16_csv_io,
-    write_ugr16_csv_fixture,
 )
 from ingestion.adapters.ugr16 import (
     UGR16Adapter,
     UGR16ValidationError,
-    _parse_ugr16_timestamp,
     _normalise_label,
+    _parse_ugr16_timestamp,
 )
 from ingestion.schema.canonical_flow import (
     ELIGIBLE_FEATURE_COLUMNS,
     EVAL_ONLY_COLUMNS,
     METADATA_COLUMNS,
     PROHIBITED_FEATURE_COLUMNS,
+    SCHEMA_VERSION,
     CanonicalFlow,
     IngestionResult,
     SourceDataset,
-    SCHEMA_VERSION,
 )
-
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -83,7 +77,7 @@ class TestCanonicalFlowSchema:
 
     def _valid_kwargs(self, **overrides) -> dict:
         base = dict(
-            flow_end_ts=datetime(2016, 3, 1, 0, 0, 1, tzinfo=timezone.utc),
+            flow_end_ts=datetime(2016, 3, 1, 0, 0, 1, tzinfo=UTC),
             src_ip="42.219.150.10",
             dst_ip="42.219.156.20",
             src_port=443,
@@ -117,7 +111,7 @@ class TestCanonicalFlowSchema:
     def test_naive_timestamp_becomes_utc(self):
         naive = datetime(2016, 3, 1, 0, 0, 1)
         flow = CanonicalFlow(**self._valid_kwargs(flow_end_ts=naive))
-        assert flow.flow_end_ts.tzinfo == timezone.utc
+        assert flow.flow_end_ts.tzinfo == UTC
 
     def test_invalid_src_ip_raises(self):
         from pydantic import ValidationError
@@ -278,7 +272,7 @@ class TestTimestampParsing:
         assert dt.year == 2016
         assert dt.month == 3
         assert dt.day == 1
-        assert dt.tzinfo == timezone.utc
+        assert dt.tzinfo == UTC
 
     def test_format_without_sub_seconds(self):
         dt = _parse_ugr16_timestamp("2016-04-15 12:00:00")
@@ -296,7 +290,7 @@ class TestTimestampParsing:
 
     def test_result_is_utc(self):
         dt = _parse_ugr16_timestamp("2016-07-01 14:00:01.000")
-        assert dt.tzinfo == timezone.utc
+        assert dt.tzinfo == UTC
 
 
 # ─── TestLabelNormalisation ───────────────────────────────────────────────────
@@ -912,8 +906,9 @@ class TestManifestValidation:
     """Tests for check_manifest.py validation logic."""
 
     def test_valid_manifest_passes(self, tmp_path):
-        from scripts.check_manifest import validate_manifest
         import json
+
+        from scripts.check_manifest import validate_manifest
         # Create a real file with known content
         data_file = tmp_path / "sample.csv"
         data_file.write_bytes(b"hello,world")
@@ -936,8 +931,9 @@ class TestManifestValidation:
         assert validate_manifest(manifest_path) is True
 
     def test_wrong_checksum_fails(self, tmp_path):
-        from scripts.check_manifest import validate_manifest
         import json
+
+        from scripts.check_manifest import validate_manifest
         data_file = tmp_path / "sample.csv"
         data_file.write_bytes(b"hello,world")
         manifest = {
@@ -955,8 +951,9 @@ class TestManifestValidation:
         assert validate_manifest(manifest_path) is False
 
     def test_missing_file_fails(self, tmp_path):
-        from scripts.check_manifest import validate_manifest
         import json
+
+        from scripts.check_manifest import validate_manifest
         manifest = {
             "dataset": "ugr16",
             "retrieved_at": "2026-10-22T00:00:00+00:00",
@@ -976,9 +973,170 @@ class TestManifestValidation:
         assert validate_manifest(tmp_path / "does_not_exist.json") is False
 
     def test_missing_required_key_fails(self, tmp_path):
-        from scripts.check_manifest import validate_manifest
         import json
+
+        from scripts.check_manifest import validate_manifest
         manifest = {"dataset": "ugr16"}  # missing required keys
         manifest_path = tmp_path / "manifest.json"
         manifest_path.write_text(json.dumps(manifest))
         assert validate_manifest(manifest_path) is False
+
+
+# ─── Regression Tests for Milestone 2 Fixes ───────────────────────────────────
+
+@pytest.mark.unit
+class TestShortRowsAndMissingCellsRegression:
+    """Regression tests verifying short rows, missing cells, and blank lines never crash parsing."""
+
+    def test_short_row_does_not_crash_and_is_rejected(self):
+        """A row with fewer fields than headers must be rejected as short_row, not crash with AttributeError."""
+        csv_content = (
+            UGR16_HEADER + "\n"
+            "2016-03-01 00:00:01.000,0.1,42.219.150.10\n"  # only 3 columns instead of 13
+        )
+        tmp = _csv_to_tmp_file(csv_content)
+        adapter = UGR16Adapter(skip_invalid_rows=True)
+        try:
+            accepted, rejected = _collect_all(adapter, tmp)
+            assert len(accepted) == 0
+            assert len(rejected) == 1
+            assert "short_row" in rejected[0]
+        finally:
+            tmp.unlink(missing_ok=True)
+
+    def test_blank_line_in_csv_is_rejected_cleanly(self):
+        """Empty/blank lines in CSV should be counted as rejected, not crash."""
+        csv_content = (
+            UGR16_HEADER + "\n"
+            "   \n"
+            "2016-03-01 00:00:01.000,0.1,42.219.150.10,42.219.156.20,80,443,TCP,.A.,0,0,1,100,background\n"
+        )
+        tmp = _csv_to_tmp_file(csv_content)
+        adapter = UGR16Adapter(skip_invalid_rows=True)
+        try:
+            accepted, rejected = _collect_all(adapter, tmp)
+            assert len(accepted) == 1
+            assert len(rejected) == 1
+            assert "empty_row" in rejected[0]
+        finally:
+            tmp.unlink(missing_ok=True)
+
+    def test_missing_cells_in_required_columns(self):
+        """Row where required cells are empty commas must be rejected safely."""
+        csv_content = (
+            UGR16_HEADER + "\n"
+            "2016-03-01 00:00:01.000,,42.219.150.10,,,,,,,,,\n"
+        )
+        tmp = _csv_to_tmp_file(csv_content)
+        adapter = UGR16Adapter(skip_invalid_rows=True)
+        try:
+            accepted, rejected = _collect_all(adapter, tmp)
+            assert len(accepted) == 0
+            assert len(rejected) == 1
+            assert "missing" in rejected[0]
+        finally:
+            tmp.unlink(missing_ok=True)
+
+    def test_direct_parse_row_with_none_values(self):
+        """_parse_row should safely handle dicts containing None values without raising AttributeError."""
+        adapter = UGR16Adapter()
+        row = {"te": None, "sa": None, "da": None, "pr": None, "pkt": None, "byt": None}
+        result = adapter._parse_row(row, 1, "test.csv")
+        assert isinstance(result, str)
+        assert "missing" in result
+
+    def test_parse_optional_int_and_float_with_none(self):
+        from ingestion.adapters.ugr16 import _parse_optional_float, _parse_optional_int
+        assert _parse_optional_int(None, "sp", 1) is None
+        assert _parse_optional_float(None, "td", 1) is None
+        assert _parse_optional_int("  ", "sp", 1) is None
+        assert _parse_optional_float("  ", "td", 1) is None
+
+
+@pytest.mark.unit
+class TestPrepareUGR16ScriptRegression:
+    """Regression tests for scripts/prepare_ugr16.py."""
+
+    def test_prepare_file_creates_clean_output_and_manifest(self, tmp_path):
+        from scripts.prepare_ugr16 import prepare_file
+        # Write synthetic CSV
+        src_file = tmp_path / "ugr16_201603.csv"
+        src_file.write_text(make_ugr16_csv_content(SYNTHETIC_UGR16_ROWS[:5]), encoding="utf-8")
+
+        dest_dir = tmp_path / "interim"
+        out_file = prepare_file(src_file, dest_dir, compress_output=False)
+
+        assert out_file.exists()
+        manifest_path = dest_dir / "manifest.json"
+        assert manifest_path.exists()
+
+        import json
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        assert manifest["dataset"] == "ugr16"
+        assert len(manifest["files"]) == 1
+        file_meta = manifest["files"][0]
+        assert file_meta["rows_read"] == 5
+        assert file_meta["rows_accepted"] == 5
+        assert file_meta["rows_rejected"] == 0
+
+    def test_prepare_file_max_rows_limiting(self, tmp_path):
+        from scripts.prepare_ugr16 import prepare_file
+        src_file = tmp_path / "ugr16_sample.csv"
+        src_file.write_text(make_ugr16_csv_content(SYNTHETIC_UGR16_ROWS), encoding="utf-8")
+
+        dest_dir = tmp_path / "interim_sample"
+        prepare_file(src_file, dest_dir, max_rows=2, compress_output=False)
+
+        import json
+        manifest = json.loads((dest_dir / "manifest.json").read_text(encoding="utf-8"))
+        assert manifest["files"][0]["rows_read"] == 2
+        assert manifest["files"][0]["rows_accepted"] == 2
+
+    def test_find_source_file(self, tmp_path):
+        from scripts.prepare_ugr16 import find_source_file
+        # Create candidate file
+        sample = tmp_path / "ugr16_201603.csv"
+        sample.write_text("header\n", encoding="utf-8")
+
+        resolved = find_source_file(tmp_path, month="2016-03")
+        assert resolved.name == "ugr16_201603.csv"
+
+        with pytest.raises(FileNotFoundError):
+            find_source_file(tmp_path / "does_not_exist")
+
+
+@pytest.mark.unit
+class TestAcquireDatasetCLIRegression:
+    """Regression tests for scripts/acquire_dataset.py CLI parser and arguments."""
+
+    def test_download_subcommand_parser(self):
+        from scripts.acquire_dataset import build_parser
+        parser = build_parser()
+        args = parser.parse_args([
+            "download", "ugr16",
+            "--dest", "datasets/raw/ugr16",
+            "--month", "2016-03",
+            "--expected-checksum", "abcdef123456",
+            "--no-resume",
+        ])
+        assert args.cmd == "download"
+        assert args.dataset == "ugr16"
+        assert args.dest == "datasets/raw/ugr16"
+        assert args.month == "2016-03"
+        assert args.expected_checksum == "abcdef123456"
+        assert args.no_resume is True
+
+    def test_info_subcommand_parser(self):
+        from scripts.acquire_dataset import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["info", "ugr16"])
+        assert args.cmd == "info"
+        assert args.dataset == "ugr16"
+
+    def test_manifest_subcommand_parser(self):
+        from scripts.acquire_dataset import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["manifest", "ugr16", "--file", "sample.csv"])
+        assert args.cmd == "manifest"
+        assert args.dataset == "ugr16"
+        assert args.file == "sample.csv"

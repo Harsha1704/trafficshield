@@ -13,16 +13,16 @@ All API endpoints must use these helpers to ensure a uniform response envelope:
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import Any, Optional
+from typing import Any
 
 from flask import jsonify
 
 
 def success_response(
     data: Any = None,
-    message: Optional[str] = None,
+    message: str | None = None,
     status_code: int = HTTPStatus.OK,
-    meta: Optional[dict] = None,
+    meta: dict | None = None,
 ):
     """Return a JSON success response."""
     body: dict[str, Any] = {"success": True}
@@ -38,8 +38,8 @@ def success_response(
 def error_response(
     message: str,
     status_code: int = HTTPStatus.BAD_REQUEST,
-    error_code: Optional[str] = None,
-    details: Optional[Any] = None,
+    error_code: str | None = None,
+    details: Any | None = None,
 ):
     """Return a JSON error response."""
     body: dict[str, Any] = {

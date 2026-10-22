@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from flask import Blueprint, current_app
 
@@ -37,7 +37,7 @@ def health():
             "status": "ok",
             "service": "TrafficShield",
             "version": settings.app_version if settings else "unknown",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "uptime_seconds": round(time.monotonic() - _START_TIME, 2),
         }
     )
@@ -66,7 +66,7 @@ def ready():
     payload = {
         "status": overall_status,
         "checks": checks,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     if all_ok:
@@ -82,8 +82,9 @@ def ready():
 def _check_database() -> dict:
     """Attempt a minimal DB query to verify connectivity."""
     try:
-        from app.extensions import db
         from sqlalchemy import text
+
+        from app.extensions import db
         with db.engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return {"status": "ok"}

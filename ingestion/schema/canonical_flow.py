@@ -29,14 +29,12 @@ EVAL_ONLY  — evaluation label; NEVER used for training or inference
 from __future__ import annotations
 
 import ipaddress
-import re
 import uuid
-from datetime import datetime, timezone
-from enum import Enum
-from typing import Any, Optional
+from datetime import UTC, datetime
+from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -111,14 +109,14 @@ METADATA_COLUMNS: frozenset[str] = frozenset({
 
 # ─── Enums ────────────────────────────────────────────────────────────────────
 
-class EligibilityStatus(str, Enum):
+class EligibilityStatus(StrEnum):
     ELIGIBLE = "eligible"
     PROHIBITED = "prohibited"
     METADATA = "metadata"
     EVAL_ONLY = "eval_only"
 
 
-class SourceDataset(str, Enum):
+class SourceDataset(StrEnum):
     UGR16 = "ugr16"
     CICIDS2017 = "cicids2017"
     UNSWNB15 = "unswnb15"
@@ -146,11 +144,11 @@ class CanonicalFlow(BaseModel):
         default=SourceDataset.UNKNOWN,
         description="Source dataset identifier.",
     )
-    source_file: Optional[str] = Field(
+    source_file: str | None = Field(
         default=None,
         description="Filename or path of the source file this record came from.",
     )
-    source_row_index: Optional[int] = Field(
+    source_row_index: int | None = Field(
         default=None,
         ge=0,
         description="Zero-based row index in the source file (for traceability).",
@@ -160,7 +158,7 @@ class CanonicalFlow(BaseModel):
         description="Canonical schema version.",
     )
     ingest_ts: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="UTC timestamp when this record was ingested into TrafficShield.",
     )
 
@@ -173,7 +171,7 @@ class CanonicalFlow(BaseModel):
             "ELIGIBILITY: ELIGIBLE."
         ),
     )
-    duration_seconds: Optional[float] = Field(
+    duration_seconds: float | None = Field(
         default=None,
         ge=0.0,
         description=(
@@ -199,7 +197,7 @@ class CanonicalFlow(BaseModel):
             "ELIGIBILITY: ELIGIBLE."
         ),
     )
-    src_port: Optional[int] = Field(
+    src_port: int | None = Field(
         default=None,
         ge=0,
         le=65535,
@@ -208,7 +206,7 @@ class CanonicalFlow(BaseModel):
             "ELIGIBILITY: ELIGIBLE."
         ),
     )
-    dst_port: Optional[int] = Field(
+    dst_port: int | None = Field(
         default=None,
         ge=0,
         le=65535,
@@ -226,7 +224,7 @@ class CanonicalFlow(BaseModel):
             "ELIGIBILITY: ELIGIBLE."
         ),
     )
-    protocol_number: Optional[int] = Field(
+    protocol_number: int | None = Field(
         default=None,
         ge=0,
         le=255,
@@ -254,7 +252,7 @@ class CanonicalFlow(BaseModel):
     )
 
     # ── TCP flags (ELIGIBLE with documented caveat) ───────────────────────────
-    tcp_flags_raw: Optional[str] = Field(
+    tcp_flags_raw: str | None = Field(
         default=None,
         description=(
             "Cumulative TCP flags observed in this direction, as a string "
@@ -267,7 +265,7 @@ class CanonicalFlow(BaseModel):
     )
 
     # ── Router/sensor metadata (ELIGIBLE) ─────────────────────────────────────
-    fwd_status: Optional[int] = Field(
+    fwd_status: int | None = Field(
         default=None,
         ge=0,
         le=255,
@@ -277,7 +275,7 @@ class CanonicalFlow(BaseModel):
             "ELIGIBILITY: ELIGIBLE."
         ),
     )
-    ip_tos: Optional[int] = Field(
+    ip_tos: int | None = Field(
         default=None,
         ge=0,
         le=255,
@@ -293,7 +291,7 @@ class CanonicalFlow(BaseModel):
     # They would require reverse-direction observations.
 
     # ── Evaluation only (EVAL_ONLY — NEVER in feature matrix) ─────────────────
-    eval_label: Optional[str] = Field(
+    eval_label: str | None = Field(
         default=None,
         description=(
             "Normalised evaluation label (e.g. 'background', 'dos', 'scan11'). "
@@ -301,14 +299,14 @@ class CanonicalFlow(BaseModel):
             "EVAL_ONLY: Must never enter the model training or inference pipeline."
         ),
     )
-    eval_label_raw: Optional[str] = Field(
+    eval_label_raw: str | None = Field(
         default=None,
         description=(
             "Original, unnormalised label string from the source dataset. "
             "EVAL_ONLY: preserved for auditing."
         ),
     )
-    is_attack: Optional[bool] = Field(
+    is_attack: bool | None = Field(
         default=None,
         description=(
             "True when eval_label indicates an attack; False for benign/background. "
@@ -327,7 +325,7 @@ class CanonicalFlow(BaseModel):
         try:
             return str(ipaddress.ip_address(v))
         except ValueError:
-            raise ValueError(f"Invalid IP address: {v!r}")
+            raise ValueError(f"Invalid IP address: {v!r}") from None
 
     @field_validator("protocol_name")
     @classmethod
@@ -351,12 +349,12 @@ class CanonicalFlow(BaseModel):
         """Ensure timestamp is timezone-aware UTC."""
         if v.tzinfo is None:
             # Treat naive datetimes as UTC (document this assumption)
-            return v.replace(tzinfo=timezone.utc)
-        return v.astimezone(timezone.utc)
+            return v.replace(tzinfo=UTC)
+        return v.astimezone(UTC)
 
     @field_validator("tcp_flags_raw")
     @classmethod
-    def validate_tcp_flags(cls, v: Optional[str]) -> Optional[str]:
+    def validate_tcp_flags(cls, v: str | None) -> str | None:
         """Accept known flag string patterns or None."""
         if v is None:
             return None
@@ -368,14 +366,14 @@ class CanonicalFlow(BaseModel):
         return cleaned
 
     @model_validator(mode="after")
-    def derive_protocol_number(self) -> "CanonicalFlow":
+    def derive_protocol_number(self) -> CanonicalFlow:
         """Auto-populate protocol_number from protocol_name if not set."""
         if self.protocol_number is None and self.protocol_name:
             self.protocol_number = _PROTOCOL_MAP.get(self.protocol_name.upper())
         return self
 
     @model_validator(mode="after")
-    def validate_ports_for_protocol(self) -> "CanonicalFlow":
+    def validate_ports_for_protocol(self) -> CanonicalFlow:
         """
         For ICMP and similar, src/dst ports are not meaningful.
         We allow None for any protocol; the validator does not force zeros.
@@ -403,21 +401,21 @@ class CanonicalFlow(BaseModel):
         return self.protocol_name.upper() == "TCP"
 
     @property
-    def bytes_per_packet(self) -> Optional[float]:
+    def bytes_per_packet(self) -> float | None:
         """Mean bytes per packet; None if packet count is zero."""
         if self.fwd_packets > 0:
             return self.fwd_bytes / self.fwd_packets
         return None
 
     @property
-    def packets_per_second(self) -> Optional[float]:
+    def packets_per_second(self) -> float | None:
         """Packet rate; None if duration is zero or absent."""
         if self.duration_seconds and self.duration_seconds > 0:
             return self.fwd_packets / self.duration_seconds
         return None
 
     @property
-    def bytes_per_second(self) -> Optional[float]:
+    def bytes_per_second(self) -> float | None:
         """Byte rate; None if duration is zero or absent."""
         if self.duration_seconds and self.duration_seconds > 0:
             return self.fwd_bytes / self.duration_seconds
@@ -434,8 +432,8 @@ class IngestionResult(BaseModel):
     source_file: str
     source_dataset: SourceDataset
     schema_version: str = SCHEMA_VERSION
-    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    completed_at: Optional[datetime] = None
+    started_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    completed_at: datetime | None = None
 
     rows_read: int = 0
     rows_accepted: int = 0
@@ -445,7 +443,7 @@ class IngestionResult(BaseModel):
     rejection_reasons: dict[str, int] = Field(default_factory=dict)
 
     @property
-    def acceptance_rate(self) -> Optional[float]:
+    def acceptance_rate(self) -> float | None:
         if self.rows_read > 0:
             return self.rows_accepted / self.rows_read
         return None
@@ -455,4 +453,4 @@ class IngestionResult(BaseModel):
         self.rejection_reasons[reason] = self.rejection_reasons.get(reason, 0) + 1
 
     def finish(self) -> None:
-        self.completed_at = datetime.now(timezone.utc)
+        self.completed_at = datetime.now(UTC)

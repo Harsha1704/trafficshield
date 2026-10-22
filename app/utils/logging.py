@@ -11,7 +11,7 @@ from typing import Literal
 try:
     from pythonjsonlogger import json as jsonlogger  # v3.x
 except ImportError:
-    from pythonjsonlogger import jsonlogger  # v2.x fallback
+    from pythonjsonlogger import jsonlogger as jsonlogger  # type: ignore[no-redef]
 
 
 class _TextFormatter(logging.Formatter):
@@ -55,6 +55,7 @@ def configure_logging(
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(getattr(logging, level.upper(), logging.INFO))
 
+    formatter: logging.Formatter
     if fmt == "json":
         formatter = jsonlogger.JsonFormatter(
             fmt="%(asctime)s %(name)s %(levelname)s %(message)s",

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Optional
 
 from flask import Flask
 
@@ -21,7 +20,7 @@ from app.utils.logging import configure_logging
 from config.settings import BaseAppSettings, get_settings, get_testing_settings
 
 
-def create_app(env: Optional[str] = None) -> Flask:
+def create_app(env: str | None = None) -> Flask:
     """
     Application factory.
 
@@ -35,6 +34,7 @@ def create_app(env: Optional[str] = None) -> Flask:
     app = Flask(__name__, instance_relative_config=False)
 
     # ─── Load settings ────────────────────────────────────────────────────────
+    settings: BaseAppSettings
     if env == "testing":
         settings = get_testing_settings()
     else:

@@ -5,7 +5,7 @@ Concrete domain models are added in later milestones.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,7 +14,7 @@ from app.extensions import db
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class UUIDMixin:
@@ -40,7 +40,7 @@ class AuditMixin(UUIDMixin, TimestampMixin):
 
 
 # ─── Placeholder model (keeps SQLAlchemy happy in M1) ─────────────────────────
-class SystemEvent(AuditMixin, db.Model):
+class SystemEvent(AuditMixin, db.Model):  # type: ignore[name-defined]
     """
     Audit log for system-level events (startup, config changes, etc.).
     Provides a minimal DB schema for Milestone 1.
