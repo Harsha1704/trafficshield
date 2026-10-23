@@ -1,0 +1,11 @@
+category,count,percentage
+normal,2218764,87.3513
+generic,215481,8.4833
+exploits,44525,1.7529
+fuzzers,24246,0.9545
+dos,16353,0.6438
+reconnaissance,13987,0.5507
+analysis,2677,0.1054
+backdoor,2329,0.0917
+shellcode,1511,0.0595
+worms,174,0.0069

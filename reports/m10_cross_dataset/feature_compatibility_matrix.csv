@@ -1,0 +1,108 @@
+source_dataset,original_column,destination_feature,transformation,forward_only,availability_timing,requires_reverse_or_bidirectional,requires_future_or_labels,missingness_and_limitations,status
+UNSW-NB15,srcip,src_ip,Provenance only,No,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,sport,src_port,Provenance only,Yes,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,dstip,dst_ip,Provenance only,No,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,dsport,dst_port,Provenance only,Yes,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,proto,protocol_name,Provenance only,Yes,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,state,state,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_BIDIRECTIONAL
+UNSW-NB15,dur,duration_seconds,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,sbytes,fwd_bytes,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,dbytes,bwd_bytes,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,sttl,sttl,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,dttl,dttl,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,sloss,sloss,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_BIDIRECTIONAL
+UNSW-NB15,dloss,dloss,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,service,service,Provenance only,Yes,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,Sload,sload,Numeric float conversion / causal rate,Yes,flow_completion,No,No,None observed,ACCEPTED
+UNSW-NB15,Dload,dload,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,Spkts,fwd_packets,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,Dpkts,bwd_packets,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,swin,swin,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,dwin,dwin,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,stcpb,stcpb,Provenance only,No,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,dtcpb,dtcpb,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,smeansz,smeansz,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,dmeansz,dmeansz,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,trans_depth,trans_depth,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_BIDIRECTIONAL
+UNSW-NB15,res_bdy_len,res_bdy_len,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,Sjit,sjit,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,Djit,djit,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,Stime,flow_start_ts,Provenance only,No,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,Ltime,flow_end_ts,Provenance only,No,packet_arrival,No,No,None observed,EXCLUDED_IDENTIFIER
+UNSW-NB15,Sintpkt,sintpkt,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,Dintpkt,dintpkt,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,tcprtt,tcprtt,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,synack,synack,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_REVERSE
+UNSW-NB15,ackdat,ackdat,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_BIDIRECTIONAL
+UNSW-NB15,is_sm_ips_ports,is_sm_ips_ports,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,None observed,ACCEPTED
+UNSW-NB15,ct_state_ttl,ct_state_ttl,None (prohibited),No,flow_completion,Yes,No,None observed,REJECTED_BIDIRECTIONAL
+UNSW-NB15,ct_flw_http_mthd,ct_flw_http_mthd,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.,ACCEPTED
+UNSW-NB15,is_ftp_login,is_ftp_login,None (prohibited),No,flow_completion,Yes,No,Requires observing server authentication response.,REJECTED_BIDIRECTIONAL
+UNSW-NB15,ct_ftp_cmd,ct_ftp_cmd,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.,ACCEPTED
+UNSW-NB15,ct_srv_src,ct_srv_src,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,"Empirical lookahead: row 0 has value 3, anticipating flows at rows 27 and 37. Non-causal batch window.",ACCEPTED
+UNSW-NB15,ct_srv_dst,ct_srv_dst,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,ct_dst_ltm,ct_dst_ltm,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,ct_src_ ltm,ct_src_ltm,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,ct_src_dport_ltm,ct_src_dport_ltm,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,ct_dst_sport_ltm,ct_dst_sport_ltm,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,ct_dst_src_ltm,ct_dst_src_ltm,Numeric float conversion / causal rate,Yes,packet_arrival,No,No,Precomputed batch window over 100 connections contains future observations.,ACCEPTED
+UNSW-NB15,attack_cat,eval_label,None (prohibited),No,post_event,No,Yes,None observed,REJECTED_LABEL
+UNSW-NB15,Label,is_attack,None (prohibited),No,post_event,No,Yes,None observed,REJECTED_LABEL
+CICIDS2017,Destination Port,dst_port,Routing metadata / identifier,Yes,packet_arrival,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,EXCLUDED_METADATA
+CICIDS2017,Flow Duration,duration_microseconds,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Total Fwd Packets,fwd_packets,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Total Length of Fwd Packets,fwd_bytes,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Packet Length Max,fwd_pkt_len_max,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Packet Length Min,fwd_pkt_len_min,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Packet Length Mean,fwd_pkt_len_mean,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Packet Length Std,fwd_pkt_len_std,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd IAT Total,fwd_iat_total,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd IAT Mean,fwd_iat_mean,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd IAT Std,fwd_iat_std,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd IAT Max,fwd_iat_max,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd IAT Min,fwd_iat_min,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd PSH Flags,fwd_psh_flags,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd URG Flags,fwd_urg_flags,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Header Length,fwd_header_len,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Fwd Packets/s,fwd_packets_per_sec,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Avg Fwd Segment Size,avg_fwd_segment_size,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Init_Win_bytes_forward,init_win_bytes_forward,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_prefix,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,act_data_pkt_fwd,act_data_pkt_fwd,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_completion,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,min_seg_size_forward,min_seg_size_forward,"Numeric coercion, whitespace stripped, inf/nan cleaned",Yes,flow_prefix,No,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,ACCEPTED
+CICIDS2017,Total Backward Packets,bwd_packets,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Total Length of Bwd Packets,bwd_bytes,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Packet Length Max,bwd_pkt_len_max,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Packet Length Min,bwd_pkt_len_min,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Packet Length Mean,bwd_pkt_len_mean,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Packet Length Std,bwd_pkt_len_std,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd IAT Total,bwd_iat_total,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd IAT Mean,bwd_iat_mean,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd IAT Std,bwd_iat_std,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd IAT Max,bwd_iat_max,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd IAT Min,bwd_iat_min,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd PSH Flags,bwd_psh_flags,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd URG Flags,bwd_urg_flags,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Header Length,bwd_header_len,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Bwd Packets/s,bwd_packets_per_sec,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Avg Bwd Segment Size,avg_bwd_segment_size,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Init_Win_bytes_backward,init_win_bytes_backward,None (strictly prohibited),No,flow_prefix,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Down/Up Ratio,down_up_ratio,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_REVERSE
+CICIDS2017,Flow Bytes/s,flow_bytes_per_sec,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Flow Packets/s,flow_packets_per_sec,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Flow IAT Mean,flow_iat_mean,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Flow IAT Std,flow_iat_std,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Flow IAT Max,flow_iat_max,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Flow IAT Min,flow_iat_min,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Min Packet Length,min_packet_length,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Max Packet Length,max_packet_length,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Packet Length Mean,packet_length_mean,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Packet Length Std,packet_length_std,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Packet Length Variance,packet_length_variance,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,FIN Flag Count,fin_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,SYN Flag Count,syn_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,RST Flag Count,rst_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,PSH Flag Count,psh_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,ACK Flag Count,ack_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,URG Flag Count,urg_flag_count,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Average Packet Size,average_packet_size,None (strictly prohibited),No,flow_completion,Yes,No,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_BIDIRECTIONAL
+CICIDS2017,Label,eval_label,None (isolated for post-scoring evaluation),No,post_event,No,Yes,Frequent Infinity in rate fields when duration=0; NaN in idle/active,REJECTED_LABEL

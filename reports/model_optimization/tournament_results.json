@@ -1,0 +1,962 @@
+[
+  {
+    "model_name": "RandomForestClassifier",
+    "model_type": "supervised_tree",
+    "accuracy": 0.969762,
+    "precision": 0.906671,
+    "recall": 1.0,
+    "specificity": 0.957185,
+    "false_positive_rate": 0.042815,
+    "f1_score": 0.951051,
+    "balanced_accuracy": 0.978593,
+    "roc_auc": 0.99737,
+    "pr_auc": 0.991823,
+    "confusion_matrix": [
+      [
+        13481,
+        603
+      ],
+      [
+        0,
+        5858
+      ]
+    ],
+    "flagged_count": 6461,
+    "flagged_percentage": 32.399,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 2.061,
+    "inference_latency_us": 2.34,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.14,
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 12
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "ExtraTreesClassifier",
+    "model_type": "supervised_tree",
+    "accuracy": 0.968408,
+    "precision": 0.902898,
+    "recall": 1.0,
+    "specificity": 0.955268,
+    "false_positive_rate": 0.044732,
+    "f1_score": 0.948971,
+    "balanced_accuracy": 0.977634,
+    "roc_auc": 0.996512,
+    "pr_auc": 0.986979,
+    "confusion_matrix": [
+      [
+        13454,
+        630
+      ],
+      [
+        0,
+        5858
+      ]
+    ],
+    "flagged_count": 6488,
+    "flagged_percentage": 32.5343,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.732,
+    "inference_latency_us": 3.07,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.3,
+    "hyperparameters": {
+      "n_estimators": 100,
+      "max_depth": 12
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "HistGradientBoostingClassifier",
+    "model_type": "supervised_boosting",
+    "accuracy": 0.985859,
+    "precision": 0.95422,
+    "recall": 0.999829,
+    "specificity": 0.980048,
+    "false_positive_rate": 0.019952,
+    "f1_score": 0.976492,
+    "balanced_accuracy": 0.989939,
+    "roc_auc": 0.997972,
+    "pr_auc": 0.992296,
+    "confusion_matrix": [
+      [
+        13803,
+        281
+      ],
+      [
+        1,
+        5857
+      ]
+    ],
+    "flagged_count": 6138,
+    "flagged_percentage": 30.7793,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 0.9981,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.278,
+    "inference_latency_us": 0.65,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "max_iter": 150,
+      "max_depth": 8
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "XGBoostClassifier",
+    "model_type": "supervised_boosting",
+    "accuracy": 0.985658,
+    "precision": 0.953598,
+    "recall": 0.999829,
+    "specificity": 0.979764,
+    "false_positive_rate": 0.020236,
+    "f1_score": 0.976167,
+    "balanced_accuracy": 0.989797,
+    "roc_auc": 0.99743,
+    "pr_auc": 0.988415,
+    "confusion_matrix": [
+      [
+        13799,
+        285
+      ],
+      [
+        1,
+        5857
+      ]
+    ],
+    "flagged_count": 6142,
+    "flagged_percentage": 30.7993,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 0.9993,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 1.765,
+    "inference_latency_us": 0.32,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "n_estimators": 150,
+      "max_depth": 6,
+      "learning_rate": 0.08
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "LightGBMClassifier",
+    "model_type": "supervised_boosting",
+    "accuracy": 0.985608,
+    "precision": 0.953443,
+    "recall": 0.999829,
+    "specificity": 0.979693,
+    "false_positive_rate": 0.020307,
+    "f1_score": 0.976085,
+    "balanced_accuracy": 0.989761,
+    "roc_auc": 0.996283,
+    "pr_auc": 0.981677,
+    "confusion_matrix": [
+      [
+        13798,
+        286
+      ],
+      [
+        1,
+        5857
+      ]
+    ],
+    "flagged_count": 6143,
+    "flagged_percentage": 30.8043,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 0.9981,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.167,
+    "inference_latency_us": 0.8,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "n_estimators": 150,
+      "max_depth": 6,
+      "learning_rate": 0.08
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "MLPClassifier",
+    "model_type": "supervised_neural",
+    "accuracy": 0.912797,
+    "precision": 0.791838,
+    "recall": 0.953909,
+    "specificity": 0.895697,
+    "false_positive_rate": 0.104303,
+    "f1_score": 0.86535,
+    "balanced_accuracy": 0.924803,
+    "roc_auc": 0.937423,
+    "pr_auc": 0.871884,
+    "confusion_matrix": [
+      [
+        12615,
+        1469
+      ],
+      [
+        270,
+        5588
+      ]
+    ],
+    "flagged_count": 7057,
+    "flagged_percentage": 35.3876,
+    "category_recall": {
+      "exploits": 0.9404,
+      "generic": 0.9974,
+      "dos": 0.9271,
+      "reconnaissance": 1.0,
+      "analysis": 0.917,
+      "backdoor": 0.9174,
+      "fuzzers": 0.9466,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 2.645,
+    "inference_latency_us": 0.41,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.12,
+    "hyperparameters": {
+      "hidden_layer_sizes": [
+        64,
+        32
+      ],
+      "max_iter": 30
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "XGBoost_ClassWeighted",
+    "model_type": "imbalance_aware",
+    "accuracy": 0.985257,
+    "precision": 0.956066,
+    "recall": 0.995562,
+    "specificity": 0.980971,
+    "false_positive_rate": 0.019029,
+    "f1_score": 0.975414,
+    "balanced_accuracy": 0.988266,
+    "roc_auc": 0.997033,
+    "pr_auc": 0.988202,
+    "confusion_matrix": [
+      [
+        13816,
+        268
+      ],
+      [
+        26,
+        5832
+      ]
+    ],
+    "flagged_count": 6100,
+    "flagged_percentage": 30.5887,
+    "category_recall": {
+      "exploits": 0.9914,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 0.9902,
+      "shellcode": 0.9583,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.162,
+    "inference_latency_us": 0.37,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.71,
+    "hyperparameters": {
+      "scale_pos_weight": 12.22
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "SMOTE_XGBoost",
+    "model_type": "imbalance_aware",
+    "accuracy": 0.985508,
+    "precision": 0.953871,
+    "recall": 0.998976,
+    "specificity": 0.979906,
+    "false_positive_rate": 0.020094,
+    "f1_score": 0.975903,
+    "balanced_accuracy": 0.989441,
+    "roc_auc": 0.997471,
+    "pr_auc": 0.989304,
+    "confusion_matrix": [
+      [
+        13801,
+        283
+      ],
+      [
+        6,
+        5852
+      ]
+    ],
+    "flagged_count": 6135,
+    "flagged_percentage": 30.7642,
+    "category_recall": {
+      "exploits": 0.9992,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 0.9972,
+      "shellcode": 0.9583,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.277,
+    "inference_latency_us": 0.38,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.66,
+    "hyperparameters": {
+      "resampling": "SMOTE",
+      "n_estimators": 150
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "OptunaTuned_XGBoost",
+    "model_type": "optimized_supervised",
+    "accuracy": 0.985759,
+    "precision": 0.953909,
+    "recall": 0.999829,
+    "specificity": 0.979906,
+    "false_positive_rate": 0.020094,
+    "f1_score": 0.976329,
+    "balanced_accuracy": 0.989868,
+    "roc_auc": 0.998571,
+    "pr_auc": 0.995444,
+    "confusion_matrix": [
+      [
+        13801,
+        283
+      ],
+      [
+        1,
+        5857
+      ]
+    ],
+    "flagged_count": 6140,
+    "flagged_percentage": 30.7893,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 0.9993,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.253,
+    "inference_latency_us": 0.37,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.13,
+    "hyperparameters": {
+      "n_estimators": 180,
+      "max_depth": 5,
+      "learning_rate": 0.030398696602619617,
+      "subsample": 0.7550213529560301,
+      "colsample_bytree": 0.7912726728878613,
+      "min_child_weight": 5
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "SoftVotingEnsemble",
+    "model_type": "supervised_ensemble",
+    "accuracy": 0.984856,
+    "precision": 0.95112,
+    "recall": 0.999829,
+    "specificity": 0.978628,
+    "false_positive_rate": 0.021372,
+    "f1_score": 0.974867,
+    "balanced_accuracy": 0.989229,
+    "roc_auc": 0.997515,
+    "pr_auc": 0.989583,
+    "confusion_matrix": [
+      [
+        13783,
+        301
+      ],
+      [
+        1,
+        5857
+      ]
+    ],
+    "flagged_count": 6158,
+    "flagged_percentage": 30.8796,
+    "category_recall": {
+      "exploits": 1.0,
+      "generic": 1.0,
+      "dos": 0.9981,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 4.52,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "estimators": [
+        "xgb",
+        "lgb",
+        "hgb",
+        "rf"
+      ]
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "CalibratedProbability_XGBoost",
+    "model_type": "calibrated_supervised",
+    "accuracy": 0.985759,
+    "precision": 0.954353,
+    "recall": 0.999317,
+    "specificity": 0.980119,
+    "false_positive_rate": 0.019881,
+    "f1_score": 0.976318,
+    "balanced_accuracy": 0.989718,
+    "roc_auc": 0.998521,
+    "pr_auc": 0.994804,
+    "confusion_matrix": [
+      [
+        13804,
+        280
+      ],
+      [
+        4,
+        5854
+      ]
+    ],
+    "flagged_count": 6134,
+    "flagged_percentage": 30.7592,
+    "category_recall": {
+      "exploits": 0.9992,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 0.9979,
+      "shellcode": 1.0,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.033,
+    "inference_latency_us": 0.48,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "method": "isotonic",
+      "calibration_split": "prefit_cal_partition"
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "RobustStatisticalDetector",
+    "model_type": "unsupervised",
+    "accuracy": 0.701534,
+    "precision": 0.27619,
+    "recall": 0.009901,
+    "specificity": 0.989208,
+    "false_positive_rate": 0.010792,
+    "f1_score": 0.019117,
+    "balanced_accuracy": 0.499554,
+    "roc_auc": 0.890709,
+    "pr_auc": 0.652675,
+    "confusion_matrix": [
+      [
+        13932,
+        152
+      ],
+      [
+        5800,
+        58
+      ]
+    ],
+    "flagged_count": 210,
+    "flagged_percentage": 1.0531,
+    "category_recall": {
+      "exploits": 0.0,
+      "generic": 0.0,
+      "dos": 0.0,
+      "reconnaissance": 0.0,
+      "analysis": 0.0,
+      "backdoor": 0.0,
+      "fuzzers": 0.0408,
+      "shellcode": 0.0,
+      "worms": 0.0
+    },
+    "train_time_sec": 0.019,
+    "inference_latency_us": 0.2,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 3304.801082,
+    "hyperparameters": {
+      "aggregation": "max",
+      "quantile": 0.99
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "IsolationForestDetector",
+    "model_type": "unsupervised",
+    "accuracy": 0.71051,
+    "precision": 0.742857,
+    "recall": 0.022192,
+    "specificity": 0.996805,
+    "false_positive_rate": 0.003195,
+    "f1_score": 0.043096,
+    "balanced_accuracy": 0.509498,
+    "roc_auc": 0.908577,
+    "pr_auc": 0.714711,
+    "confusion_matrix": [
+      [
+        14039,
+        45
+      ],
+      [
+        5728,
+        130
+      ]
+    ],
+    "flagged_count": 175,
+    "flagged_percentage": 0.8775,
+    "category_recall": {
+      "exploits": 0.011,
+      "generic": 0.026,
+      "dos": 0.0134,
+      "reconnaissance": 0.0065,
+      "analysis": 0.0131,
+      "backdoor": 0.013,
+      "fuzzers": 0.038,
+      "shellcode": 0.0833,
+      "worms": 0.0
+    },
+    "train_time_sec": 0.123,
+    "inference_latency_us": 3.23,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.690876,
+    "hyperparameters": {
+      "n_estimators": 100,
+      "quantile": 0.99
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "AutoencoderDetector",
+    "model_type": "unsupervised",
+    "accuracy": 0.778658,
+    "precision": 0.843482,
+    "recall": 0.302663,
+    "specificity": 0.97664,
+    "false_positive_rate": 0.02336,
+    "f1_score": 0.445477,
+    "balanced_accuracy": 0.639652,
+    "roc_auc": 0.92229,
+    "pr_auc": 0.805294,
+    "confusion_matrix": [
+      [
+        13755,
+        329
+      ],
+      [
+        4085,
+        1773
+      ]
+    ],
+    "flagged_count": 2102,
+    "flagged_percentage": 10.5406,
+    "category_recall": {
+      "exploits": 0.3856,
+      "generic": 0.0059,
+      "dos": 0.4722,
+      "reconnaissance": 0.0714,
+      "analysis": 0.5371,
+      "backdoor": 0.5348,
+      "fuzzers": 0.3664,
+      "shellcode": 0.0833,
+      "worms": 0.0
+    },
+    "train_time_sec": 0.699,
+    "inference_latency_us": 0.92,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 201.742596,
+    "hyperparameters": {
+      "epochs": 10,
+      "backend": "numpy",
+      "quantile": 0.99
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "CalibratedEnsembleDetector",
+    "model_type": "unsupervised_ensemble",
+    "accuracy": 0.705095,
+    "precision": 0.41958,
+    "recall": 0.010242,
+    "specificity": 0.994107,
+    "false_positive_rate": 0.005893,
+    "f1_score": 0.019997,
+    "balanced_accuracy": 0.502175,
+    "roc_auc": 0.917308,
+    "pr_auc": 0.709067,
+    "confusion_matrix": [
+      [
+        14001,
+        83
+      ],
+      [
+        5798,
+        60
+      ]
+    ],
+    "flagged_count": 143,
+    "flagged_percentage": 0.7171,
+    "category_recall": {
+      "exploits": 0.0039,
+      "generic": 0.0026,
+      "dos": 0.0058,
+      "reconnaissance": 0.0,
+      "analysis": 0.0044,
+      "backdoor": 0.0043,
+      "fuzzers": 0.0295,
+      "shellcode": 0.0833,
+      "worms": 0.0
+    },
+    "train_time_sec": 0.569,
+    "inference_latency_us": 2.64,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.988323,
+    "hyperparameters": {
+      "members": [
+        "statistical",
+        "iforest",
+        "autoencoder"
+      ],
+      "normalizer": "empirical_percentile"
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "Hybrid_XGBoost_Plus_AnomalyScores",
+    "model_type": "hybrid_architecture",
+    "accuracy": 0.985658,
+    "precision": 0.954042,
+    "recall": 0.999317,
+    "specificity": 0.979977,
+    "false_positive_rate": 0.020023,
+    "f1_score": 0.976155,
+    "balanced_accuracy": 0.989647,
+    "roc_auc": 0.996658,
+    "pr_auc": 0.986676,
+    "confusion_matrix": [
+      [
+        13802,
+        282
+      ],
+      [
+        4,
+        5854
+      ]
+    ],
+    "flagged_count": 6136,
+    "flagged_percentage": 30.7692,
+    "category_recall": {
+      "exploits": 0.9976,
+      "generic": 1.0,
+      "dos": 1.0,
+      "reconnaissance": 1.0,
+      "analysis": 1.0,
+      "backdoor": 1.0,
+      "fuzzers": 1.0,
+      "shellcode": 0.9583,
+      "worms": 1.0
+    },
+    "train_time_sec": 0.485,
+    "inference_latency_us": 0.31,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.1,
+    "hyperparameters": {
+      "base": "XGBoost",
+      "augmented_features": [
+        "ae_mse",
+        "iforest_score"
+      ]
+    },
+    "test_partition_size": 19942
+  },
+  {
+    "model_name": "XGBoostClassifier_CROSS_FILE_DAY2",
+    "model_type": "cross_file_holdout",
+    "accuracy": 0.97375,
+    "precision": 0.921728,
+    "recall": 0.980173,
+    "specificity": 0.971555,
+    "false_positive_rate": 0.028445,
+    "f1_score": 0.950052,
+    "balanced_accuracy": 0.975864,
+    "roc_auc": 0.980887,
+    "pr_auc": 0.880859,
+    "confusion_matrix": [
+      [
+        14482,
+        424
+      ],
+      [
+        101,
+        4993
+      ]
+    ],
+    "flagged_count": 5417,
+    "flagged_percentage": 27.085,
+    "category_recall": {
+      "exploits": 0.9713,
+      "fuzzers": 0.555,
+      "dos": 0.9811,
+      "generic": 1.0,
+      "shellcode": 0.8947,
+      "backdoor": 1.0,
+      "reconnaissance": 0.9593,
+      "worms": 1.0,
+      "analysis": 1.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 0.36,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.5,
+    "hyperparameters": {
+      "source_file": "UNSW-NB15_3.csv"
+    },
+    "test_partition_size": 20000
+  },
+  {
+    "model_name": "SoftVotingEnsemble_CROSS_FILE_DAY2",
+    "model_type": "cross_file_holdout",
+    "accuracy": 0.9739,
+    "precision": 0.922083,
+    "recall": 0.980369,
+    "specificity": 0.971689,
+    "false_positive_rate": 0.028311,
+    "f1_score": 0.950333,
+    "balanced_accuracy": 0.976029,
+    "roc_auc": 0.983932,
+    "pr_auc": 0.923779,
+    "confusion_matrix": [
+      [
+        14484,
+        422
+      ],
+      [
+        100,
+        4994
+      ]
+    ],
+    "flagged_count": 5416,
+    "flagged_percentage": 27.08,
+    "category_recall": {
+      "exploits": 0.9749,
+      "fuzzers": 0.5654,
+      "dos": 0.9623,
+      "generic": 1.0,
+      "shellcode": 0.8421,
+      "backdoor": 1.0,
+      "reconnaissance": 0.9593,
+      "worms": 1.0,
+      "analysis": 1.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 4.12,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.5,
+    "hyperparameters": {
+      "source_file": "UNSW-NB15_3.csv"
+    },
+    "test_partition_size": 20000
+  },
+  {
+    "model_name": "CalibratedProbability_XGBoost_CROSS_FILE_DAY2",
+    "model_type": "cross_file_holdout",
+    "accuracy": 0.97085,
+    "precision": 0.927745,
+    "recall": 0.960346,
+    "specificity": 0.97444,
+    "false_positive_rate": 0.02556,
+    "f1_score": 0.943764,
+    "balanced_accuracy": 0.967393,
+    "roc_auc": 0.981093,
+    "pr_auc": 0.8907,
+    "confusion_matrix": [
+      [
+        14525,
+        381
+      ],
+      [
+        202,
+        4892
+      ]
+    ],
+    "flagged_count": 5273,
+    "flagged_percentage": 26.365,
+    "category_recall": {
+      "exploits": 0.8925,
+      "fuzzers": 0.288,
+      "dos": 0.9434,
+      "generic": 0.9977,
+      "shellcode": 0.8421,
+      "backdoor": 0.8,
+      "reconnaissance": 0.8455,
+      "worms": 1.0,
+      "analysis": 1.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 0.53,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.5,
+    "hyperparameters": {
+      "source_file": "UNSW-NB15_3.csv"
+    },
+    "test_partition_size": 20000
+  },
+  {
+    "model_name": "RandomForestClassifier_CROSS_FILE_DAY2",
+    "model_type": "cross_file_holdout",
+    "accuracy": 0.97195,
+    "precision": 0.914578,
+    "recall": 0.981547,
+    "specificity": 0.96867,
+    "false_positive_rate": 0.03133,
+    "f1_score": 0.94688,
+    "balanced_accuracy": 0.975109,
+    "roc_auc": 0.992127,
+    "pr_auc": 0.974229,
+    "confusion_matrix": [
+      [
+        14439,
+        467
+      ],
+      [
+        94,
+        5000
+      ]
+    ],
+    "flagged_count": 5467,
+    "flagged_percentage": 27.335,
+    "category_recall": {
+      "exploits": 0.957,
+      "fuzzers": 0.6545,
+      "dos": 0.9623,
+      "generic": 0.9998,
+      "shellcode": 0.8421,
+      "backdoor": 1.0,
+      "reconnaissance": 0.9187,
+      "worms": 1.0,
+      "analysis": 1.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 2.25,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.5,
+    "hyperparameters": {
+      "source_file": "UNSW-NB15_3.csv"
+    },
+    "test_partition_size": 20000
+  },
+  {
+    "model_name": "CalibratedEnsembleDetector_CROSS_FILE_DAY2",
+    "model_type": "cross_file_holdout",
+    "accuracy": 0.73705,
+    "precision": 0.093596,
+    "recall": 0.00373,
+    "specificity": 0.987656,
+    "false_positive_rate": 0.012344,
+    "f1_score": 0.007174,
+    "balanced_accuracy": 0.495693,
+    "roc_auc": 0.721722,
+    "pr_auc": 0.386916,
+    "confusion_matrix": [
+      [
+        14722,
+        184
+      ],
+      [
+        5075,
+        19
+      ]
+    ],
+    "flagged_count": 203,
+    "flagged_percentage": 1.015,
+    "category_recall": {
+      "exploits": 0.0108,
+      "fuzzers": 0.0157,
+      "dos": 0.0755,
+      "generic": 0.0016,
+      "shellcode": 0.1053,
+      "backdoor": 0.0,
+      "reconnaissance": 0.0,
+      "worms": 0.0,
+      "analysis": 0.0
+    },
+    "train_time_sec": 0.0,
+    "inference_latency_us": 4.93,
+    "peak_memory_mb": 0.0,
+    "threshold_value": 0.5,
+    "hyperparameters": {
+      "source_file": "UNSW-NB15_3.csv"
+    },
+    "test_partition_size": 20000
+  }
+]

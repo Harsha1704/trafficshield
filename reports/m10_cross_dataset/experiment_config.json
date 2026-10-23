@@ -1,0 +1,35 @@
+{
+  "milestone": "M10",
+  "date": "2026-10-23",
+  "random_seed": 42,
+  "common_causal_features": [
+    "duration_seconds",
+    "fwd_bytes",
+    "fwd_packets",
+    "smeansz",
+    "sintpkt",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "swin"
+  ],
+  "frozen_production_features": [
+    "duration_seconds",
+    "fwd_bytes",
+    "sttl",
+    "sload",
+    "fwd_packets",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "is_sm_ips_ports"
+  ],
+  "direct_transfer_status": "DIRECT_TRANSFER_UNSUPPORTED",
+  "track_a_status": "NOT RUN (Dataset absent locally)",
+  "track_b_common_subspace_accuracy": 0.918464,
+  "track_c_temporal_shift_accuracy": 0.765
+}

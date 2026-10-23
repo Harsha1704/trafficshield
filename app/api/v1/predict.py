@@ -16,6 +16,7 @@ from typing import Any
 
 from flask import Blueprint, request
 
+from app.utils.auth import require_role
 from app.utils.response import error_response, success_response
 from features.policy import PolicyViolationError
 from ml.production_service import ProductionInferenceService
@@ -43,6 +44,7 @@ def get_inference_service() -> ProductionInferenceService:
 
 
 @predict_bp.route("/predict", methods=["POST"])
+@require_role("analyst", "admin")
 def predict_single() -> Any:
     """
     Score a single flow record.
@@ -88,13 +90,14 @@ def predict_single() -> Any:
     except Exception as exc:
         logger.error("Inference internal error: %s", exc, exc_info=True)
         return error_response(
-            message=f"Inference processing failed: {exc}",
+            message="Inference processing encountered an unexpected internal error.",
             status_code=500,
             error_code="INTERNAL_INFERENCE_ERROR",
         )
 
 
 @predict_bp.route("/predict/batch", methods=["POST"])
+@require_role("analyst", "admin")
 def predict_batch() -> Any:
     """Score a batch of flow records with summary statistics."""
     if not request.is_json:
@@ -132,8 +135,26 @@ def predict_batch() -> Any:
 
     service = get_inference_service()
 
+    import time
+    t_start = time.perf_counter()
     try:
         batch_result = service.predict_batch(records)
+        elapsed_ms = (time.perf_counter() - t_start) * 1000.0
+
+        # Record aggregate operational monitoring telemetry
+        try:
+            from app.api.v1.monitoring import get_monitoring_service
+            mon_service = get_monitoring_service()
+            mon_service.record_batch_telemetry(
+                batch_id=request.headers.get("X-Batch-ID"),
+                records=records,
+                predictions=batch_result["predictions"],
+                latency_ms=elapsed_ms,
+                source=request.headers.get("X-Source", "batch_upload"),
+            )
+        except Exception as mon_err:
+            logger.warning("Monitoring telemetry recording non-fatal error: %s", mon_err)
+
         return success_response(data=batch_result, status_code=200)
 
     except PolicyViolationError as pve:
@@ -149,8 +170,9 @@ def predict_batch() -> Any:
             error_code="SCHEMA_VALIDATION_ERROR",
         )
     except Exception as exc:
+        logger.error("Batch inference internal error: %s", exc, exc_info=True)
         return error_response(
-            message=f"Batch inference failed: {exc}",
+            message="Batch inference encountered an unexpected internal error.",
             status_code=500,
             error_code="INTERNAL_INFERENCE_ERROR",
         )

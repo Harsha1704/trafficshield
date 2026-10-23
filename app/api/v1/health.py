@@ -60,6 +60,10 @@ def ready():
     if db_status["status"] != "ok":
         all_ok = False
 
+    # ─── Monitoring Telemetry Freshness check ──────────────────────────────────
+    mon_status = _check_monitoring_freshness()
+    checks["monitoring"] = mon_status
+
     overall_status = "ok" if all_ok else "degraded"
     http_code = 200 if all_ok else 503
 
@@ -80,7 +84,7 @@ def ready():
 
 
 def _check_database() -> dict:
-    """Attempt a minimal DB query to verify connectivity."""
+    """Attempt a minimal DB query to verify connectivity without leaking credentials."""
     try:
         from sqlalchemy import text
 
@@ -90,4 +94,32 @@ def _check_database() -> dict:
         return {"status": "ok"}
     except Exception as exc:
         logger.warning("Database readiness check failed", exc_info=exc)
-        return {"status": "error", "message": str(exc)}
+        # Never leak raw database connection strings, credentials, or traces
+        return {"status": "error", "message": "Database connection unreachable"}
+
+
+def _check_monitoring_freshness() -> dict:
+    """Check telemetry freshness to detect silent pipeline halts."""
+    try:
+        from datetime import timedelta
+
+        from app.database.models import MonitoringBatchMetric
+
+        latest = MonitoringBatchMetric.query.order_by(MonitoringBatchMetric.timestamp.desc()).first()
+        if not latest:
+            return {"status": "ok", "telemetry": "no_batches_yet", "fresh": True}
+
+        # Stale threshold: 24 hours
+        stale_threshold = timedelta(hours=24)
+        age = datetime.now(UTC) - latest.timestamp
+        is_stale = age > stale_threshold
+
+        return {
+            "status": "warning" if is_stale else "ok",
+            "last_batch_at": latest.timestamp.isoformat(),
+            "age_seconds": round(age.total_seconds(), 1),
+            "fresh": not is_stale,
+            "message": "Telemetry is stale (>24h)" if is_stale else "Telemetry is fresh",
+        }
+    except Exception:
+        return {"status": "warning", "fresh": False, "message": "Telemetry status unavailable"}

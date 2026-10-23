@@ -1,0 +1,429 @@
+{
+  "audit_timestamp_utc": "2026-10-23T07:06:49.430401+00:00",
+  "data_directory": "D:\\projects\\trafficshield\\datasets\\raw\\unsw_nb15",
+  "output_directory": "D:\\projects\\trafficshield\\reports\\unsw_nb15_audit",
+  "total_files_discovered": 8,
+  "files_discovered": {
+    "NUSW-NB15_features.csv": {
+      "size_bytes": 4044,
+      "size_mb": 0.0,
+      "extension": ".csv"
+    },
+    "NUSW-NB15_GT.csv": {
+      "size_bytes": 86426111,
+      "size_mb": 82.42,
+      "extension": ".csv"
+    },
+    "The UNSW-NB15 description.pdf": {
+      "size_bytes": 189112,
+      "size_mb": 0.18,
+      "extension": ".pdf"
+    },
+    "UNSW-NB15_1.csv": {
+      "size_bytes": 168979718,
+      "size_mb": 161.15,
+      "extension": ".csv"
+    },
+    "UNSW-NB15_2.csv": {
+      "size_bytes": 165221021,
+      "size_mb": 157.57,
+      "extension": ".csv"
+    },
+    "UNSW-NB15_3.csv": {
+      "size_bytes": 154588103,
+      "size_mb": 147.43,
+      "extension": ".csv"
+    },
+    "UNSW-NB15_4.csv": {
+      "size_bytes": 97588754,
+      "size_mb": 93.07,
+      "extension": ".csv"
+    },
+    "UNSW-NB15_LIST_EVENTS.csv": {
+      "size_bytes": 4639,
+      "size_mb": 0.0,
+      "extension": ".csv"
+    }
+  },
+  "features_file_found": true,
+  "features_file_name": "NUSW-NB15_features.csv",
+  "schema_verified_49_columns": true,
+  "verified_feature_names": [
+    "srcip",
+    "sport",
+    "dstip",
+    "dsport",
+    "proto",
+    "state",
+    "dur",
+    "sbytes",
+    "dbytes",
+    "sttl",
+    "dttl",
+    "sloss",
+    "dloss",
+    "service",
+    "Sload",
+    "Dload",
+    "Spkts",
+    "Dpkts",
+    "swin",
+    "dwin",
+    "stcpb",
+    "dtcpb",
+    "smeansz",
+    "dmeansz",
+    "trans_depth",
+    "res_bdy_len",
+    "Sjit",
+    "Djit",
+    "Stime",
+    "Ltime",
+    "Sintpkt",
+    "Dintpkt",
+    "tcprtt",
+    "synack",
+    "ackdat",
+    "is_sm_ips_ports",
+    "ct_state_ttl",
+    "ct_flw_http_mthd",
+    "is_ftp_login",
+    "ct_ftp_cmd",
+    "ct_srv_src",
+    "ct_srv_dst",
+    "ct_dst_ltm",
+    "ct_src_ ltm",
+    "ct_src_dport_ltm",
+    "ct_dst_sport_ltm",
+    "ct_dst_src_ltm",
+    "attack_cat",
+    "Label"
+  ],
+  "total_rows_audited": 2540047,
+  "valid_records_accepted": 2540047,
+  "malformed_records_rejected": 0,
+  "rejection_breakdown": {},
+  "row_count_investigation": {
+    "raw_rows_audited": 2540047,
+    "boundary_duplicates_count": 3,
+    "boundary_duplicates_details": [
+      {
+        "boundary": "UNSW-NB15_1.csv -> UNSW-NB15_2.csv",
+        "row_preview": "59.166.0.0,6055,149.171.126.5,54145,tcp...",
+        "ltime": "1421955842",
+        "stime": "1421955842"
+      },
+      {
+        "boundary": "UNSW-NB15_2.csv -> UNSW-NB15_3.csv",
+        "row_preview": "59.166.0.1,18247,149.171.126.4,7662,tcp...",
+        "ltime": "1424231129",
+        "stime": "1424231129"
+      },
+      {
+        "boundary": "UNSW-NB15_3.csv -> UNSW-NB15_4.csv",
+        "row_preview": "59.166.0.9,7045,149.171.126.7,25,tcp...",
+        "ltime": "1424250009",
+        "stime": "1424250009"
+      }
+    ],
+    "deduplicated_unique_records": 2540044,
+    "published_dataset_count": 2540044,
+    "discrepancy_resolved": true,
+    "explanation": "The raw CSV distribution files have an inclusive 1-row boundary overlap between adjacent files (last row of file 1 == first row of file 2, last row of file 2 == first row of file 3, last row of file 3 == first row of file 4). Deduplicating these exact 3 boundary overlap rows yields exactly 2,540,044 unique records, which matches the official published UNSW-NB15 dataset total."
+  },
+  "global_chronological_ordering": {
+    "is_chronologically_ordered_across_files": true,
+    "global_ltime_monotonicity_violations": 0,
+    "explanation": "Flows are ordered globally by Ltime (flow end timestamp). The apparent overlap when comparing min(Stime) to max(Ltime) across file boundaries occurs because Stime is the flow start time (Stime = Ltime - duration). For boundary flows with duration > 0, Stime naturally precedes Ltime. Across the entire concatenated sequence, Ltime is monotonically non-decreasing with zero drops."
+  },
+  "label_distribution": {
+    "binary_normal_0": 2218764,
+    "binary_attack_1": 321283,
+    "attack_prevalence_pct": 12.6487
+  },
+  "attack_category_breakdown": {
+    "normal": 2218764,
+    "exploits": 44525,
+    "reconnaissance": 13987,
+    "dos": 16353,
+    "generic": 215481,
+    "shellcode": 1511,
+    "fuzzers": 24246,
+    "worms": 174,
+    "backdoor": 2329,
+    "analysis": 2677
+  },
+  "unidirectional_feature_policy": {
+    "total_specs": 49,
+    "disjoint_partition_counts": {
+      "forward_observable_numeric": 19,
+      "forward_observable_metadata": 4,
+      "reverse_direction": 13,
+      "bidirectional_or_future_dependent": 6,
+      "identifier_or_grouping_only": 7
+    },
+    "disjoint_partition_columns": {
+      "forward_observable_numeric": [
+        "dur",
+        "sbytes",
+        "sttl",
+        "Sload",
+        "Spkts",
+        "swin",
+        "smeansz",
+        "Sjit",
+        "Sintpkt",
+        "is_sm_ips_ports",
+        "ct_flw_http_mthd",
+        "ct_ftp_cmd",
+        "ct_srv_src",
+        "ct_srv_dst",
+        "ct_dst_ltm",
+        "ct_src_ ltm",
+        "ct_src_dport_ltm",
+        "ct_dst_sport_ltm",
+        "ct_dst_src_ltm"
+      ],
+      "forward_observable_metadata": [
+        "sport",
+        "dsport",
+        "proto",
+        "service"
+      ],
+      "reverse_direction": [
+        "dbytes",
+        "dttl",
+        "dloss",
+        "Dload",
+        "Dpkts",
+        "dwin",
+        "dtcpb",
+        "dmeansz",
+        "res_bdy_len",
+        "Djit",
+        "Dintpkt",
+        "tcprtt",
+        "synack"
+      ],
+      "bidirectional_or_future_dependent": [
+        "state",
+        "sloss",
+        "trans_depth",
+        "ackdat",
+        "ct_state_ttl",
+        "is_ftp_login"
+      ],
+      "identifier_or_grouping_only": [
+        "srcip",
+        "dstip",
+        "stcpb",
+        "Stime",
+        "Ltime",
+        "attack_cat",
+        "Label"
+      ]
+    },
+    "reconciliation_explanation": "Total 49 fields partitioned into 5 disjoint categories: 19 forward numeric + 4 forward metadata + 13 reverse prohibited + 6 bidirectional prohibited + 7 identifiers/timestamps/labels = 49. Previous summary reported '24 prohibited' by summing 13 reverse + 6 bidirectional + 5 non-timestamp identifiers/labels, omitting Stime and Ltime (2 timestamps).",
+    "forward_observable_model_features": [
+      "duration_seconds",
+      "fwd_bytes",
+      "sttl",
+      "sload",
+      "fwd_packets",
+      "swin",
+      "smeansz",
+      "sjit",
+      "sintpkt",
+      "is_sm_ips_ports",
+      "ct_flw_http_mthd",
+      "ct_ftp_cmd",
+      "ct_srv_src",
+      "ct_srv_dst",
+      "ct_dst_ltm",
+      "ct_src_ltm",
+      "ct_src_dport_ltm",
+      "ct_dst_sport_ltm",
+      "ct_dst_src_ltm"
+    ],
+    "strict_causal_model_features": [
+      "duration_seconds",
+      "fwd_bytes",
+      "sttl",
+      "sload",
+      "fwd_packets",
+      "swin",
+      "smeansz",
+      "sjit",
+      "sintpkt",
+      "is_sm_ips_ports"
+    ],
+    "precomputed_window_aggregate_features": [
+      "ct_flw_http_mthd",
+      "ct_ftp_cmd",
+      "ct_srv_src",
+      "ct_srv_dst",
+      "ct_dst_ltm",
+      "ct_src_ltm",
+      "ct_src_dport_ltm",
+      "ct_dst_sport_ltm",
+      "ct_dst_src_ltm"
+    ],
+    "prohibited_reverse_and_bidirectional_features": [
+      "Dintpkt",
+      "Djit",
+      "Dload",
+      "Dpkts",
+      "ackdat",
+      "bwd_bytes",
+      "bwd_packets",
+      "ct_state_ttl",
+      "dbytes",
+      "dintpkt",
+      "djit",
+      "dload",
+      "dloss",
+      "dmeansz",
+      "dtcpb",
+      "dttl",
+      "dwin",
+      "is_ftp_login",
+      "res_bdy_len",
+      "sloss",
+      "state",
+      "synack",
+      "tcprtt",
+      "trans_depth"
+    ]
+  },
+  "file_audits": [
+    {
+      "filename": "UNSW-NB15_1.csv",
+      "size_bytes": 168979718,
+      "size_mb": 161.15,
+      "rows_read": 700001,
+      "valid_records": 700001,
+      "malformed_records": 0,
+      "rejections": {},
+      "ltime_monotonicity_violations": 0,
+      "is_strictly_chronological": true,
+      "stime_start_utc": "2015-01-22T11:49:37+00:00",
+      "stime_end_utc": "2015-01-22T19:44:02+00:00",
+      "ltime_start_utc": "2015-01-22T11:50:14+00:00",
+      "ltime_end_utc": "2015-01-22T19:44:02+00:00",
+      "labels": {
+        "0": 677786,
+        "1": 22215
+      },
+      "attack_categories": {
+        "normal": 677786,
+        "exploits": 5409,
+        "reconnaissance": 1759,
+        "dos": 1167,
+        "generic": 7522,
+        "shellcode": 223,
+        "fuzzers": 5051,
+        "worms": 24,
+        "backdoor": 534,
+        "analysis": 526
+      },
+      "audit_duration_seconds": 2.92
+    },
+    {
+      "filename": "UNSW-NB15_2.csv",
+      "size_bytes": 165221021,
+      "size_mb": 157.57,
+      "rows_read": 700001,
+      "valid_records": 700001,
+      "malformed_records": 0,
+      "rejections": {},
+      "ltime_monotonicity_violations": 0,
+      "is_strictly_chronological": true,
+      "stime_start_utc": "2015-01-22T19:43:15+00:00",
+      "stime_end_utc": "2015-02-18T03:45:29+00:00",
+      "ltime_start_utc": "2015-01-22T19:44:02+00:00",
+      "ltime_end_utc": "2015-02-18T03:45:29+00:00",
+      "labels": {
+        "0": 647252,
+        "1": 52749
+      },
+      "attack_categories": {
+        "normal": 647252,
+        "exploits": 11103,
+        "reconnaissance": 3116,
+        "backdoor": 370,
+        "dos": 4637,
+        "generic": 27883,
+        "fuzzers": 4668,
+        "analysis": 608,
+        "shellcode": 324,
+        "worms": 40
+      },
+      "audit_duration_seconds": 14.27
+    },
+    {
+      "filename": "UNSW-NB15_3.csv",
+      "size_bytes": 154588103,
+      "size_mb": 147.43,
+      "rows_read": 700001,
+      "valid_records": 700001,
+      "malformed_records": 0,
+      "rejections": {},
+      "ltime_monotonicity_violations": 0,
+      "is_strictly_chronological": true,
+      "stime_start_utc": "2015-02-18T03:44:59+00:00",
+      "stime_end_utc": "2015-02-18T09:00:09+00:00",
+      "ltime_start_utc": "2015-02-18T03:45:29+00:00",
+      "ltime_end_utc": "2015-02-18T09:00:09+00:00",
+      "labels": {
+        "0": 542576,
+        "1": 157425
+      },
+      "attack_categories": {
+        "normal": 542576,
+        "exploits": 16574,
+        "fuzzers": 9137,
+        "dos": 5642,
+        "generic": 118198,
+        "shellcode": 593,
+        "backdoor": 759,
+        "reconnaissance": 5582,
+        "worms": 67,
+        "analysis": 873
+      },
+      "audit_duration_seconds": 14.16
+    },
+    {
+      "filename": "UNSW-NB15_4.csv",
+      "size_bytes": 97588754,
+      "size_mb": 93.07,
+      "rows_read": 440044,
+      "valid_records": 440044,
+      "malformed_records": 0,
+      "rejections": {},
+      "ltime_monotonicity_violations": 0,
+      "is_strictly_chronological": true,
+      "stime_start_utc": "2015-02-18T08:59:44+00:00",
+      "stime_end_utc": "2015-02-18T12:21:08+00:00",
+      "ltime_start_utc": "2015-02-18T09:00:09+00:00",
+      "ltime_end_utc": "2015-02-18T12:21:09+00:00",
+      "labels": {
+        "0": 351150,
+        "1": 88894
+      },
+      "attack_categories": {
+        "normal": 351150,
+        "exploits": 11439,
+        "fuzzers": 5390,
+        "backdoor": 666,
+        "dos": 4907,
+        "generic": 61878,
+        "reconnaissance": 3530,
+        "shellcode": 371,
+        "analysis": 670,
+        "worms": 43
+      },
+      "audit_duration_seconds": 8.21
+    }
+  ],
+  "audit_duration_seconds": 39.57
+}

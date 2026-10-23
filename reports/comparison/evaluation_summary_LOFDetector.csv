@@ -1,0 +1,23 @@
+Metric / Attribute,Value
+Detector Type,LOFDetector
+Feature Policy Version,1.0
+Dataset Name,synthetic_demo
+Train Samples,300
+Calibration Samples,100
+Test Samples,100
+Threshold Value,1.739531830817001
+Threshold Method,calibration_quantile
+Target Calibration Quantile,0.99
+True Positives (TP),15
+False Positives (FP),4
+True Negatives (TN),81
+False Negatives (FN),0
+Precision,0.789474
+Recall,1.0
+Specificity,0.952941
+False Positive Rate (FPR),0.047059
+F1 Score,0.882353
+Balanced Accuracy,0.976471
+ROC-AUC,1.0
+Average Precision (PR-AUC),1.0
+Flagged Percentage (%),19.0

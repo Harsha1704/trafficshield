@@ -61,15 +61,27 @@ class BaseAppSettings(BaseSettings):
 
     # ─── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: str = Field(
-        default="http://localhost:5173,http://localhost:3000"
+        default="http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000"
     )
 
     # ─── Logging ──────────────────────────────────────────────────────────────
     log_level: str = Field(default="INFO")
     log_format: Literal["json", "text"] = Field(default="json")
 
-    # ─── Security ─────────────────────────────────────────────────────────────
+    # ─── Security & Auth ──────────────────────────────────────────────────────
     session_cookie_secure: bool = Field(default=False)
+    session_cookie_httponly: bool = Field(default=True)
+    session_cookie_samesite: str = Field(default="Lax")
+    auth_enabled: bool = Field(default=True)
+    auth_token_expiry_hours: int = Field(default=8)
+    admin_initial_username: str = Field(default="admin")
+    admin_initial_password: str = Field(default="")
+    analyst_initial_username: str = Field(default="analyst")
+    analyst_initial_password: str = Field(default="")
+
+    # ─── Monitoring Operational Thresholds ────────────────────────────────────
+    monitoring_retention_days: int = Field(default=30)
+    monitoring_stale_hours: int = Field(default=24)
 
     @field_validator("log_level")
     @classmethod
@@ -85,6 +97,10 @@ class BaseAppSettings(BaseSettings):
         return {ext.strip().lower() for ext in self.allowed_extensions.split(",")}
 
     @property
+    def is_production(self) -> bool:
+        return False
+
+    @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
@@ -97,6 +113,11 @@ class BaseAppSettings(BaseSettings):
             "MAX_CONTENT_LENGTH": self.max_upload_bytes,
             "RATELIMIT_DEFAULT": self.ratelimit_default,
             "RATELIMIT_STORAGE_URI": self.ratelimit_storage_url,
+            "SESSION_COOKIE_SECURE": self.session_cookie_secure,
+            "SESSION_COOKIE_HTTPONLY": self.session_cookie_httponly,
+            "SESSION_COOKIE_SAMESITE": self.session_cookie_samesite,
+            "AUTH_ENABLED": self.auth_enabled,
+            "AUTH_TOKEN_EXPIRY_HOURS": self.auth_token_expiry_hours,
         }
 
 
@@ -113,6 +134,7 @@ class TestingSettings(BaseAppSettings):
 
     database_url: str = Field(default="sqlite:///:memory:")
     testing: bool = Field(default=True)
+    auth_enabled: bool = Field(default=False)
     log_level: str = Field(default="WARNING")
     ratelimit_default: str = Field(default="99999 per hour")
     ratelimit_storage_url: str = Field(default="memory://")
@@ -121,6 +143,7 @@ class TestingSettings(BaseAppSettings):
         cfg = super().to_flask_config()
         cfg["TESTING"] = True
         cfg["WTF_CSRF_ENABLED"] = False
+        cfg["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"check_same_thread": False}}
         return cfg
 
 
@@ -130,6 +153,10 @@ class ProductionSettings(BaseAppSettings):
     flask_debug: bool = Field(default=False)
     session_cookie_secure: bool = Field(default=True)
     log_format: Literal["json", "text"] = Field(default="json")
+
+    @property
+    def is_production(self) -> bool:
+        return True
 
     @field_validator("secret_key")
     @classmethod
@@ -149,6 +176,21 @@ class ProductionSettings(BaseAppSettings):
             raise ValueError("Production database must not use SQLite")
         return v
 
+    @field_validator("cors_origins")
+    @classmethod
+    def cors_must_not_be_wildcard(cls, v: str) -> str:
+        origins = [o.strip() for o in v.split(",") if o.strip()]
+        if "*" in origins:
+            raise ValueError("Wildcard CORS origin '*' is strictly prohibited in production")
+        return v
+
+    @field_validator("flask_debug")
+    @classmethod
+    def debug_must_be_false(cls, v: bool) -> bool:
+        if v is True:
+            raise ValueError("flask_debug must be False in production")
+        return v
+
 
 # ─── Environment selection ────────────────────────────────────────────────────
 _ENV_MAP: dict[str, type[BaseAppSettings]] = {
@@ -166,7 +208,7 @@ def get_settings(env: str | None = None) -> BaseAppSettings:
     The environment is determined by the FLASK_ENV (or APP_ENV) variable,
     defaulting to 'development'.
     """
-    env = env or os.getenv("FLASK_ENV") or os.getenv("APP_ENV") or "development"
+    env = env or os.getenv("FLASK_ENV") or os.getenv("APP_ENV") or os.getenv("ENV") or "development"
     env = env.lower()
     settings_cls = _ENV_MAP.get(env, DevelopmentSettings)
     return settings_cls()

@@ -1,0 +1,23 @@
+Metric / Attribute,Value
+Detector Type,IsolationForestDetector
+Feature Policy Version,1.0
+Dataset Name,unsw_nb15_4files
+Train Samples,30000
+Calibration Samples,10000
+Test Samples,10000
+Threshold Value,0.6316231383058417
+Threshold Method,calibration_quantile
+Target Calibration Quantile,0.99
+True Positives (TP),55
+False Positives (FP),43
+True Negatives (TN),9375
+False Negatives (FN),527
+Precision,0.561224
+Recall,0.094502
+Specificity,0.995434
+False Positive Rate (FPR),0.004566
+F1 Score,0.161765
+Balanced Accuracy,0.544968
+ROC-AUC,0.804993
+Average Precision (PR-AUC),0.25201
+Flagged Percentage (%),0.98

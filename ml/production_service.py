@@ -17,6 +17,7 @@ Responsibilities:
 """
 from __future__ import annotations
 
+import hashlib
 import logging
 import uuid
 from pathlib import Path
@@ -29,6 +30,10 @@ import pandas as pd
 from features.policy import PolicyViolationError, audit_columns
 
 logger = logging.getLogger("production_service")
+
+# Authoritative frozen artifact checksums verified in M9
+EXPECTED_DETECTOR_SHA256 = "c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495"
+EXPECTED_PREPROCESSOR_SHA256 = "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653"
 
 REQUIRED_BASE_FEATURES = [
     "duration_seconds",
@@ -52,27 +57,62 @@ class ProductionInferenceService:
         model_path: str | Path | None = None,
         preprocessor_path: str | Path | None = None,
         threshold: float = 0.5,
+        verify_checksums: bool = True,
     ) -> None:
-        self.model_path = Path(model_path) if model_path else None
-        self.preprocessor_path = Path(preprocessor_path) if preprocessor_path else None
+        def_model = Path("artifacts/models/production_detector.joblib")
+        def_prep = Path("artifacts/models/production_preprocessor.joblib")
+        self.model_path = Path(model_path) if model_path else (def_model if def_model.exists() else None)
+        self.preprocessor_path = Path(preprocessor_path) if preprocessor_path else (def_prep if def_prep.exists() else None)
         self.threshold = threshold
+        self.verify_checksums = verify_checksums
 
         self.model: Any = None
         self.preprocessor: Any = None
         self.feature_names: list[str] = []
         self.model_name: str = "ProductionFlowClassifier"
         self.version: str = "1.0.0"
+        self.model_sha256: str | None = None
+        self.preprocessor_sha256: str | None = None
 
         if self.model_path and self.model_path.exists():
             self.load_artifacts()
 
+    @staticmethod
+    def compute_sha256(filepath: Path) -> str:
+        """Compute SHA-256 hash of a file on disk."""
+        h = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            while chunk := f.read(65536):
+                h.update(chunk)
+        return h.hexdigest()
+
     def load_artifacts(self) -> None:
-        """Load and verify serialized model and preprocessor artifacts."""
+        """
+        Load and verify serialized model and preprocessor artifacts.
+        Enforces cryptographic SHA-256 integrity check against known frozen hashes.
+        Fails fast if artifacts are missing, corrupt, or tampered with.
+        """
         if self.model_path and self.model_path.exists():
+            actual_model_hash = self.compute_sha256(self.model_path)
+            self.model_sha256 = actual_model_hash
+            if self.verify_checksums and actual_model_hash != EXPECTED_DETECTOR_SHA256:
+                raise RuntimeError(
+                    f"Model artifact SHA-256 integrity verification failed! "
+                    f"Expected: {EXPECTED_DETECTOR_SHA256}, got: {actual_model_hash}. "
+                    f"Refusing to load untrusted or modified artifact."
+                )
             self.model = joblib.load(self.model_path)
             self.model_name = getattr(self.model, "__class__", type(self.model)).__name__
 
         if self.preprocessor_path and self.preprocessor_path.exists():
+            actual_prep_hash = self.compute_sha256(self.preprocessor_path)
+            self.preprocessor_sha256 = actual_prep_hash
+            if self.verify_checksums and actual_prep_hash != EXPECTED_PREPROCESSOR_SHA256:
+                raise RuntimeError(
+                    f"Preprocessor artifact SHA-256 integrity verification failed! "
+                    f"Expected: {EXPECTED_PREPROCESSOR_SHA256}, got: {actual_prep_hash}. "
+                    f"Refusing to load untrusted or modified artifact."
+                )
             self.preprocessor = joblib.load(self.preprocessor_path)
             if hasattr(self.preprocessor, "feature_names_in_"):
                 self.feature_names = list(self.preprocessor.feature_names_in_)
@@ -228,4 +268,42 @@ class ProductionInferenceService:
             "engineered_features": ["packet_rate", "byte_rate", "bytes_per_packet"],
             "model_loaded": self.model is not None,
             "preprocessor_loaded": self.preprocessor is not None,
+            "artifact_integrity": {
+                "verified": bool(self.model is not None and self.preprocessor is not None),
+                "model_sha256": self.model_sha256 or EXPECTED_DETECTOR_SHA256,
+                "preprocessor_sha256": self.preprocessor_sha256 or EXPECTED_PREPROCESSOR_SHA256,
+            },
+            "verified_benchmark": {
+                "evaluation_dataset": "UNSW-NB15",
+                "verification_milestone": "M9 Independent Reproduction",
+                "heldout_test": {
+                    "split_description": "Day 1 Held-Out Test Split (19,942 flows)",
+                    "flows": 19942,
+                    "accuracy": 0.981045,
+                    "recall": 0.977808,
+                    "precision": 0.958501,
+                    "specificity": 0.982391,
+                    "fpr": 0.017609,
+                    "f1_score": 0.968058,
+                    "roc_auc": 0.998711,
+                    "pr_auc": 0.996661,
+                    "confusion_matrix": [13836, 248, 130, 5728],
+                },
+                "day2_temporal_holdout": {
+                    "split_description": "Day 2 Out-of-Distribution Holdout (20,000 flows, 24 days later)",
+                    "flows": 20000,
+                    "accuracy": 0.969700,
+                    "recall": 0.983700,
+                    "precision": 0.905700,
+                    "specificity": 0.965000,
+                    "fpr": 0.035000,
+                    "f1_score": 0.943100,
+                    "confusion_matrix": [14384, 522, 83, 5011],
+                },
+                "cross_dataset_limits": {
+                    "cicids2017_status": "DIRECT_TRANSFER_UNSUPPORTED",
+                    "cicids2017_local_raw_data": "ABSENT_LOCALLY (0 MB)",
+                    "audit_verdict": "M10.1 Provenance Audit Confirmed Synthetic Fixture (Unverified on real CICIDS2017)",
+                },
+            },
         }

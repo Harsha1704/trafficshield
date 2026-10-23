@@ -1,0 +1,23 @@
+Metric / Attribute,Value
+Detector Type,AutoencoderDetector
+Feature Policy Version,1.0
+Dataset Name,unsw_nb15_2files
+Train Samples,60015
+Calibration Samples,20043
+Test Samples,19942
+Threshold Value,0.059069477723324375
+Threshold Method,calibration_quantile
+Target Calibration Quantile,0.99
+True Positives (TP),745
+False Positives (FP),971
+True Negatives (TN),13113
+False Negatives (FN),5113
+Precision,0.434149
+Recall,0.127177
+Specificity,0.931057
+False Positive Rate (FPR),0.068943
+F1 Score,0.196726
+Balanced Accuracy,0.529117
+ROC-AUC,0.872369
+Average Precision (PR-AUC),0.635022
+Flagged Percentage (%),8.605

@@ -1,0 +1,213 @@
+{
+  "detector_type": "AutoencoderDetector",
+  "detector_parameters": {
+    "hidden_dims": [
+      32,
+      16
+    ],
+    "learning_rate": 0.001,
+    "epochs": 20,
+    "batch_size": 128,
+    "early_stopping": true,
+    "patience": 3,
+    "val_split": 0.1,
+    "random_state": 42,
+    "threshold": null,
+    "backend": "auto",
+    "backend_used": "numpy"
+  },
+  "feature_names": [
+    "fwd_packets",
+    "fwd_bytes",
+    "duration_seconds",
+    "ip_tos",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "log_fwd_packets",
+    "log_fwd_bytes",
+    "log_duration",
+    "log_packet_rate",
+    "log_byte_rate",
+    "log_bytes_per_packet",
+    "hour_of_day",
+    "day_of_week",
+    "sin_hour",
+    "cos_hour",
+    "sin_day_of_week",
+    "cos_day_of_week",
+    "is_tcp",
+    "is_udp",
+    "is_icmp",
+    "is_well_known_dst_port",
+    "has_syn",
+    "has_ack",
+    "has_fin",
+    "has_rst",
+    "has_psh",
+    "has_urg",
+    "is_weekend",
+    "fwd_status_0",
+    "protocol_category_TCP",
+    "dst_port_category_well_known",
+    "src_port_category_registered"
+  ],
+  "train_count": 300,
+  "calibration_count": 100,
+  "test_count": 100,
+  "train_time_range": [
+    "2016-03-01T00:00:00+00:00",
+    "2016-03-01T14:57:00+00:00"
+  ],
+  "calibration_time_range": [
+    "2016-03-01T15:00:00+00:00",
+    "2016-03-01T19:57:00+00:00"
+  ],
+  "test_time_range": [
+    "2016-03-01T20:00:00+00:00",
+    "2016-03-02T00:57:00+00:00"
+  ],
+  "threshold_method": "calibration_quantile",
+  "threshold_value": 1.7730293810523607,
+  "target_calibration_quantile": 0.99,
+  "binary_metrics": {
+    "total_samples": 100,
+    "true_positives": 15,
+    "false_positives": 1,
+    "true_negatives": 84,
+    "false_negatives": 0,
+    "actual_positives": 15,
+    "actual_negatives": 85,
+    "flagged_count": 16,
+    "flagged_percentage": 16.0,
+    "precision": 0.9375,
+    "recall": 1.0,
+    "specificity": 0.988235,
+    "false_positive_rate": 0.011765,
+    "f1_score": 0.967742,
+    "balanced_accuracy": 0.994118,
+    "confusion_matrix": [
+      [
+        84,
+        1
+      ],
+      [
+        0,
+        15
+      ]
+    ],
+    "undefined_metrics": []
+  },
+  "ranking_metrics": {
+    "roc_auc": 1.0,
+    "average_precision": 1.0,
+    "warning": null
+  },
+  "category_metrics": {
+    "dos": {
+      "total_occurrences": 15,
+      "detected_count": 15,
+      "missed_count": 0,
+      "recall": 1.0
+    }
+  },
+  "temporal_metrics": {
+    "total_alerts": 16,
+    "interval_freq": "1h",
+    "n_intervals": 5,
+    "alerts_per_interval_mean": 3.2,
+    "alerts_per_interval_max": 4,
+    "alerts_per_interval_std": 1.3038
+  },
+  "threshold_sweep": [
+    {
+      "calibration_quantile": 0.9,
+      "target_calibration_fpr": 0.1,
+      "threshold_value": 1.363437,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 23,
+      "test_alert_percentage": 23.0,
+      "test_observed_fpr": 0.094118,
+      "test_precision": 0.652174,
+      "test_recall": 1.0,
+      "test_f1_score": 0.789474,
+      "fpr_divergence": -0.005882
+    },
+    {
+      "calibration_quantile": 0.95,
+      "target_calibration_fpr": 0.05,
+      "threshold_value": 1.546948,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 17,
+      "test_alert_percentage": 17.0,
+      "test_observed_fpr": 0.023529,
+      "test_precision": 0.882353,
+      "test_recall": 1.0,
+      "test_f1_score": 0.9375,
+      "fpr_divergence": -0.026471
+    },
+    {
+      "calibration_quantile": 0.98,
+      "target_calibration_fpr": 0.02,
+      "threshold_value": 1.651853,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 16,
+      "test_alert_percentage": 16.0,
+      "test_observed_fpr": 0.011765,
+      "test_precision": 0.9375,
+      "test_recall": 1.0,
+      "test_f1_score": 0.967742,
+      "fpr_divergence": -0.008235
+    },
+    {
+      "calibration_quantile": 0.99,
+      "target_calibration_fpr": 0.01,
+      "threshold_value": 1.773029,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 16,
+      "test_alert_percentage": 16.0,
+      "test_observed_fpr": 0.011765,
+      "test_precision": 0.9375,
+      "test_recall": 1.0,
+      "test_f1_score": 0.967742,
+      "fpr_divergence": 0.001765
+    },
+    {
+      "calibration_quantile": 0.995,
+      "target_calibration_fpr": 0.005,
+      "threshold_value": 2.781102,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 15,
+      "test_alert_percentage": 15.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 1.0,
+      "test_f1_score": 1.0,
+      "fpr_divergence": -0.005
+    },
+    {
+      "calibration_quantile": 0.999,
+      "target_calibration_fpr": 0.001,
+      "threshold_value": 3.587561,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 15,
+      "test_alert_percentage": 15.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 1.0,
+      "test_f1_score": 1.0,
+      "fpr_divergence": -0.001
+    }
+  ],
+  "dataset_name": "synthetic_demo",
+  "manifest_ref": "in-memory-demo",
+  "feature_policy_version": "1.0",
+  "created_at_utc": "2026-10-23T12:13:55.344272+00:00",
+  "warnings": []
+}

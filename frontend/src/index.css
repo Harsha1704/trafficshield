@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #07090e;
+    --bg-card: #0d121d;
+    --bg-card-hover: #121929;
+    --border-subtle: rgba(56, 189, 248, 0.12);
+    --border-highlight: rgba(56, 189, 248, 0.35);
+    --cyan-accent: #06b6d4;
+    --cyan-glow: rgba(6, 182, 212, 0.25);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: #f1f5f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  code, pre, .font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+}
+
+/* Custom Scrollbar for High-Density SOC Tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090d15;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Restrained Glassmorphism */
+.glass-panel {
+  background: rgba(13, 18, 29, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+}
+
+.glass-panel-hover:hover {
+  background: rgba(18, 25, 41, 0.85);
+  border-color: rgba(56, 189, 248, 0.28);
+}
+
+/* Subtle Tactical Grid Pattern */
+.bg-tactical-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Accessible Severity Styling */
+.badge-critical {
+  background-color: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+.badge-high {
+  background-color: rgba(249, 115, 22, 0.18);
+  color: #fdba74;
+  border: 1px solid rgba(249, 115, 22, 0.45);
+}
+
+.badge-medium {
+  background-color: rgba(245, 158, 11, 0.18);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.badge-low {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+/* Status Indicators */
+.status-new {
+  background-color: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+}
+
+.status-investigating {
+  background-color: rgba(168, 85, 247, 0.18);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+}
+
+.status-resolved {
+  background-color: rgba(16, 185, 129, 0.18);
+  color: #86efac;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.status-false_positive {
+  background-color: rgba(100, 116, 139, 0.22);
+  color: #cbd5e1;
+  border: 1px solid rgba(100, 116, 139, 0.45);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

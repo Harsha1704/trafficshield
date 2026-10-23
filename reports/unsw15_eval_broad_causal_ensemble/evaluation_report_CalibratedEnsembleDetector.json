@@ -1,0 +1,264 @@
+{
+  "detector_type": "CalibratedEnsembleDetector",
+  "detector_parameters": {
+    "normalizer": "empirical_percentile",
+    "weights": {
+      "statistical": 0.25,
+      "iforest": 0.25,
+      "lof": 0.25,
+      "autoencoder": 0.25
+    },
+    "detector_names": [
+      "statistical",
+      "iforest",
+      "lof",
+      "autoencoder"
+    ],
+    "random_state": 42,
+    "threshold": null,
+    "is_calibrated": true
+  },
+  "feature_names": [
+    "fwd_packets",
+    "fwd_bytes",
+    "duration_seconds",
+    "ip_tos",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "log_fwd_packets",
+    "log_fwd_bytes",
+    "log_duration",
+    "log_packet_rate",
+    "log_byte_rate",
+    "log_bytes_per_packet",
+    "hour_of_day",
+    "day_of_week",
+    "sin_hour",
+    "cos_hour",
+    "sin_day_of_week",
+    "cos_day_of_week",
+    "sttl",
+    "sload",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "is_tcp",
+    "is_udp",
+    "is_icmp",
+    "is_well_known_dst_port",
+    "has_syn",
+    "has_ack",
+    "has_fin",
+    "has_rst",
+    "has_psh",
+    "has_urg",
+    "is_weekend",
+    "is_sm_ips_ports",
+    "fwd_status_0",
+    "protocol_category_OTHER",
+    "dst_port_category_unknown",
+    "src_port_category_unknown"
+  ],
+  "train_count": 30014,
+  "calibration_count": 9988,
+  "test_count": 9998,
+  "train_time_range": [
+    "2015-01-22T11:50:14+00:00",
+    "2015-01-22T12:09:17+00:00"
+  ],
+  "calibration_time_range": [
+    "2015-01-22T12:09:18+00:00",
+    "2015-01-22T12:15:50+00:00"
+  ],
+  "test_time_range": [
+    "2015-01-22T12:15:51+00:00",
+    "2015-01-22T12:23:16+00:00"
+  ],
+  "threshold_method": "calibration_quantile",
+  "threshold_value": 0.9677613135762916,
+  "target_calibration_quantile": 0.99,
+  "binary_metrics": {
+    "total_samples": 9998,
+    "true_positives": 5,
+    "false_positives": 1,
+    "true_negatives": 9415,
+    "false_negatives": 577,
+    "actual_positives": 582,
+    "actual_negatives": 9416,
+    "flagged_count": 6,
+    "flagged_percentage": 0.06,
+    "precision": 0.833333,
+    "recall": 0.008591,
+    "specificity": 0.999894,
+    "false_positive_rate": 0.000106,
+    "f1_score": 0.017007,
+    "balanced_accuracy": 0.504242,
+    "confusion_matrix": [
+      [
+        9415,
+        1
+      ],
+      [
+        577,
+        5
+      ]
+    ],
+    "undefined_metrics": []
+  },
+  "ranking_metrics": {
+    "roc_auc": 0.923955,
+    "average_precision": 0.398157,
+    "warning": null
+  },
+  "category_metrics": {
+    "backdoor": {
+      "total_occurrences": 4,
+      "detected_count": 0,
+      "missed_count": 4,
+      "recall": 0.0
+    },
+    "dos": {
+      "total_occurrences": 51,
+      "detected_count": 0,
+      "missed_count": 51,
+      "recall": 0.0
+    },
+    "exploits": {
+      "total_occurrences": 273,
+      "detected_count": 1,
+      "missed_count": 272,
+      "recall": 0.003663
+    },
+    "fuzzers": {
+      "total_occurrences": 87,
+      "detected_count": 0,
+      "missed_count": 87,
+      "recall": 0.0
+    },
+    "generic": {
+      "total_occurrences": 45,
+      "detected_count": 0,
+      "missed_count": 45,
+      "recall": 0.0
+    },
+    "reconnaissance": {
+      "total_occurrences": 109,
+      "detected_count": 4,
+      "missed_count": 105,
+      "recall": 0.036697
+    },
+    "shellcode": {
+      "total_occurrences": 12,
+      "detected_count": 0,
+      "missed_count": 12,
+      "recall": 0.0
+    },
+    "worms": {
+      "total_occurrences": 1,
+      "detected_count": 0,
+      "missed_count": 1,
+      "recall": 0.0
+    }
+  },
+  "temporal_metrics": {
+    "total_alerts": 6,
+    "interval_freq": "1h",
+    "n_intervals": 1,
+    "alerts_per_interval_mean": 6.0,
+    "alerts_per_interval_max": 6,
+    "alerts_per_interval_std": 0.0
+  },
+  "threshold_sweep": [
+    {
+      "calibration_quantile": 0.9,
+      "target_calibration_fpr": 0.1,
+      "threshold_value": 0.803952,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 618,
+      "test_alert_percentage": 6.1812,
+      "test_observed_fpr": 0.043224,
+      "test_precision": 0.341424,
+      "test_recall": 0.362543,
+      "test_f1_score": 0.351667,
+      "fpr_divergence": -0.056776
+    },
+    {
+      "calibration_quantile": 0.95,
+      "target_calibration_fpr": 0.05,
+      "threshold_value": 0.88296,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 247,
+      "test_alert_percentage": 2.4705,
+      "test_observed_fpr": 0.012001,
+      "test_precision": 0.54251,
+      "test_recall": 0.230241,
+      "test_f1_score": 0.323281,
+      "fpr_divergence": -0.037999
+    },
+    {
+      "calibration_quantile": 0.98,
+      "target_calibration_fpr": 0.02,
+      "threshold_value": 0.953194,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 49,
+      "test_alert_percentage": 0.4901,
+      "test_observed_fpr": 0.001593,
+      "test_precision": 0.693878,
+      "test_recall": 0.058419,
+      "test_f1_score": 0.107765,
+      "fpr_divergence": -0.018407
+    },
+    {
+      "calibration_quantile": 0.99,
+      "target_calibration_fpr": 0.01,
+      "threshold_value": 0.967761,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 6,
+      "test_alert_percentage": 0.06,
+      "test_observed_fpr": 0.000106,
+      "test_precision": 0.833333,
+      "test_recall": 0.008591,
+      "test_f1_score": 0.017007,
+      "fpr_divergence": -0.009894
+    },
+    {
+      "calibration_quantile": 0.995,
+      "target_calibration_fpr": 0.005,
+      "threshold_value": 0.971366,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 5,
+      "test_alert_percentage": 0.05,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 0.008591,
+      "test_f1_score": 0.017036,
+      "fpr_divergence": -0.005
+    },
+    {
+      "calibration_quantile": 0.999,
+      "target_calibration_fpr": 0.001,
+      "threshold_value": 0.98786,
+      "calibration_sample_size": 9988,
+      "test_sample_size": 9998,
+      "test_alert_count": 0,
+      "test_alert_percentage": 0.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": null,
+      "test_recall": 0.0,
+      "test_f1_score": null,
+      "fpr_divergence": -0.001
+    }
+  ],
+  "dataset_name": "unsw_nb15_UNSW-NB15_1",
+  "manifest_ref": "D:\\projects\\trafficshield\\datasets\\raw\\unsw_nb15\\UNSW-NB15_1.csv",
+  "feature_policy_version": "1.0",
+  "created_at_utc": "2026-10-23T12:15:11.500254+00:00",
+  "warnings": []
+}

@@ -1,0 +1,23 @@
+Metric / Attribute,Value
+Detector Type,CalibratedEnsembleDetector
+Feature Policy Version,1.0
+Dataset Name,synthetic_demo
+Train Samples,300
+Calibration Samples,100
+Test Samples,100
+Threshold Value,0.9752500000000002
+Threshold Method,calibration_quantile
+Target Calibration Quantile,0.99
+True Positives (TP),15
+False Positives (FP),0
+True Negatives (TN),85
+False Negatives (FN),0
+Precision,1.0
+Recall,1.0
+Specificity,1.0
+False Positive Rate (FPR),0.0
+F1 Score,1.0
+Balanced Accuracy,1.0
+ROC-AUC,1.0
+Average Precision (PR-AUC),1.0
+Flagged Percentage (%),15.0

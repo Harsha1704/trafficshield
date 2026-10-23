@@ -52,6 +52,7 @@ datasets/processed/
 datasets/canonical/
 *.pcap
 *.pcapng
+!data/captures/sample_traffic.pcap
 *.csv.gz
 *.nfcapd
 
@@ -82,8 +83,13 @@ frontend/.vite/
 # Docker
 *.env.docker
 
-# Reports (generated)
-reports/
+# Reports (temporary test/coverage output)
+htmlcov/
+.coverage
+.coverage.*
+*.coverage
+reports/*.html
+reports/*.xml
 
 # OS
 Thumbs.db

@@ -1,0 +1,116 @@
+{
+  "dataset": "UNSW-NB15 (Day 1: Files 1 & 2)",
+  "total_rows_audited": 100000,
+  "causal_feature_count": 13,
+  "causal_feature_names": [
+    "duration_seconds",
+    "fwd_bytes",
+    "sttl",
+    "sload",
+    "fwd_packets",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "is_sm_ips_ports",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet"
+  ],
+  "nan_counts": {
+    "duration_seconds": 0,
+    "fwd_bytes": 0,
+    "sttl": 0,
+    "sload": 0,
+    "fwd_packets": 0,
+    "swin": 0,
+    "smeansz": 0,
+    "sjit": 0,
+    "sintpkt": 0,
+    "is_sm_ips_ports": 0,
+    "packet_rate": 0,
+    "byte_rate": 0,
+    "bytes_per_packet": 0
+  },
+  "inf_counts": {
+    "duration_seconds": 0,
+    "fwd_bytes": 0,
+    "sttl": 0,
+    "sload": 0,
+    "fwd_packets": 0,
+    "swin": 0,
+    "smeansz": 0,
+    "sjit": 0,
+    "sintpkt": 0,
+    "is_sm_ips_ports": 0,
+    "packet_rate": 0,
+    "byte_rate": 0,
+    "bytes_per_packet": 0
+  },
+  "near_constant_columns": [],
+  "class_distribution": {
+    "normal_count": 88570,
+    "attack_count": 11430,
+    "attack_prevalence": 0.1143
+  },
+  "attack_categories": {
+    "normal": 88570,
+    "exploits": 3374,
+    "fuzzers": 3329,
+    "generic": 1820,
+    "reconnaissance": 945,
+    "dos": 862,
+    "backdoor": 494,
+    "analysis": 464,
+    "shellcode": 126,
+    "worms": 16
+  },
+  "feature_target_correlations": {
+    "duration_seconds": 0.0287,
+    "fwd_bytes": 0.0359,
+    "sttl": 0.8022,
+    "sload": 0.2565,
+    "fwd_packets": -0.0817,
+    "swin": -0.1532,
+    "smeansz": 0.0593,
+    "sjit": 0.0857,
+    "sintpkt": -0.0151,
+    "is_sm_ips_ports": -0.0178,
+    "packet_rate": 0.4084,
+    "byte_rate": 0.2702,
+    "bytes_per_packet": 0.0594
+  },
+  "strongest_target_correlation": {
+    "feature": "sttl",
+    "correlation": 0.8022
+  },
+  "chronological_integrity": {
+    "timestamp_col": "flow_end_ts",
+    "is_monotonic_increasing": true,
+    "time_min": "2015-01-22T11:50:14+00:00",
+    "time_max": "2015-01-22T12:53:21+00:00"
+  },
+  "cross_file_holdout": {
+    "file": "UNSW-NB15_3.csv",
+    "samples": 20000,
+    "attack_count": 5094,
+    "normal_count": 14906,
+    "attack_prevalence": 0.2547,
+    "time_range": [
+      "2015-02-18 03:45:29+00:00",
+      "2015-02-18 03:52:53+00:00"
+    ],
+    "categories": {
+      "normal": 14906,
+      "generic": 4422,
+      "exploits": 279,
+      "fuzzers": 191,
+      "reconnaissance": 123,
+      "dos": 53,
+      "shellcode": 19,
+      "backdoor": 5,
+      "worms": 1,
+      "analysis": 1
+    }
+  }
+}

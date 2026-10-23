@@ -1,0 +1,23 @@
+Metric / Attribute,Value
+Detector Type,RobustStatisticalDetector
+Feature Policy Version,1.0
+Dataset Name,unsw_nb15_4files
+Train Samples,6000
+Calibration Samples,2000
+Test Samples,2000
+Threshold Value,3746.1514789764365
+Threshold Method,calibration_quantile
+Target Calibration Quantile,0.99
+True Positives (TP),1
+False Positives (FP),8
+True Negatives (TN),1799
+False Negatives (FN),192
+Precision,0.111111
+Recall,0.005181
+Specificity,0.995573
+False Positive Rate (FPR),0.004427
+F1 Score,0.009901
+Balanced Accuracy,0.500377
+ROC-AUC,0.807248
+Average Precision (PR-AUC),0.278638
+Flagged Percentage (%),0.45

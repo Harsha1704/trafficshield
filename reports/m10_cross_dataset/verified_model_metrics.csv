@@ -1,0 +1,10 @@
+track,model_name,dataset,n_samples,accuracy,precision,recall,specificity,false_positive_rate,f1_score,balanced_accuracy,roc_auc,pr_auc,confusion_matrix,tn,fp,fn,tp
+Track B (Common Subspace - Within Dataset),LogisticRegression,UNSW-NB15_HeldoutTest,19942,0.726858,0.704478,0.12086,0.978912,0.021088,0.206324,0.549886,0.800026,0.591027,"[13787, 297, 5150, 708]",13787,297,5150,708
+Track B (Common Subspace - Within Dataset),RandomForest,UNSW-NB15_HeldoutTest,19942,0.858339,0.773588,0.73199,0.910892,0.089108,0.752215,0.821441,0.954529,0.881288,"[12829, 1255, 1570, 4288]",12829,1255,1570,4288
+Track B (Common Subspace - Within Dataset),HistGradientBoosting,UNSW-NB15_HeldoutTest,19942,0.918464,0.799717,0.96381,0.899602,0.100398,0.874129,0.931706,0.980245,0.945149,"[12670, 1414, 212, 5646]",12670,1414,212,5646
+Track C (Temporal Shift - 24 Days Later),LogisticRegression,UNSW-NB15_Day2_Holdout,20000,0.68335,0.120637,0.038673,0.903663,0.096337,0.05857,0.471168,0.660951,0.374469,"[13470, 1436, 4897, 197]",13470,1436,4897,197
+Track C (Temporal Shift - 24 Days Later),RandomForest,UNSW-NB15_Day2_Holdout,20000,0.84375,0.623139,0.978013,0.797867,0.202133,0.76125,0.88794,0.946422,0.86519,"[11893, 3013, 112, 4982]",11893,3013,112,4982
+Track C (Temporal Shift - 24 Days Later),HistGradientBoosting,UNSW-NB15_Day2_Holdout,20000,0.765,0.520724,0.971731,0.694351,0.305649,0.678082,0.833041,0.986114,0.972417,"[10350, 4556, 144, 4950]",10350,4556,144,4950
+Track B (Cross-Dataset Zero-Shot Transfer),RandomForest_ZeroShot,Synthetic_CICIDS2017_Fixture,10000,0.5832,0.19668,0.576667,0.584353,0.415647,0.29332,0.58051,0.584385,0.164065,"[4967, 3533, 635, 865]",4967,3533,635,865
+Track B (Cross-Dataset Zero-Shot Transfer),HistGradientBoosting_ZeroShot,Synthetic_CICIDS2017_Fixture,10000,0.7131,0.142559,0.182,0.806824,0.193176,0.159883,0.494412,0.506794,0.158815,"[6858, 1642, 1227, 273]",6858,1642,1227,273
+Track A (Dataset-Specific Baseline),CICIDS2017_Production_Model,CICIDS2017_Official_Raw,0,NOT RUN (Dataset absent locally),NOT RUN,NOT RUN,NOT RUN,NOT RUN,NOT RUN,NOT RUN,NOT RUN,NOT RUN,N/A,0,0,0,0

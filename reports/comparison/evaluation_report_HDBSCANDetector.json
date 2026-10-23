@@ -1,0 +1,205 @@
+{
+  "detector_type": "HDBSCANDetector",
+  "detector_parameters": {
+    "min_cluster_size": 5,
+    "min_samples": null,
+    "metric": "euclidean",
+    "cluster_selection_epsilon": 0.0,
+    "cluster_selection_method": "eom",
+    "threshold": null
+  },
+  "feature_names": [
+    "fwd_packets",
+    "fwd_bytes",
+    "duration_seconds",
+    "ip_tos",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "log_fwd_packets",
+    "log_fwd_bytes",
+    "log_duration",
+    "log_packet_rate",
+    "log_byte_rate",
+    "log_bytes_per_packet",
+    "hour_of_day",
+    "day_of_week",
+    "sin_hour",
+    "cos_hour",
+    "sin_day_of_week",
+    "cos_day_of_week",
+    "is_tcp",
+    "is_udp",
+    "is_icmp",
+    "is_well_known_dst_port",
+    "has_syn",
+    "has_ack",
+    "has_fin",
+    "has_rst",
+    "has_psh",
+    "has_urg",
+    "is_weekend",
+    "fwd_status_0",
+    "protocol_category_TCP",
+    "dst_port_category_well_known",
+    "src_port_category_registered"
+  ],
+  "train_count": 300,
+  "calibration_count": 100,
+  "test_count": 100,
+  "train_time_range": [
+    "2016-03-01T00:00:00+00:00",
+    "2016-03-01T14:57:00+00:00"
+  ],
+  "calibration_time_range": [
+    "2016-03-01T15:00:00+00:00",
+    "2016-03-01T19:57:00+00:00"
+  ],
+  "test_time_range": [
+    "2016-03-01T20:00:00+00:00",
+    "2016-03-02T00:57:00+00:00"
+  ],
+  "threshold_method": "calibration_quantile",
+  "threshold_value": 6742307.325599881,
+  "target_calibration_quantile": 0.99,
+  "binary_metrics": {
+    "total_samples": 100,
+    "true_positives": 15,
+    "false_positives": 0,
+    "true_negatives": 85,
+    "false_negatives": 0,
+    "actual_positives": 15,
+    "actual_negatives": 85,
+    "flagged_count": 15,
+    "flagged_percentage": 15.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "specificity": 1.0,
+    "false_positive_rate": 0.0,
+    "f1_score": 1.0,
+    "balanced_accuracy": 1.0,
+    "confusion_matrix": [
+      [
+        85,
+        0
+      ],
+      [
+        0,
+        15
+      ]
+    ],
+    "undefined_metrics": []
+  },
+  "ranking_metrics": {
+    "roc_auc": 1.0,
+    "average_precision": 1.0,
+    "warning": null
+  },
+  "category_metrics": {
+    "dos": {
+      "total_occurrences": 15,
+      "detected_count": 15,
+      "missed_count": 0,
+      "recall": 1.0
+    }
+  },
+  "temporal_metrics": {
+    "total_alerts": 15,
+    "interval_freq": "1h",
+    "n_intervals": 5,
+    "alerts_per_interval_mean": 3.0,
+    "alerts_per_interval_max": 4,
+    "alerts_per_interval_std": 1.7321
+  },
+  "threshold_sweep": [
+    {
+      "calibration_quantile": 0.9,
+      "target_calibration_fpr": 0.1,
+      "threshold_value": 5862989.54007,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 21,
+      "test_alert_percentage": 21.0,
+      "test_observed_fpr": 0.070588,
+      "test_precision": 0.714286,
+      "test_recall": 1.0,
+      "test_f1_score": 0.833333,
+      "fpr_divergence": -0.029412
+    },
+    {
+      "calibration_quantile": 0.95,
+      "target_calibration_fpr": 0.05,
+      "threshold_value": 6232896.510424,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 18,
+      "test_alert_percentage": 18.0,
+      "test_observed_fpr": 0.035294,
+      "test_precision": 0.833333,
+      "test_recall": 1.0,
+      "test_f1_score": 0.909091,
+      "fpr_divergence": -0.014706
+    },
+    {
+      "calibration_quantile": 0.98,
+      "target_calibration_fpr": 0.02,
+      "threshold_value": 6476339.627004,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 18,
+      "test_alert_percentage": 18.0,
+      "test_observed_fpr": 0.035294,
+      "test_precision": 0.833333,
+      "test_recall": 1.0,
+      "test_f1_score": 0.909091,
+      "fpr_divergence": 0.015294
+    },
+    {
+      "calibration_quantile": 0.99,
+      "target_calibration_fpr": 0.01,
+      "threshold_value": 6742307.3256,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 15,
+      "test_alert_percentage": 15.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 1.0,
+      "test_f1_score": 1.0,
+      "fpr_divergence": -0.01
+    },
+    {
+      "calibration_quantile": 0.995,
+      "target_calibration_fpr": 0.005,
+      "threshold_value": 7772666.412943,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 15,
+      "test_alert_percentage": 15.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 1.0,
+      "test_f1_score": 1.0,
+      "fpr_divergence": -0.005
+    },
+    {
+      "calibration_quantile": 0.999,
+      "target_calibration_fpr": 0.001,
+      "threshold_value": 8596953.682817,
+      "calibration_sample_size": 100,
+      "test_sample_size": 100,
+      "test_alert_count": 15,
+      "test_alert_percentage": 15.0,
+      "test_observed_fpr": 0.0,
+      "test_precision": 1.0,
+      "test_recall": 1.0,
+      "test_f1_score": 1.0,
+      "fpr_divergence": -0.001
+    }
+  ],
+  "dataset_name": "synthetic_demo",
+  "manifest_ref": "in-memory-demo",
+  "feature_policy_version": "1.0",
+  "created_at_utc": "2026-10-22T10:59:20.174253+00:00",
+  "warnings": []
+}

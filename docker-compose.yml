@@ -1,0 +1,87 @@
+services:
+  # ─── TrafficShield Core Application Service ────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trafficshield-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - path: .env.production
+        required: false
+      - path: .env
+        required: false
+    environment:
+      - FLASK_ENV=production
+      - APP_ENV=production
+      - FLASK_DEBUG=0
+      - SECRET_KEY=${SECRET_KEY:-replace-with-a-strong-random-secret-key-at-least-32-chars}
+      - DATABASE_URL=postgresql://trafficshield_user:${POSTGRES_PASSWORD:-ChangeMePostgresSecret123!}@db:5432/trafficshield_prod
+      - AUTH_ENABLED=1
+      - AUTH_TOKEN_EXPIRY_HOURS=8
+      - ADMIN_INITIAL_USERNAME=${ADMIN_INITIAL_USERNAME:-admin}
+      - ADMIN_INITIAL_PASSWORD=${ADMIN_INITIAL_PASSWORD:-ChangeMeAdminPass123!}
+      - ANALYST_INITIAL_USERNAME=${ANALYST_INITIAL_USERNAME:-analyst}
+      - ANALYST_INITIAL_PASSWORD=${ANALYST_INITIAL_PASSWORD:-ChangeMeAnalystPass123!}
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://soc.trafficshield.internal
+      - SESSION_COOKIE_SECURE=0 # Set to 1 behind HTTPS reverse proxy
+      - GUNICORN_WORKERS=4
+      - GUNICORN_THREADS=4
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - trafficshield-network
+
+  # ─── PostgreSQL Production Database ─────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: trafficshield-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trafficshield_prod
+      POSTGRES_USER: trafficshield_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ChangeMePostgresSecret123!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trafficshield_user -d trafficshield_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - trafficshield-network
+
+  # ─── Optional Nginx Reverse Proxy & TLS Terminator ──────────────────────────
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: trafficshield-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - trafficshield-network
+
+networks:
+  trafficshield-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
