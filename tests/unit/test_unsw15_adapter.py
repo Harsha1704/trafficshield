@@ -239,3 +239,85 @@ def test_missing_file_raises_filenotfound(tmp_path: Path):
     missing_path = tmp_path / "does_not_exist.csv"
     with pytest.raises(FileNotFoundError):
         list(adapter.iter_records(missing_path))
+
+
+def test_boundary_deduplication(tmp_path: Path):
+    """Verify boundary de-duplication drops the overlapping row across consecutive files."""
+    f1 = tmp_path / "file1.csv"
+    f2 = tmp_path / "file2.csv"
+
+    # File 1 has 5 rows
+    rows1 = [make_synthetic_unsw_row(i, stime=100.0 + i, ltime=101.0 + i) for i in range(5)]
+    with open(f1, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerows(rows1)
+
+    # File 2 starts with identical duplicate of File 1's last row (rows1[-1]), plus 4 new rows
+    dup_row = list(rows1[-1])
+    rows2 = [dup_row] + [make_synthetic_unsw_row(10 + i, stime=110.0 + i, ltime=111.0 + i) for i in range(4)]
+    with open(f2, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerows(rows2)
+
+    adapter = UNSW15Adapter()
+
+    # Without deduplication: 5 + 5 = 10 rows
+    feat_raw, _, _ = adapter.load_unidirectional_dataframe([f1, f2], deduplicate_boundaries=False)
+    assert len(feat_raw) == 10
+
+    # With deduplication: 5 + 5 - 1 = 9 rows
+    feat_dedup, _, _ = adapter.load_unidirectional_dataframe([f1, f2], deduplicate_boundaries=True)
+    assert len(feat_dedup) == 9
+
+
+def test_causal_only_loading(tmp_path: Path):
+    """Verify causal_only=True excludes all precomputed ct_* features."""
+    csv_file = tmp_path / "test_causal.csv"
+    create_synthetic_unsw_csv(csv_file, n_rows=20)
+
+    adapter = UNSW15Adapter()
+    feat_all, _, _ = adapter.load_unidirectional_dataframe(csv_file, causal_only=False, include_engineered_rates=False)
+    assert len(feat_all.columns) == 19
+    assert "ct_srv_src" in feat_all.columns
+
+    feat_causal, _, _ = adapter.load_unidirectional_dataframe(csv_file, causal_only=True, include_engineered_rates=False)
+    assert len(feat_causal.columns) == 10
+    assert "ct_srv_src" not in feat_causal.columns
+    assert "ct_dst_ltm" not in feat_causal.columns
+    assert "fwd_bytes" in feat_causal.columns
+    assert "duration_seconds" in feat_causal.columns
+
+
+def test_identical_timestamps_kept_together_in_split():
+    """Verify split keeps identical timestamps together without straddling boundaries."""
+    records = []
+    # 10 records at T=10, 10 records at T=20, 10 records at T=30
+    for i in range(30):
+        if i < 10:
+            ts = "2026-01-01T10:00:00Z"
+        elif i < 20:
+            ts = "2026-01-01T11:00:00Z"
+        else:
+            ts = "2026-01-01T12:00:00Z"
+        records.append({
+            "flow_end_ts": ts,
+            "fwd_packets": 10,
+            "fwd_bytes": 100,
+            "duration_seconds": 1.0,
+            "eval_label": "normal",
+        })
+
+    df = pd.DataFrame(records)
+    part = chronological_three_way_split(
+        df,
+        train_ratio=0.35, # 10.5 rows -> would straddle T=11:00:00 without grouping
+        cal_ratio=0.35,
+        test_ratio=0.30,
+        timestamp_col="flow_end_ts",
+    )
+
+    # Identical timestamps must not be split across train and cal
+    train_max = part.train_df["flow_end_ts"].max()
+    cal_min = part.calibration_df["flow_end_ts"].min()
+    assert train_max < cal_min
+

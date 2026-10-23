@@ -100,7 +100,10 @@ class ModelEvaluator:
         cal_features, _, _ = extract_features_and_labels(partition.calibration_df)
         x_cal = self.preprocessor.transform_df(cal_features)
 
-        cal_scores = self.detector.score_samples(x_cal)
+        if hasattr(self.detector, "calibrate_ensemble"):
+            cal_scores = self.detector.calibrate_ensemble(x_cal)
+        else:
+            cal_scores = self.detector.score_samples(x_cal)
         frozen_thresh = compute_quantile_threshold(cal_scores, quantile=quantile)
         self.detector.set_threshold(frozen_thresh)
 

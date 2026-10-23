@@ -65,6 +65,8 @@ class UNSWFieldSpec:
     data_type: DataType
     description: str
     rationale: str
+    is_causal: bool = True
+    causal_notes: str = ""
 
     @property
     def is_model_feature(self) -> bool:
@@ -83,6 +85,8 @@ class UNSWFieldSpec:
             "field_role": str(self.field_role),
             "data_type": str(self.data_type),
             "is_model_feature": self.is_model_feature,
+            "is_causal": self.is_causal,
+            "causal_notes": self.causal_notes,
             "description": self.description,
             "rationale": self.rationale,
         }
@@ -508,6 +512,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Number of flows with HTTP methods (GET/POST)",
         rationale="Client HTTP request methods are transmitted in the forward direction.",
+        is_causal=False,
+        causal_notes="Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.",
     ),
     # 39. is_ftp_login
     UNSWFieldSpec(
@@ -519,6 +525,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.BOOLEAN,
         description="Binary: 1 if FTP session accessed by user and password",
         rationale="Verifying authenticated session status requires observing server reply code (230 vs 530).",
+        is_causal=False,
+        causal_notes="Requires observing server authentication response.",
     ),
     # 40. ct_ftp_cmd
     UNSWFieldSpec(
@@ -530,6 +538,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Count of flows with command in FTP session",
         rationale="Client FTP command invocations travel in the forward request stream.",
+        is_causal=False,
+        causal_notes="Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.",
     ),
     # 41. ct_srv_src
     UNSWFieldSpec(
@@ -541,6 +551,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections with same service and source address in recent 100 connections",
         rationale="Local sensor window aggregate over forward stream source addresses and requested services.",
+        is_causal=False,
+        causal_notes="Empirical lookahead: row 0 has value 3, anticipating flows at rows 27 and 37. Non-causal batch window.",
     ),
     # 42. ct_srv_dst
     UNSWFieldSpec(
@@ -552,6 +564,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections with same service and destination address in recent 100 connections",
         rationale="Local sensor window aggregate over forward destination addresses and requested services.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 43. ct_dst_ltm
     UNSWFieldSpec(
@@ -563,6 +577,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections of same destination address in recent 100 connections",
         rationale="Local forward stream fan-in indicator.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 44. ct_src_ ltm
     UNSWFieldSpec(
@@ -574,6 +590,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections of same source address in recent 100 connections",
         rationale="Local forward stream fan-out indicator.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 45. ct_src_dport_ltm
     UNSWFieldSpec(
@@ -585,6 +603,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections of same source address and destination port in recent 100 connections",
         rationale="Forward stream port-scanning / horizontal reconnaissance indicator.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 46. ct_dst_sport_ltm
     UNSWFieldSpec(
@@ -596,6 +616,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections of same destination address and source port in recent 100 connections",
         rationale="Forward stream vertical reconnaissance indicator.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 47. ct_dst_src_ltm
     UNSWFieldSpec(
@@ -607,6 +629,8 @@ UNSW_NB15_SPECS: list[UNSWFieldSpec] = [
         data_type=DataType.NUMERIC,
         description="Connections of same source and destination address in recent 100 connections",
         rationale="Forward stream host-pair connection density indicator.",
+        is_causal=False,
+        causal_notes="Precomputed batch window over 100 connections contains future observations.",
     ),
     # 48. attack_cat
     UNSWFieldSpec(
@@ -656,9 +680,70 @@ def get_unsw_spec_by_normalized(name: str) -> UNSWFieldSpec | None:
     return _BY_NORMALIZED_NAME.get(clean)
 
 
-def get_eligible_unsw_model_features() -> list[str]:
-    """Return the list of normalized feature names eligible for model inputs."""
+def get_eligible_unsw_model_features(strict_causal_only: bool = False) -> list[str]:
+    """
+    Return the list of normalized feature names eligible for model inputs.
+
+    Parameters
+    ----------
+    strict_causal_only : bool
+        If True, restricts to the 10 strictly causal, zero-lookahead features,
+        excluding the 9 precomputed batch-window aggregate features (ct_*).
+        If False (default), returns all 19 forward-observable model candidates.
+    """
+    if strict_causal_only:
+        return get_strict_causal_unsw_model_features()
     return [s.normalized_name for s in UNSW_NB15_SPECS if s.is_model_feature]
+
+
+def get_strict_causal_unsw_model_features() -> list[str]:
+    """
+    Return only the 10 strictly causal forward-observable model features.
+
+    Excludes the 9 precomputed ct_* features which contain future-flow lookahead
+    over 100-connection windows.
+    """
+    return [s.normalized_name for s in UNSW_NB15_SPECS if s.is_model_feature and s.is_causal]
+
+
+def get_disjoint_unsw_policy_categories() -> dict[str, list[str]]:
+    """
+    Return the exact disjoint 5-way partition of all 49 UNSW-NB15 columns.
+
+    Categories:
+    1. forward_observable_numeric (19): Forward model features (10 causal + 9 batch window aggregates).
+    2. forward_observable_metadata (4): Forward categorical/metadata headers (sport, dsport, proto, service).
+    3. reverse_direction (13): Strictly forbidden reverse-direction metrics.
+    4. bidirectional_or_future_dependent (6): Strictly forbidden bidirectional handshake / response metrics.
+    5. identifier_or_grouping_only (7): Network identifiers (3), timestamps (2), and evaluation labels (2).
+
+    Total: 19 + 4 + 13 + 6 + 7 = 49.
+    """
+    categories: dict[str, list[str]] = {
+        "forward_observable_numeric": [],
+        "forward_observable_metadata": [],
+        "reverse_direction": [],
+        "bidirectional_or_future_dependent": [],
+        "identifier_or_grouping_only": [],
+    }
+    for s in UNSW_NB15_SPECS:
+        if s.is_model_feature:
+            categories["forward_observable_numeric"].append(s.raw_name)
+        elif s.directionality == UNSWFeatureDirectionality.FORWARD_OBSERVABLE:
+            categories["forward_observable_metadata"].append(s.raw_name)
+        elif s.directionality == UNSWFeatureDirectionality.REVERSE_DIRECTION:
+            categories["reverse_direction"].append(s.raw_name)
+        elif s.directionality == UNSWFeatureDirectionality.BIDIRECTIONAL_OR_FUTURE_DEPENDENT:
+            categories["bidirectional_or_future_dependent"].append(s.raw_name)
+        elif s.directionality == UNSWFeatureDirectionality.IDENTIFIER_OR_GROUPING_ONLY:
+            categories["identifier_or_grouping_only"].append(s.raw_name)
+        else:
+            raise ValueError(f"Uncategorized spec: {s}")
+
+    total = sum(len(v) for v in categories.values())
+    if total != 49:
+        raise ValueError(f"Expected 49 total columns in disjoint partition, got {total}")
+    return categories
 
 
 def get_prohibited_unsw_features() -> list[str]:
@@ -738,11 +823,18 @@ def export_unsw_policy_json(out_path: Path) -> Path:
     """Export the complete policy as a structured machine-readable JSON artifact."""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    cats = get_disjoint_unsw_policy_categories()
     payload = {
-        "version": "1.0",
+        "version": "1.1",
         "dataset": "UNSW-NB15",
         "total_fields": len(UNSW_NB15_SPECS),
+        "disjoint_partition_counts": {k: len(v) for k, v in cats.items()},
+        "disjoint_partition_columns": cats,
         "eligible_model_features": get_eligible_unsw_model_features(),
+        "strict_causal_model_features": get_strict_causal_unsw_model_features(),
+        "precomputed_window_aggregate_features": [
+            s.normalized_name for s in UNSW_NB15_SPECS if s.is_model_feature and not s.is_causal
+        ],
         "prohibited_features": get_prohibited_unsw_features(),
         "specs": [s.to_dict() for s in UNSW_NB15_SPECS],
     }
@@ -754,34 +846,50 @@ def export_unsw_policy_markdown(out_path: Path) -> Path:
     """Export the feature policy as a human-readable Markdown documentation table."""
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    cats = get_disjoint_unsw_policy_categories()
     lines = [
         "# TrafficShield — UNSW-NB15 Unidirectional Feature Eligibility Policy",
         "",
-        "Version: 1.0  ",
+        "Version: 1.1  ",
         "Dataset: UNSW-NB15 Network Intrusion Dataset  ",
         "Premise: Unidirectional Link Monitoring (Zero Reverse / Bidirectional Leakage)",
         "",
-        "## Summary of Classification",
+        "## Summary of Exact Disjoint Classification (49 Fields)",
         "",
         "| Category | Count | Status | Description |",
         "|---|---|---|---|",
-        f"| `forward_observable` (numeric) | {sum(1 for s in UNSW_NB15_SPECS if s.is_model_feature)} | ✅ Eligible | Observable exclusively in forward packet stream |",
-        f"| `forward_observable` (metadata) | {sum(1 for s in UNSW_NB15_SPECS if s.directionality == UNSWFeatureDirectionality.FORWARD_OBSERVABLE and not s.is_model_feature)} | ℹ️ Encoded | Ports/Protocol headers (categorical encoding only) |",
-        f"| `reverse_direction` | {sum(1 for s in UNSW_NB15_SPECS if s.directionality == UNSWFeatureDirectionality.REVERSE_DIRECTION)} | ❌ Prohibited | Requires unobserved return traffic |",
-        f"| `bidirectional_or_future_dependent` | {sum(1 for s in UNSW_NB15_SPECS if s.directionality == UNSWFeatureDirectionality.BIDIRECTIONAL_OR_FUTURE_DEPENDENT)} | ❌ Prohibited | Handshake state, RTT, or response pairing |",
-        f"| `identifier_or_grouping_only` | {sum(1 for s in UNSW_NB15_SPECS if s.directionality == UNSWFeatureDirectionality.IDENTIFIER_OR_GROUPING_ONLY)} | ⛔ Excluded | IPs, timestamps, and ground-truth evaluation labels |",
+        f"| `forward_observable` (numeric) | {len(cats['forward_observable_numeric'])} | ✅ Eligible | Observable exclusively in forward packet stream (10 causal + 9 batch window) |",
+        f"| `forward_observable` (metadata) | {len(cats['forward_observable_metadata'])} | ℹ️ Encoded | Ports/Protocol headers (categorical encoding only) |",
+        f"| `reverse_direction` | {len(cats['reverse_direction'])} | ❌ Prohibited | Requires unobserved return traffic |",
+        f"| `bidirectional_or_future_dependent` | {len(cats['bidirectional_or_future_dependent'])} | ❌ Prohibited | Handshake state, RTT, or response pairing |",
+        f"| `identifier_or_grouping_only` | {len(cats['identifier_or_grouping_only'])} | ⛔ Excluded | IPs (3), timestamps (2), and ground-truth evaluation labels (2) |",
+        "",
+        f"**Total Fields Classified:** {sum(len(v) for v in cats.values())} of 49",
+        "",
+        "---",
+        "",
+        "## Causal Observability Distinction for Model Features",
+        "",
+        "- **10 Strictly Causal Per-Flow Intrinsic Features:**",
+        "  `dur`, `sbytes`, `sttl`, `sload`, `spkts`, `swin`, `smeansz`, `sjit`, `sintpkt`, `is_sm_ips_ports`",
+        "  Zero dependencies on future or concurrent flows; safe for strict online unidirectional inference.",
+        "",
+        "- **9 Precomputed Batch Window Aggregate Features (ct_*):**",
+        "  `ct_flw_http_mthd`, `ct_ftp_cmd`, `ct_srv_src`, `ct_srv_dst`, `ct_dst_ltm`, `ct_src_ltm`, `ct_src_dport_ltm`, `ct_dst_sport_ltm`, `ct_dst_src_ltm`",
+        "  Precomputed in raw CSV over 100-connection windows containing future observations (temporal lookahead bias). Excluded from strict causal one-way detection.",
         "",
         "---",
         "",
         "## Detailed Column-by-Column Policy",
         "",
-        "| # | Raw Name | Normalized | Category | Role | Model Feature? | Rationale |",
-        "|---|---|---|---|---|---|---|",
+        "| # | Raw Name | Normalized | Category | Role | Model Feature? | Causal? | Rationale |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for s in UNSW_NB15_SPECS:
         status = "✅ YES" if s.is_model_feature else "❌ NO"
+        causal_str = "✅ YES" if s.is_causal else "⚠️ BATCH/LOOKAHEAD"
         lines.append(
-            f"| {s.index} | `{s.raw_name}` | `{s.normalized_name}` | `{s.directionality}` | `{s.field_role}` | {status} | {s.rationale} |"
+            f"| {s.index} | `{s.raw_name}` | `{s.normalized_name}` | `{s.directionality}` | `{s.field_role}` | {status} | {causal_str} | {s.rationale} |"
         )
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return out_path

@@ -64,6 +64,163 @@ class ChronologicalPartition:
         return self.train_count + self.calibration_count + self.test_count
 
 
+@dataclass
+class ChronologicalFourWayPartition:
+    """Stores four chronological partitions: Train, Validation, Calibration, and Test."""
+    train_df: pd.DataFrame
+    val_df: pd.DataFrame
+    calibration_df: pd.DataFrame
+    test_df: pd.DataFrame
+
+    timestamp_col: str = "flow_end_ts"
+    train_time_range: tuple[str | None, str | None] = (None, None)
+    val_time_range: tuple[str | None, str | None] = (None, None)
+    calibration_time_range: tuple[str | None, str | None] = (None, None)
+    test_time_range: tuple[str | None, str | None] = (None, None)
+
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def train_count(self) -> int:
+        return len(self.train_df)
+
+    @property
+    def val_count(self) -> int:
+        return len(self.val_df)
+
+    @property
+    def calibration_count(self) -> int:
+        return len(self.calibration_df)
+
+    @property
+    def test_count(self) -> int:
+        return len(self.test_df)
+
+    @property
+    def total_count(self) -> int:
+        return self.train_count + self.val_count + self.calibration_count + self.test_count
+
+
+def chronological_four_way_split(
+    data: pd.DataFrame | Sequence[CanonicalFlow],
+    train_ratio: float = 0.50,
+    val_ratio: float = 0.15,
+    cal_ratio: float = 0.15,
+    test_ratio: float = 0.20,
+    timestamp_col: str = "flow_end_ts",
+    enforce_strict_order: bool = True,
+) -> ChronologicalFourWayPartition:
+    """
+    Partition observations chronologically into Train, Validation, Calibration, and Test splits.
+
+    Guarantees:
+    - Train is chronologically earlier than Validation.
+    - Validation is chronologically earlier than Calibration.
+    - Calibration is chronologically earlier than Test.
+    """
+    total_ratio = train_ratio + val_ratio + cal_ratio + test_ratio
+    if not (0.999 <= total_ratio <= 1.001):
+        raise ValueError(
+            f"Ratios must sum to 1.0, got train={train_ratio}, val={val_ratio}, cal={cal_ratio}, test={test_ratio}"
+        )
+
+    if isinstance(data, pd.DataFrame):
+        df = data.copy()
+    elif isinstance(data, (list, tuple)):
+        if not data:
+            empty_df = pd.DataFrame()
+            return ChronologicalFourWayPartition(empty_df, empty_df, empty_df, empty_df, timestamp_col=timestamp_col)
+        records = [f.model_dump() if hasattr(f, "model_dump") else dict(f) for f in data]
+        df = pd.DataFrame.from_records(records)
+    else:
+        raise TypeError(f"Unsupported input data type: {type(data)}")
+
+    if df.empty:
+        empty_df = pd.DataFrame()
+        return ChronologicalFourWayPartition(empty_df, empty_df, empty_df, empty_df, timestamp_col=timestamp_col)
+
+    if timestamp_col not in df.columns:
+        raise KeyError(f"Timestamp column '{timestamp_col}' not found in data.")
+
+    df["_sort_ts"] = pd.to_datetime(df[timestamp_col], utc=True, errors="coerce")
+    n_missing_ts = int(df["_sort_ts"].isna().sum())
+    if n_missing_ts > 0:
+        df = df.dropna(subset=["_sort_ts"])
+
+    df = df.sort_values(by="_sort_ts", ascending=True).reset_index(drop=True)
+    n_samples = len(df)
+
+    idx_train = int(n_samples * train_ratio)
+    idx_val = int(n_samples * (train_ratio + val_ratio))
+    idx_cal = int(n_samples * (train_ratio + val_ratio + cal_ratio))
+
+    # Keep identical timestamps together across cuts
+    while 0 < idx_train < n_samples and df.loc[idx_train, "_sort_ts"] == df.loc[idx_train - 1, "_sort_ts"]:
+        if idx_train + 1 < idx_val:
+            idx_train += 1
+        else:
+            break
+
+    while idx_train < idx_val < n_samples and df.loc[idx_val, "_sort_ts"] == df.loc[idx_val - 1, "_sort_ts"]:
+        if idx_val + 1 < idx_cal:
+            idx_val += 1
+        else:
+            break
+
+    while idx_val < idx_cal < n_samples and df.loc[idx_cal, "_sort_ts"] == df.loc[idx_cal - 1, "_sort_ts"]:
+        if idx_cal + 1 < n_samples:
+            idx_cal += 1
+        else:
+            break
+
+    train_df = df.iloc[:idx_train].copy()
+    val_df = df.iloc[idx_train:idx_val].copy()
+    calibration_df = df.iloc[idx_val:idx_cal].copy()
+    test_df = df.iloc[idx_cal:].copy()
+
+    def get_range(d: pd.DataFrame) -> tuple[str | None, str | None]:
+        if d.empty:
+            return (None, None)
+        return (d["_sort_ts"].min().isoformat(), d["_sort_ts"].max().isoformat())
+
+    train_range = get_range(train_df)
+    val_range = get_range(val_df)
+    cal_range = get_range(calibration_df)
+    test_range = get_range(test_df)
+
+    train_df = train_df.drop(columns=["_sort_ts"])
+    val_df = val_df.drop(columns=["_sort_ts"])
+    calibration_df = calibration_df.drop(columns=["_sort_ts"])
+    test_df = test_df.drop(columns=["_sort_ts"])
+
+    if enforce_strict_order:
+        if train_range[1] and val_range[0] and train_range[1] > val_range[0]:
+            raise TemporalLeakageError(f"Train max ({train_range[1]}) overlaps with val min ({val_range[0]})")
+        if val_range[1] and cal_range[0] and val_range[1] > cal_range[0]:
+            raise TemporalLeakageError(f"Val max ({val_range[1]}) overlaps with cal min ({cal_range[0]})")
+        if cal_range[1] and test_range[0] and cal_range[1] > test_range[0]:
+            raise TemporalLeakageError(f"Cal max ({cal_range[1]}) overlaps with test min ({test_range[0]})")
+
+    return ChronologicalFourWayPartition(
+        train_df=train_df,
+        val_df=val_df,
+        calibration_df=calibration_df,
+        test_df=test_df,
+        timestamp_col=timestamp_col,
+        train_time_range=train_range,
+        val_time_range=val_range,
+        calibration_time_range=cal_range,
+        test_time_range=test_range,
+        metadata={
+            "train_ratio": train_ratio,
+            "val_ratio": val_ratio,
+            "cal_ratio": cal_ratio,
+            "test_ratio": test_ratio,
+            "missing_timestamps_dropped": n_missing_ts,
+        },
+    )
+
+
 def chronological_three_way_split(
     data: pd.DataFrame | Sequence[CanonicalFlow],
     train_ratio: float = 0.6,
@@ -124,6 +281,19 @@ def chronological_three_way_split(
 
     idx_train = int(n_samples * train_ratio)
     idx_cal = int(n_samples * (train_ratio + cal_ratio))
+
+    # Keep identical timestamps together across partition cuts
+    while 0 < idx_train < n_samples and df.loc[idx_train, "_sort_ts"] == df.loc[idx_train - 1, "_sort_ts"]:
+        if idx_train + 1 < idx_cal:
+            idx_train += 1
+        else:
+            break
+
+    while idx_train < idx_cal < n_samples and df.loc[idx_cal, "_sort_ts"] == df.loc[idx_cal - 1, "_sort_ts"]:
+        if idx_cal + 1 < n_samples:
+            idx_cal += 1
+        else:
+            break
 
     train_df = df.iloc[:idx_train].copy()
     calibration_df = df.iloc[idx_train:idx_cal].copy()

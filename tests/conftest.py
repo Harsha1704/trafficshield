@@ -8,8 +8,21 @@ Fixtures are scoped appropriately:
 from __future__ import annotations
 
 import os
+import sys
+import types
 
 import pytest
+
+# Windows Smart App Control / WDAC compatibility guard:
+# Stub unused internal C-extension solvers (_sag_fast) if blocked by host code-integrity policy
+if "sklearn.linear_model._sag_fast" not in sys.modules:
+    try:
+        import sklearn.linear_model._sag_fast  # noqa: F401
+    except (ImportError, OSError):
+        _mock_sag = types.ModuleType("sklearn.linear_model._sag_fast")
+        _mock_sag.sag32 = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+        _mock_sag.sag64 = lambda *args, **kwargs: None  # type: ignore[attr-defined]
+        sys.modules["sklearn.linear_model._sag_fast"] = _mock_sag
 
 # Force testing environment BEFORE app import so settings are correct
 os.environ.setdefault("FLASK_ENV", "testing")

@@ -1,7 +1,75 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "dataset": "UNSW-NB15",
   "total_fields": 49,
+  "disjoint_partition_counts": {
+    "forward_observable_numeric": 19,
+    "forward_observable_metadata": 4,
+    "reverse_direction": 13,
+    "bidirectional_or_future_dependent": 6,
+    "identifier_or_grouping_only": 7
+  },
+  "disjoint_partition_columns": {
+    "forward_observable_numeric": [
+      "dur",
+      "sbytes",
+      "sttl",
+      "Sload",
+      "Spkts",
+      "swin",
+      "smeansz",
+      "Sjit",
+      "Sintpkt",
+      "is_sm_ips_ports",
+      "ct_flw_http_mthd",
+      "ct_ftp_cmd",
+      "ct_srv_src",
+      "ct_srv_dst",
+      "ct_dst_ltm",
+      "ct_src_ ltm",
+      "ct_src_dport_ltm",
+      "ct_dst_sport_ltm",
+      "ct_dst_src_ltm"
+    ],
+    "forward_observable_metadata": [
+      "sport",
+      "dsport",
+      "proto",
+      "service"
+    ],
+    "reverse_direction": [
+      "dbytes",
+      "dttl",
+      "dloss",
+      "Dload",
+      "Dpkts",
+      "dwin",
+      "dtcpb",
+      "dmeansz",
+      "res_bdy_len",
+      "Djit",
+      "Dintpkt",
+      "tcprtt",
+      "synack"
+    ],
+    "bidirectional_or_future_dependent": [
+      "state",
+      "sloss",
+      "trans_depth",
+      "ackdat",
+      "ct_state_ttl",
+      "is_ftp_login"
+    ],
+    "identifier_or_grouping_only": [
+      "srcip",
+      "dstip",
+      "stcpb",
+      "Stime",
+      "Ltime",
+      "attack_cat",
+      "Label"
+    ]
+  },
   "eligible_model_features": [
     "duration_seconds",
     "fwd_bytes",
@@ -13,6 +81,29 @@
     "sjit",
     "sintpkt",
     "is_sm_ips_ports",
+    "ct_flw_http_mthd",
+    "ct_ftp_cmd",
+    "ct_srv_src",
+    "ct_srv_dst",
+    "ct_dst_ltm",
+    "ct_src_ltm",
+    "ct_src_dport_ltm",
+    "ct_dst_sport_ltm",
+    "ct_dst_src_ltm"
+  ],
+  "strict_causal_model_features": [
+    "duration_seconds",
+    "fwd_bytes",
+    "sttl",
+    "sload",
+    "fwd_packets",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "is_sm_ips_ports"
+  ],
+  "precomputed_window_aggregate_features": [
     "ct_flw_http_mthd",
     "ct_ftp_cmd",
     "ct_srv_src",
@@ -58,6 +149,8 @@
       "field_role": "identifier",
       "data_type": "string",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source IP address",
       "rationale": "Network entity identifier. Used for entity tracking / state grouping; never a continuous numeric feature."
     },
@@ -69,6 +162,8 @@
       "field_role": "metadata",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source port number",
       "rationale": "Observed directly in forward transport header. Encoded into well-known / ephemeral categories, not raw scalar magnitude."
     },
@@ -80,6 +175,8 @@
       "field_role": "identifier",
       "data_type": "string",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination IP address",
       "rationale": "Network entity identifier. Prohibited from numeric feature matrix."
     },
@@ -91,6 +188,8 @@
       "field_role": "metadata",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination port number",
       "rationale": "Observed directly in forward transport header. Encoded into service port categories / well-known indicators."
     },
@@ -102,6 +201,8 @@
       "field_role": "metadata",
       "data_type": "categorical",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Transaction protocol",
       "rationale": "Observed in forward IP header protocol field. Categorical indicator."
     },
@@ -113,6 +214,8 @@
       "field_role": "forbidden",
       "data_type": "categorical",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Indicates to the state and its dependent protocol (ACC, CLO, CON, FIN, etc.)",
       "rationale": "ARGUS derives connection states (FIN, CON, CLO) by observing bidirectional TCP handshakes and teardowns across both link directions."
     },
@@ -124,6 +227,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Record total duration",
       "rationale": "Elapsed time from first observed forward packet to last observed forward packet at the monitoring link."
     },
@@ -135,6 +240,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source to destination transaction bytes",
       "rationale": "Cumulative forward byte volume observable from packet length headers."
     },
@@ -146,6 +253,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination to source transaction bytes",
       "rationale": "Reverse-direction byte count. Requires observing return traffic. Strictly prohibited."
     },
@@ -157,6 +266,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source to destination time to live value",
       "rationale": "Observed directly in forward IP header TTL field."
     },
@@ -168,6 +279,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination to source time to live value",
       "rationale": "Reverse IP header TTL. Requires observing return packets. Strictly prohibited."
     },
@@ -179,6 +292,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source packets retransmitted or dropped",
       "rationale": "In ARGUS flow monitors, drop estimation often relies on reverse SACK or response acknowledgment gaps. Excluded fail-safe."
     },
@@ -190,6 +305,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination packets retransmitted or dropped",
       "rationale": "Reverse-direction packet loss. Requires observing return traffic. Strictly prohibited."
     },
@@ -201,6 +318,8 @@
       "field_role": "metadata",
       "data_type": "categorical",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Application service (http, ftp, smtp, ssh, dns, etc.)",
       "rationale": "Derived from destination port and forward packet payload signature."
     },
@@ -212,6 +331,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source bits per second",
       "rationale": "Forward transmission rate (8 * sbytes / dur). Fully observable from forward stream."
     },
@@ -223,6 +344,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination bits per second",
       "rationale": "Reverse-direction transmission rate. Requires return bytes. Strictly prohibited."
     },
@@ -234,6 +357,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source to destination packet count",
       "rationale": "Cumulative forward packet count observable at sensor interface."
     },
@@ -245,6 +370,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination to source packet count",
       "rationale": "Reverse packet count. Requires observing return traffic. Strictly prohibited."
     },
@@ -256,6 +383,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source TCP window advertisement value",
       "rationale": "Observed in forward TCP header window field."
     },
@@ -267,6 +396,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination TCP window advertisement value",
       "rationale": "Observed in reverse TCP header window field. Strictly prohibited."
     },
@@ -278,6 +409,8 @@
       "field_role": "identifier",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source TCP base sequence number",
       "rationale": "Random 32-bit transaction identifier without physical continuous magnitude."
     },
@@ -289,6 +422,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination TCP base sequence number",
       "rationale": "Destination sequence number from reverse TCP header. Strictly prohibited."
     },
@@ -300,6 +435,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Mean of the flow packet size transmitted by the src",
       "rationale": "Mean forward packet size (sbytes / Spkts). Observable in forward direction."
     },
@@ -311,6 +448,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Mean of the flow packet size transmitted by the dst",
       "rationale": "Mean reverse packet size. Requires return packets. Strictly prohibited."
     },
@@ -322,6 +461,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Pipelined depth into HTTP request/response transaction",
       "rationale": "Requires tracking request-response pairs across both link directions."
     },
@@ -333,6 +474,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Actual uncompressed content size of server HTTP response body",
       "rationale": "Server response body transferred from destination back to source. Strictly prohibited."
     },
@@ -344,6 +487,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source jitter (mSec)",
       "rationale": "Variation in inter-packet arrival times of forward packets."
     },
@@ -355,6 +500,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination jitter (mSec)",
       "rationale": "Variation in inter-packet arrival times of return packets. Strictly prohibited."
     },
@@ -366,6 +513,8 @@
       "field_role": "timestamp",
       "data_type": "datetime",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Record start time (epoch seconds)",
       "rationale": "Timestamp used for ordering and windowing; excluded from numeric feature matrix."
     },
@@ -377,6 +526,8 @@
       "field_role": "timestamp",
       "data_type": "datetime",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Record last time (epoch seconds)",
       "rationale": "Primary chronological ordering key for flow completion. Excluded from numeric features."
     },
@@ -388,6 +539,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Source interpacket arrival time (mSec)",
       "rationale": "Time elapsed between consecutive forward packets. Fully forward observable."
     },
@@ -399,6 +552,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Destination interpacket arrival time (mSec)",
       "rationale": "Time elapsed between return packets. Requires reverse observation. Strictly prohibited."
     },
@@ -410,6 +565,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "TCP connection setup round-trip time (synack + ackdat)",
       "rationale": "Explicit round-trip measurement requiring reverse SYN-ACK packet. Strictly prohibited."
     },
@@ -421,6 +578,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "TCP connection setup time between SYN and SYN-ACK",
       "rationale": "SYN-ACK travels in return direction. Strictly prohibited."
     },
@@ -432,6 +591,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "TCP connection setup time between SYN-ACK and ACK",
       "rationale": "Requires knowing reverse SYN-ACK arrival time. Strictly prohibited."
     },
@@ -443,6 +604,8 @@
       "field_role": "feature",
       "data_type": "boolean",
       "is_model_feature": true,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Binary indicator: 1 if srcip==dstip and sport==dsport, else 0",
       "rationale": "Land attack indicator observable directly from forward packet IP/port headers."
     },
@@ -454,6 +617,8 @@
       "field_role": "forbidden",
       "data_type": "numeric",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Count of connections for state according to TTL range",
       "rationale": "Directly incorporates connection state which requires bidirectional tracking."
     },
@@ -465,6 +630,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.",
       "description": "Number of flows with HTTP methods (GET/POST)",
       "rationale": "Client HTTP request methods are transmitted in the forward direction."
     },
@@ -476,6 +643,8 @@
       "field_role": "forbidden",
       "data_type": "boolean",
       "is_model_feature": false,
+      "is_causal": false,
+      "causal_notes": "Requires observing server authentication response.",
       "description": "Binary: 1 if FTP session accessed by user and password",
       "rationale": "Verifying authenticated session status requires observing server reply code (230 vs 530)."
     },
@@ -487,6 +656,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed over 100-connection batch window in raw dataset. Non-causal future lookahead across window.",
       "description": "Count of flows with command in FTP session",
       "rationale": "Client FTP command invocations travel in the forward request stream."
     },
@@ -498,6 +669,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Empirical lookahead: row 0 has value 3, anticipating flows at rows 27 and 37. Non-causal batch window.",
       "description": "Connections with same service and source address in recent 100 connections",
       "rationale": "Local sensor window aggregate over forward stream source addresses and requested services."
     },
@@ -509,6 +682,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections with same service and destination address in recent 100 connections",
       "rationale": "Local sensor window aggregate over forward destination addresses and requested services."
     },
@@ -520,6 +695,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections of same destination address in recent 100 connections",
       "rationale": "Local forward stream fan-in indicator."
     },
@@ -531,6 +708,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections of same source address in recent 100 connections",
       "rationale": "Local forward stream fan-out indicator."
     },
@@ -542,6 +721,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections of same source address and destination port in recent 100 connections",
       "rationale": "Forward stream port-scanning / horizontal reconnaissance indicator."
     },
@@ -553,6 +734,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections of same destination address and source port in recent 100 connections",
       "rationale": "Forward stream vertical reconnaissance indicator."
     },
@@ -564,6 +747,8 @@
       "field_role": "feature",
       "data_type": "numeric",
       "is_model_feature": true,
+      "is_causal": false,
+      "causal_notes": "Precomputed batch window over 100 connections contains future observations.",
       "description": "Connections of same source and destination address in recent 100 connections",
       "rationale": "Forward stream host-pair connection density indicator."
     },
@@ -575,6 +760,8 @@
       "field_role": "label",
       "data_type": "string",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Name of attack category",
       "rationale": "Ground-truth attack annotation. Exclusively for post-prediction evaluation. Prohibited from training/inference."
     },
@@ -586,6 +773,8 @@
       "field_role": "label",
       "data_type": "boolean",
       "is_model_feature": false,
+      "is_causal": true,
+      "causal_notes": "",
       "description": "Binary attack indicator (0 for normal, 1 for attack)",
       "rationale": "Ground-truth binary label. Exclusively for post-prediction evaluation. Prohibited from model input."
     }

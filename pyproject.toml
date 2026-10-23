@@ -41,6 +41,7 @@ ignore = ["E501", "N803"]
 "scripts/*" = ["T201"]
 "evaluation/cli.py" = ["T201"]
 "tests/*" = ["T201", "C408", "N806"]
+"ml/*" = ["N806"]
 
 [tool.mypy]
 python_version = "3.12"

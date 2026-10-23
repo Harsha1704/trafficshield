@@ -343,6 +343,8 @@ class UNSW15Adapter:
         filepaths: list[Path] | Path,
         max_rows: int | None = None,
         include_engineered_rates: bool = True,
+        causal_only: bool = False,
+        deduplicate_boundaries: bool = False,
     ) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
         """
         Load UNSW-NB15 data directly into memory-efficient DataFrames:
@@ -350,17 +352,32 @@ class UNSW15Adapter:
         2. labels_series: Ground-truth target labels (isolated from features).
         3. metadata_df: Provenance, timestamps, and identifiers.
 
+        Parameters
+        ----------
+        filepaths : list[Path] | Path
+            One or more CSV filepaths.
+        max_rows : int | None
+            Limit total rows loaded across all files.
+        include_engineered_rates : bool
+            Compute forward rates (packet_rate, byte_rate, bytes_per_packet).
+        causal_only : bool
+            If True, only use the 10 strictly causal, zero-lookahead forward
+            features. If False (default), use all 19 forward features.
+        deduplicate_boundaries : bool
+            If True, detects and drops boundary duplicate rows between consecutive
+            partition files (resolving the 3-row dataset split boundary overlap).
+
         Guarantees:
         - All reverse-direction features (dbytes, dpkts, dload, tcprtt, etc.) are DROPPED.
         - All bidirectional state features are DROPPED.
         - An audit check runs before returning to guarantee zero directional leakage.
         """
-        if isinstance(filepaths, Path):
-            paths = [filepaths]
+        if isinstance(filepaths, (str, Path)):
+            paths = [Path(filepaths)]
         else:
-            paths = list(filepaths)
+            paths = [Path(p) for p in filepaths]
 
-        feature_cols = get_eligible_unsw_model_features()
+        feature_cols = get_eligible_unsw_model_features(strict_causal_only=causal_only)
         records_loaded = 0
 
         chunks_feat: list[pd.DataFrame] = []
@@ -370,6 +387,7 @@ class UNSW15Adapter:
         # Map raw column indices for memory-efficient loading
         # 1 to 49
         col_names = [s.normalized_name for s in UNSW_NB15_SPECS]
+        prev_file_last_row: pd.Series | None = None
 
         for p in paths:
             if not p.exists():
@@ -378,6 +396,9 @@ class UNSW15Adapter:
                 break
 
             logger.info("Streaming UNSW-NB15 from %s...", p.name)
+            is_first_chunk_of_file = True
+            last_chunk_in_file: pd.DataFrame | None = None
+
             # Use chunked read_csv
             chunk_iter = pd.read_csv(
                 p,
@@ -389,6 +410,17 @@ class UNSW15Adapter:
             )
 
             for chunk in chunk_iter:
+                if deduplicate_boundaries and is_first_chunk_of_file and prev_file_last_row is not None:
+                    if len(chunk) > 0:
+                        first_row_s = chunk.iloc[0].reset_index(drop=True)
+                        if first_row_s.equals(prev_file_last_row):
+                            logger.info("Deduplicating boundary overlap row at start of %s", p.name)
+                            chunk = chunk.iloc[1:]
+                is_first_chunk_of_file = False
+
+                if chunk.empty:
+                    continue
+
                 if max_rows is not None:
                     remaining = max_rows - records_loaded
                     if remaining <= 0:
@@ -398,6 +430,7 @@ class UNSW15Adapter:
 
                 n_chunk = len(chunk)
                 records_loaded += n_chunk
+                last_chunk_in_file = chunk
 
                 # 1. Extract and normalize labels
                 labels_raw = chunk["eval_label"].astype(str).str.strip()
@@ -451,6 +484,9 @@ class UNSW15Adapter:
                 chunks_feat.append(feat_df)
                 chunks_lbl.append(lbl_series)
                 chunks_meta.append(meta_df)
+
+            if last_chunk_in_file is not None and not last_chunk_in_file.empty:
+                prev_file_last_row = last_chunk_in_file.iloc[-1].reset_index(drop=True)
 
         if not chunks_feat:
             return pd.DataFrame(), pd.Series(name="eval_label"), pd.DataFrame()

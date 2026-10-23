@@ -141,3 +141,28 @@ def test_cli_unsw15_smoke_integration(tmp_path: Path):
     assert exit_code == 0
     assert (out_dir / "evaluation_report_RobustStatisticalDetector.json").exists()
     assert (out_dir / "evaluation_summary_RobustStatisticalDetector.csv").exists()
+
+
+def test_cli_unsw15_causal_only_and_deduplicate(tmp_path: Path):
+    """Test CLI --causal-only and --deduplicate-boundaries options."""
+    data_dir = tmp_path / "raw"
+    data_dir.mkdir()
+    f1 = data_dir / "UNSW-NB15_1.csv"
+    f2 = data_dir / "UNSW-NB15_2.csv"
+    create_synthetic_unsw_csv(f1, n_rows=40, start_time=100.0)
+    create_synthetic_unsw_csv(f2, n_rows=40, start_time=300.0)
+
+    out_dir = tmp_path / "reports_causal"
+    exit_code = eval_cli_main([
+        "--dataset", "unsw15",
+        "--data", str(data_dir),
+        "--max-rows", "70",
+        "--detector", "iforest",
+        "--causal-only",
+        "--deduplicate-boundaries",
+        "--if-estimators", "20",
+        "--out-dir", str(out_dir),
+    ])
+    assert exit_code == 0
+    assert (out_dir / "evaluation_report_IsolationForestDetector.json").exists()
+

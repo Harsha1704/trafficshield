@@ -31,7 +31,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from detection.autoencoder import AutoencoderDetector
 from detection.base import BaseDetector
+from detection.ensemble import CalibratedEnsembleDetector
 from detection.hdbscan_detector import HDBSCANDetector
 from detection.isolation_forest import IsolationForestDetector
 from detection.lof import LOFDetector
@@ -95,7 +97,11 @@ def run_evaluation(args: argparse.Namespace) -> int:
         # UNSW-NB15 dataset loader
         data_target = Path(args.data) if args.data else Path("datasets/raw/unsw_nb15")
         if data_target.is_dir():
-            files_to_load = [data_target / fn for fn in UNSW15_DATA_FILENAMES if (data_target / fn).exists()]
+            if getattr(args, "files", None):
+                specified = [s.strip() for s in args.files.split(",") if s.strip()]
+                files_to_load = [data_target / fn for fn in specified if (data_target / fn).exists()]
+            else:
+                files_to_load = [data_target / fn for fn in UNSW15_DATA_FILENAMES if (data_target / fn).exists()]
             if not files_to_load:
                 logger.error("No UNSW-NB15 data files found in %s", data_target)
                 return 1
@@ -109,12 +115,19 @@ def run_evaluation(args: argparse.Namespace) -> int:
             logger.error("UNSW-NB15 path not found: %s", data_target)
             return 1
 
-        logger.info("Loading UNSW-NB15 with unidirectional filter from %d file(s)...", len(files_to_load))
+        causal_only = getattr(args, "causal_only", False)
+        dedup_boundaries = getattr(args, "deduplicate_boundaries", False)
+        logger.info(
+            "Loading UNSW-NB15 with unidirectional filter from %d file(s) (causal_only=%s, dedup_boundaries=%s)...",
+            len(files_to_load), causal_only, dedup_boundaries,
+        )
         adapter = UNSW15Adapter(chunk_size=getattr(args, "chunk_size", 20_000))
         max_rows = getattr(args, "max_rows", None)
         feat_df, lbl_series, meta_df = adapter.load_unidirectional_dataframe(
             filepaths=files_to_load,
             max_rows=max_rows,
+            causal_only=causal_only,
+            deduplicate_boundaries=dedup_boundaries,
         )
         if len(feat_df) == 0:
             logger.error("No records loaded from %s", data_target)
@@ -182,6 +195,36 @@ def run_evaluation(args: argparse.Namespace) -> int:
         detector = LOFDetector(n_neighbors=args.lof_neighbors)
     elif args.detector.lower() == "hdbscan":
         detector = HDBSCANDetector(min_cluster_size=args.hdbscan_min_cluster_size)
+    elif args.detector.lower() in ("autoencoder", "ae"):
+        detector = AutoencoderDetector(
+            epochs=getattr(args, "ae_epochs", 20),
+            batch_size=getattr(args, "ae_batch_size", 128),
+            random_state=args.seed,
+        )
+    elif args.detector.lower() == "ensemble":
+        members_arg = getattr(args, "ensemble_detectors", "stat,iforest,autoencoder,lof")
+        member_names = [m.strip().lower() for m in members_arg.split(",") if m.strip()]
+        ens_detectors: dict[str, BaseDetector] = {}
+        for m in member_names:
+            if m in ("stat", "statistical", "robust"):
+                ens_detectors["statistical"] = RobustStatisticalDetector(aggregation=args.stat_agg)
+            elif m in ("iforest", "isolation_forest"):
+                ens_detectors["iforest"] = IsolationForestDetector(n_estimators=args.if_estimators, random_state=args.seed)
+            elif m == "lof":
+                ens_detectors["lof"] = LOFDetector(n_neighbors=args.lof_neighbors)
+            elif m == "hdbscan":
+                ens_detectors["hdbscan"] = HDBSCANDetector(min_cluster_size=args.hdbscan_min_cluster_size)
+            elif m in ("autoencoder", "ae"):
+                ens_detectors["autoencoder"] = AutoencoderDetector(
+                    epochs=getattr(args, "ae_epochs", 20),
+                    batch_size=getattr(args, "ae_batch_size", 128),
+                    random_state=args.seed,
+                )
+        detector = CalibratedEnsembleDetector(
+            detectors=ens_detectors,
+            normalizer=getattr(args, "ensemble_normalizer", "empirical_percentile"),
+            random_state=args.seed,
+        )
     else:
         logger.error("Unknown detector: %s", args.detector)
         return 1
@@ -244,12 +287,20 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Dataset type: 'generic', 'ugr16', or 'unsw15'")
     parser.add_argument("--data", help="Path to prepared dataset CSV file or raw dataset directory")
     parser.add_argument("--max-rows", type=int, default=None, help="Maximum rows to load for evaluation (for sampling/smoke test)")
-    parser.add_argument("--detector", default="statistical", choices=["statistical", "iforest", "lof", "hdbscan"],
-                        help="Detector to evaluate: 'statistical', 'iforest', 'lof', or 'hdbscan'")
+    parser.add_argument("--detector", default="statistical",
+                        choices=["statistical", "iforest", "lof", "hdbscan", "autoencoder", "ensemble"],
+                        help="Detector to evaluate: 'statistical', 'iforest', 'lof', 'hdbscan', 'autoencoder', or 'ensemble'")
     parser.add_argument("--use-temporal-features", action="store_true", help="Derive causal temporal rolling features")
     parser.add_argument("--temporal-window", type=float, default=300.0, help="Rolling window seconds (default: 300.0)")
     parser.add_argument("--lof-neighbors", type=int, default=20, help="Number of neighbors for LOF (default: 20)")
     parser.add_argument("--hdbscan-min-cluster-size", type=int, default=5, help="Min cluster size for HDBSCAN (default: 5)")
+    parser.add_argument("--ae-epochs", type=int, default=20, help="Training epochs for Autoencoder (default: 20)")
+    parser.add_argument("--ae-batch-size", type=int, default=128, help="Batch size for Autoencoder (default: 128)")
+    parser.add_argument("--ensemble-normalizer", default="empirical_percentile",
+                        choices=["empirical_percentile", "robust_minmax"],
+                        help="Calibration score normalizer for ensemble (default: 'empirical_percentile')")
+    parser.add_argument("--ensemble-detectors", default="stat,iforest,autoencoder,lof",
+                        help="Comma-separated member detectors for ensemble (default: 'stat,iforest,autoencoder,lof')")
     parser.add_argument("--timestamp-col", default="flow_end_ts", help="Timestamp column name")
     parser.add_argument("--label-col", default="eval_label", help="Ground-truth label column")
     parser.add_argument("--benign-label", default="background", help="Label value indicating normal traffic")
@@ -260,6 +311,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stat-agg", default="max", choices=["max", "top_k", "mean", "l2"], help="Aggregation for statistical detector")
     parser.add_argument("--if-estimators", type=int, default=100, help="Number of trees for Isolation Forest")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+    parser.add_argument("--files", help="Optional comma-separated list of filenames to evaluate (UNSW-NB15)")
+    parser.add_argument("--causal-only", action="store_true", help="Use strictly causal forward features (10 features, zero lookahead)")
+    parser.add_argument("--deduplicate-boundaries", action="store_true", help="Deduplicate boundary rows across adjacent dataset files")
     parser.add_argument("--out-dir", default="reports/evaluation", help="Directory for output reports")
     return parser
 

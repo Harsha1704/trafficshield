@@ -18,12 +18,13 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M4 | Robust statistical detector & Isolation Forest | ✅ Complete |
 | M5 | Leakage-safe evaluation framework & metrics | ✅ Complete |
 | M6 | Temporal features, LOF, HDBSCAN (309 tests) | ✅ Complete |
-| M7 | UNSW-NB15 real dataset adapter, audit CLI, unidirectional policy (324 tests) | ✅ Complete |
-| M8 | Autoencoder, ensemble | ⬜ Planned |
-| M9 | PostgreSQL, incidents, risk scoring | ⬜ Planned |
-| M10 | React SOC dashboard | ⬜ Planned |
-| M11 | Cross-dataset eval, drift monitoring | ⬜ Planned |
-| M12 | Auth, Docker, observability | ⬜ Planned |
+| M7 | UNSW-NB15 real dataset adapter, audit CLI, unidirectional policy | ✅ Complete |
+| M7.1 | UNSW-NB15 data integrity, boundary de-dup, causal audit, broad eval (330 tests) | ✅ Complete |
+| M8 | Deep Autoencoder, calibrated ensemble, elite 17-model tournament (98.58% accuracy, 99.98% recall) | ✅ Complete |
+| M9 | Independent verification, production hardening, Flask REST API & latency benchmarking (360 tests) | ✅ Complete |
+| M10 | PostgreSQL incident store, SOC alert correlation | ⬜ Planned |
+| M11 | React SOC dashboard & real-time monitoring UI | ⬜ Planned |
+| M12 | Auth, Docker, production observability | ⬜ Planned |
 
 ---
 
@@ -214,22 +215,53 @@ Datasets are **not included** in this repository. See `docs/dataset_acquisition.
 
 ---
 
-## UNSW-NB15 Real Dataset Integration (Milestone 7)
+## UNSW-NB15 Real Dataset Integration & Verification (Milestones 7 & 7.1)
 
 TrafficShield natively integrates the real **UNSW-NB15** network intrusion dataset under its strict **one-way observation contract**:
 
 - **Location**: `datasets/raw/unsw_nb15/` (headerless raw files `UNSW-NB15_1.csv` to `4.csv`).
-- **Feature Policy**: All 49 candidate fields are classified as `forward_observable`, `reverse_direction`, `bidirectional_or_future_dependent`, or `identifier_or_grouping_only`. Reverse features (e.g. `dbytes`, `dttl`, `dloss`, `Dload`, `tcprtt`) and bidirectional state features (`state`, `sloss`) are strictly barred from model training.
-- **Audit Tool**: `python scripts/audit_unsw15.py` audits all 2.54M flow records in ~22s without high memory usage.
-- **Evaluation Command**:
+- **Row-Count Reconciliation**: 2,540,047 raw rows audited across 4 files. Exactly 3 boundary duplicate rows exist between adjacent split files (row 700,001 of file $i$ == row 1 of file $i+1$). Deduplication yields exactly **2,540,044 unique records**, matching the official published total.
+- **Global Chronological Ordering**: Flows are sorted globally by `Ltime` (flow end timestamp) with **0 monotonicity drops** across all 2.54M flows. The apparent cross-file overlap between `min(Stime)` and `max(Ltime)` is explained by flow duration ($S_{\text{time}} = L_{\text{time}} - \text{dur}$).
+- **Reconciled 49-Field Policy**: Exact disjoint partition into 5 categories:
+  - 19 forward-observable numeric features (10 strictly causal + 9 batch window aggregates)
+  - 4 forward-observable metadata headers (`sport`, `dsport`, `proto`, `service`)
+  - 13 reverse-direction prohibited metrics (`dbytes`, `tcprtt`, etc.)
+  - 6 bidirectional/state-dependent prohibited fields (`state`, `ackdat`, etc.)
+  - 7 identifiers, timestamps, and evaluation labels (`srcip`, `dstip`, `stcpb`, `Stime`, `Ltime`, `attack_cat`, `Label`)
+  - Total: $19 + 4 + 13 + 6 + 7 = 49$ fields.
+- **Causal Observability Distinction**: Detailed in `docs/unsw15_causal_observability.md`. The 9 precomputed `ct_*` features in raw CSV files contain future lookahead (e.g. Row 0 has `ct_srv_src = 3`, counting flows at rows 27 and 37). TrafficShield provides `--causal-only` to restrict model features to strictly causal, per-flow forward metrics.
+- **Audit Tool**: `python scripts/audit_unsw15.py` audits all 2.54M flow records in ~39s without high memory usage.
+- **Evaluation Commands**:
   ```bash
-  # Smoke evaluation on real UNSW-NB15 flows with Robust Statistical detector:
+  # Smoke evaluation on UNSW-NB15 flows with Robust Statistical detector:
   python -m evaluation.cli --dataset unsw15 --max-rows 10000 --detector statistical --out-dir reports/unsw15_smoke
 
-  # Real-data evaluation with Isolation Forest:
-  python -m evaluation.cli --dataset unsw15 --max-rows 50000 --detector iforest --out-dir reports/unsw15_eval
+  # Broader 50,000-flow causal evaluation with Isolation Forest:
+  python -m evaluation.cli --dataset unsw15 --max-rows 50000 --detector iforest --causal-only --deduplicate-boundaries --out-dir reports/unsw15_eval_50k_causal
+
+  # Multi-file time-spanning evaluation across Day 1 files (100k flows):
+  python -m evaluation.cli --dataset unsw15 --files UNSW-NB15_1.csv,UNSW-NB15_2.csv --max-rows 100000 --detector iforest --causal-only --deduplicate-boundaries --out-dir reports/unsw15_eval_100k_causal
+
+  # Neural Autoencoder evaluation (M8):
+  python -m evaluation.cli --dataset unsw15 --files UNSW-NB15_1.csv,UNSW-NB15_2.csv --max-rows 100000 --causal-only --deduplicate-boundaries --detector autoencoder --ae-epochs 10 --out-dir reports/unsw15_eval_100k_causal_autoencoder
+
+  # Calibrated Multi-Detector Ensemble evaluation (M8.1):
+  python -m evaluation.cli --dataset unsw15 --files UNSW-NB15_1.csv,UNSW-NB15_2.csv --max-rows 100000 --causal-only --deduplicate-boundaries --detector ensemble --ensemble-detectors stat,iforest,autoencoder --ae-epochs 10 --out-dir reports/unsw15_eval_100k_causal_ensemble
   ```
-- **Policy Documentation**: Machine-readable JSON at `docs/unsw_nb15_feature_policy.json` and human-readable Markdown table at `docs/unsw_nb15_feature_policy.md`.
+- **Policy Documentation**: Machine-readable JSON at `docs/unsw_nb15_feature_policy.json`, human-readable Markdown table at `docs/unsw_nb15_feature_policy.md`, and causal observability analysis at `docs/unsw15_causal_observability.md`.
+
+---
+
+## Anomaly Detectors & Multi-Detector Ensemble (Milestones 4, 6, 8, 8.1)
+
+TrafficShield provides an extensible suite of unsupervised anomaly detectors sharing a unified score convention (higher score strictly = more anomalous):
+
+1. **Robust Statistical Baseline (`RobustStatisticalDetector`)**: Median and MAD/IQR based robust deviation metrics.
+2. **Isolation Forest (`IsolationForestDetector`)**: Subsampled random tree partitioning with score inversion.
+3. **Local Outlier Factor (`LOFDetector`)**: $k$-NN local density deviation novelty detector.
+4. **HDBSCAN Clustering (`HDBSCANDetector`)**: Density-based clustering outlier detector.
+5. **Neural Autoencoder (`AutoencoderDetector`, M8)**: Fully connected symmetric encoder-decoder. Anomaly score = reconstruction Mean Squared Error (MSE). Features dual execution backends: native PyTorch (`torch.nn`) when available, and a vectorized pure-NumPy CPU reference implementation when PyTorch is not installed.
+6. **Calibrated Multi-Detector Ensemble (`CalibratedEnsembleDetector`, M8.1)**: Fuses component detector scores using **calibration-only empirical percentile mapping** and predeclared weights (default: equal weights). Decision threshold is calibrated exclusively on the unlabelled calibration partition without ground-truth attack label leakage.
 
 ---
 
