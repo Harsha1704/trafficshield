@@ -18,8 +18,8 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M4 | Robust statistical detector & Isolation Forest | ✅ Complete |
 | M5 | Leakage-safe evaluation framework & metrics | ✅ Complete |
 | M6 | Temporal features, LOF, HDBSCAN (309 tests) | ✅ Complete |
-| M7 | Autoencoder, ensemble | ⬜ Planned |
-| M8 | Explainability | ⬜ Planned |
+| M7 | UNSW-NB15 real dataset adapter, audit CLI, unidirectional policy (324 tests) | ✅ Complete |
+| M8 | Autoencoder, ensemble | ⬜ Planned |
 | M9 | PostgreSQL, incidents, risk scoring | ⬜ Planned |
 | M10 | React SOC dashboard | ⬜ Planned |
 | M11 | Cross-dataset eval, drift monitoring | ⬜ Planned |
@@ -211,6 +211,25 @@ Datasets are **not included** in this repository. See `docs/dataset_acquisition.
 - CICIDS2017
 - UNSW-NB15
 - CSE-CIC-IDS2018
+
+---
+
+## UNSW-NB15 Real Dataset Integration (Milestone 7)
+
+TrafficShield natively integrates the real **UNSW-NB15** network intrusion dataset under its strict **one-way observation contract**:
+
+- **Location**: `datasets/raw/unsw_nb15/` (headerless raw files `UNSW-NB15_1.csv` to `4.csv`).
+- **Feature Policy**: All 49 candidate fields are classified as `forward_observable`, `reverse_direction`, `bidirectional_or_future_dependent`, or `identifier_or_grouping_only`. Reverse features (e.g. `dbytes`, `dttl`, `dloss`, `Dload`, `tcprtt`) and bidirectional state features (`state`, `sloss`) are strictly barred from model training.
+- **Audit Tool**: `python scripts/audit_unsw15.py` audits all 2.54M flow records in ~22s without high memory usage.
+- **Evaluation Command**:
+  ```bash
+  # Smoke evaluation on real UNSW-NB15 flows with Robust Statistical detector:
+  python -m evaluation.cli --dataset unsw15 --max-rows 10000 --detector statistical --out-dir reports/unsw15_smoke
+
+  # Real-data evaluation with Isolation Forest:
+  python -m evaluation.cli --dataset unsw15 --max-rows 50000 --detector iforest --out-dir reports/unsw15_eval
+  ```
+- **Policy Documentation**: Machine-readable JSON at `docs/unsw_nb15_feature_policy.json` and human-readable Markdown table at `docs/unsw_nb15_feature_policy.md`.
 
 ---
 

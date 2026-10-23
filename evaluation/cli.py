@@ -39,6 +39,7 @@ from detection.statistical import RobustStatisticalDetector
 from evaluation.evaluator import ModelEvaluator
 from evaluation.partitioning import chronological_three_way_split
 from features.temporal import TemporalFeatureEngineer
+from ingestion.adapters.unsw_nb15 import UNSW15_DATA_FILENAMES, UNSW15Adapter
 from preprocessing.pipeline import TrafficShieldPreprocessor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -90,6 +91,39 @@ def run_evaluation(args: argparse.Namespace) -> int:
         df = generate_synthetic_demo_data(n=500)
         dataset_name = "synthetic_demo"
         manifest_ref = "in-memory-demo"
+    elif getattr(args, "dataset", "generic") == "unsw15":
+        # UNSW-NB15 dataset loader
+        data_target = Path(args.data) if args.data else Path("datasets/raw/unsw_nb15")
+        if data_target.is_dir():
+            files_to_load = [data_target / fn for fn in UNSW15_DATA_FILENAMES if (data_target / fn).exists()]
+            if not files_to_load:
+                logger.error("No UNSW-NB15 data files found in %s", data_target)
+                return 1
+            dataset_name = f"unsw_nb15_{len(files_to_load)}files"
+            manifest_ref = str(data_target.resolve())
+        elif data_target.is_file():
+            files_to_load = [data_target]
+            dataset_name = f"unsw_nb15_{data_target.stem}"
+            manifest_ref = str(data_target.resolve())
+        else:
+            logger.error("UNSW-NB15 path not found: %s", data_target)
+            return 1
+
+        logger.info("Loading UNSW-NB15 with unidirectional filter from %d file(s)...", len(files_to_load))
+        adapter = UNSW15Adapter(chunk_size=getattr(args, "chunk_size", 20_000))
+        max_rows = getattr(args, "max_rows", None)
+        feat_df, lbl_series, meta_df = adapter.load_unidirectional_dataframe(
+            filepaths=files_to_load,
+            max_rows=max_rows,
+        )
+        if len(feat_df) == 0:
+            logger.error("No records loaded from %s", data_target)
+            return 1
+
+        # Combine into evaluation DataFrame
+        df = pd.concat([feat_df, lbl_series, meta_df[["flow_end_ts"]]], axis=1)
+        if args.benign_label == "background" and "normal" in lbl_series.values:
+            args.benign_label = "normal"
     else:
         if not args.data:
             logger.error("Must provide --data <path> or use --demo for synthetic test.")
@@ -206,7 +240,10 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=__doc__,
     )
     parser.add_argument("--demo", action="store_true", help="Run fast synthetic evaluation demo")
-    parser.add_argument("--data", help="Path to prepared dataset CSV file")
+    parser.add_argument("--dataset", default="generic", choices=["generic", "ugr16", "unsw15"],
+                        help="Dataset type: 'generic', 'ugr16', or 'unsw15'")
+    parser.add_argument("--data", help="Path to prepared dataset CSV file or raw dataset directory")
+    parser.add_argument("--max-rows", type=int, default=None, help="Maximum rows to load for evaluation (for sampling/smoke test)")
     parser.add_argument("--detector", default="statistical", choices=["statistical", "iforest", "lof", "hdbscan"],
                         help="Detector to evaluate: 'statistical', 'iforest', 'lof', or 'hdbscan'")
     parser.add_argument("--use-temporal-features", action="store_true", help="Derive causal temporal rolling features")
