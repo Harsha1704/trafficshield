@@ -14,6 +14,7 @@ Guarantees:
 """
 from __future__ import annotations
 
+import collections
 import logging
 import threading
 import time
@@ -22,6 +23,11 @@ from pathlib import Path
 from typing import Any
 
 from ingestion.capture.base import CaptureSourceType, PacketEnvelope, PacketSource
+from ingestion.capture.packet_validator import (
+    IPv4PacketValidator,
+    PacketRejectionCategory,
+)
+from ingestion.flow.fragment_reassembler import BoundedFragmentReassembler
 
 logger = logging.getLogger("pcap_replay_source")
 
@@ -65,6 +71,10 @@ class PcapReplaySource(PacketSource):
         self._packets_read = 0
         self._bytes_read = 0
         self._malformed_packets = 0
+        self._truncated_packets = 0
+        self._unsupported_packets = 0
+        self._rejection_reasons: dict[str, int] = collections.defaultdict(int)
+        self._fragment_reassembler = BoundedFragmentReassembler()
         self._start_time: float | None = None
         self._last_packet_time: float | None = None
 
@@ -161,7 +171,46 @@ class PcapReplaySource(PacketSource):
                         break
 
                 if not raw_pkt.haslayer(IP):
+                    self._unsupported_packets += 1
+                    self._rejection_reasons["UNSUPPORTED_NON_IP"] += 1
                     continue
+
+                raw_ip_bytes = bytes(raw_pkt[IP])
+                val = IPv4PacketValidator.validate_ipv4_frame(raw_ip_bytes)
+                if not val.is_valid:
+                    if val.category == PacketRejectionCategory.MALFORMED:
+                        self._malformed_packets += 1
+                    elif val.category == PacketRejectionCategory.TRUNCATED:
+                        self._truncated_packets += 1
+                    elif val.category == PacketRejectionCategory.UNSUPPORTED:
+                        self._unsupported_packets += 1
+                    if val.reason:
+                        self._rejection_reasons[val.reason.value] += 1
+                    continue
+
+                if val.is_snaplen_truncated:
+                    self._truncated_packets += 1
+                    self._rejection_reasons["TRUNCATED_CAPTURE_SNAPLEN"] += 1
+
+                if val.is_fragment:
+                    header_len = val.ip_header_len
+                    hdr = raw_ip_bytes[:header_len]
+                    payload = raw_ip_bytes[header_len:val.ip_total_len]
+                    reassembled = self._fragment_reassembler.process_fragment(
+                        src_ip=str(raw_pkt[IP].src),
+                        dst_ip=str(raw_pkt[IP].dst),
+                        ip_id=val.ip_id,
+                        protocol=val.protocol,
+                        frag_offset=val.frag_offset,
+                        more_fragments=val.more_fragments,
+                        header_bytes=hdr,
+                        payload_bytes=payload,
+                    )
+                    if reassembled is None:
+                        # Incomplete / in-flight fragment - safely held or dropped
+                        continue
+                    # Datagram successfully reassembled! Parse complete datagram
+                    raw_pkt = IP(reassembled)
 
                 ip_layer = raw_pkt[IP]
                 pkt_ts = float(raw_pkt.time) if hasattr(raw_pkt, "time") else time.time()
@@ -183,8 +232,8 @@ class PcapReplaySource(PacketSource):
                 # Extract protocol and ports
                 src_ip = str(ip_layer.src)
                 dst_ip = str(ip_layer.dst)
-                ttl = int(ip_layer.ttl)
-                byte_len = int(ip_layer.len) if hasattr(ip_layer, "len") else len(raw_pkt)
+                ttl = val.ttl if not val.is_fragment else int(ip_layer.ttl)
+                byte_len = val.ip_total_len if not val.is_fragment else len(raw_pkt)
 
                 src_port = 0
                 dst_port = 0
@@ -254,6 +303,10 @@ class PcapReplaySource(PacketSource):
             "packets_read": self._packets_read,
             "bytes_read": self._bytes_read,
             "malformed_packets": self._malformed_packets,
+            "truncated_packets": self._truncated_packets,
+            "unsupported_packets": self._unsupported_packets,
+            "rejection_reasons": dict(self._rejection_reasons),
+            "fragment_metrics": self._fragment_reassembler.get_metrics(),
             "elapsed_seconds": round(elapsed, 2),
             "replay_pps": round(self._packets_read / elapsed, 1) if elapsed > 0 else 0.0,
             "last_packet_timestamp": self._last_packet_time,

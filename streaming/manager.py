@@ -72,6 +72,9 @@ class RealTimeDetectionManager:
         self.flow_builder: UnidirectionalFlowBuilder | None = None
         self.inference_worker: StreamingInferenceWorker | None = None
         self.flow_queue: queue.Queue[dict[str, Any] | None] = queue.Queue(maxsize=10000)
+        self.flows_queued: int = 0
+        self.flows_queue_dropped: int = 0
+        self.pipeline_join_timed_out: bool = False
 
         # Pipeline runner thread
         self._pipeline_thread: threading.Thread | None = None
@@ -130,7 +133,10 @@ class RealTimeDetectionManager:
                     max_active_flows=10000,
                 )
 
-                # 3. Empty flow queue
+                # 3. Empty flow queue and reset queue counters
+                self.flows_queued = 0
+                self.flows_queue_dropped = 0
+                self.pipeline_join_timed_out = False
                 while not self.flow_queue.empty():
                     try:
                         self.flow_queue.get_nowait()
@@ -209,6 +215,9 @@ class RealTimeDetectionManager:
                     max_active_flows=10000,
                 )
 
+                self.flows_queued = 0
+                self.flows_queue_dropped = 0
+                self.pipeline_join_timed_out = False
                 while not self.flow_queue.empty():
                     try:
                         self.flow_queue.get_nowait()
@@ -264,43 +273,64 @@ class RealTimeDetectionManager:
                 logger.info("Real-time pipeline resumed.")
             return self.get_status()
 
-    def stop(self) -> dict[str, Any]:
-        """Halt capture, flush in-flight flows, and terminate worker threads."""
+    def stop(self, drain_timeout: float = 5.0) -> dict[str, Any]:
+        """
+        Orderly shutdown: halt packet acquisition, join pipeline thread, flush in-flight flows,
+        and gracefully drain remaining flows in the inference worker up to timeout.
+        """
         with self._manager_lock:
+            # Idempotency guard: return immediately if session is already fully stopped
+            if self.state in (WorkerState.STOPPED, WorkerState.FAILED, WorkerState.DEGRADED) and (
+                self.inference_worker is None or not self.inference_worker.is_running
+            ):
+                return self.get_status()
+
             self._stop_event.set()
 
+            # 1. Stop packet capture source
             if self.packet_source:
                 try:
                     self.packet_source.stop()
                 except Exception as exc:
                     logger.debug("Error stopping packet source: %s", exc)
 
-            # Flush in-flight flows to queue
-            if self.flow_builder:
-                flushed = self.flow_builder.flush()
-                for f in flushed:
-                    try:
-                        self.flow_queue.put_nowait(f)
-                    except queue.Full:
-                        pass
-
-            if self.inference_worker:
-                try:
-                    self.inference_worker.stop()
-                except Exception as exc:
-                    logger.debug("Error stopping inference worker: %s", exc)
-
+            # 2. Join pipeline thread so no further packets enter the flow builder
             if (
                 self._pipeline_thread
                 and self._pipeline_thread.is_alive()
                 and threading.current_thread() != self._pipeline_thread
             ):
                 self._pipeline_thread.join(timeout=2.0)
+                if self._pipeline_thread.is_alive():
+                    self.pipeline_join_timed_out = True
+                    self.error_message = "Pipeline thread did not terminate within join timeout"
+                    logger.warning("Pipeline thread did not terminate within join timeout; forcing ingestion halt.")
 
-            if self.state != WorkerState.FAILED:
+            # 3. Flush remaining in-flight flows from flow builder to queue
+            # (Note: flush closes the flow_builder, preventing any further packet processing)
+            if self.flow_builder:
+                flushed = self.flow_builder.flush()
+                for f in flushed:
+                    try:
+                        self.flow_queue.put(f, timeout=1.0)
+                        self.flows_queued += 1
+                    except queue.Full:
+                        self.flows_queue_dropped += 1
+                        logger.warning("Flow queue full while flushing! Dropping in-flight flow.")
+
+            # 4. Gracefully drain inference worker
+            if self.inference_worker:
+                try:
+                    self.inference_worker.stop(drain_timeout=drain_timeout)
+                except Exception as exc:
+                    logger.debug("Error stopping inference worker: %s", exc)
+
+            if self.pipeline_join_timed_out:
+                self.state = WorkerState.DEGRADED
+            elif self.state != WorkerState.FAILED:
                 self.state = WorkerState.STOPPED
 
-            logger.info("Real-time pipeline stopped successfully.")
+            logger.info("Real-time pipeline stopped. State: %s", self.state.value)
             return self.get_status()
 
     def _run_pipeline_loop(self) -> None:
@@ -321,9 +351,13 @@ class RealTimeDetectionManager:
                 # Incorporate packet and obtain any finalized flows
                 finalized = self.flow_builder.process_packet(envelope)
                 for f in finalized:
+                    if self._stop_event.is_set():
+                        break
                     try:
                         self.flow_queue.put(f, timeout=1.0)
+                        self.flows_queued += 1
                     except queue.Full:
+                        self.flows_queue_dropped += 1
                         logger.warning("Flow queue full! Dropping completed flow.")
                         if self.state == WorkerState.RUNNING:
                             self.state = WorkerState.DEGRADED
@@ -335,8 +369,9 @@ class RealTimeDetectionManager:
                 for f in flushed:
                     try:
                         self.flow_queue.put(f, timeout=1.0)
+                        self.flows_queued += 1
                     except queue.Full:
-                        pass
+                        self.flows_queue_dropped += 1
                 logger.info("PCAP replay finished all packets in file.")
 
         except Exception as exc:
@@ -344,10 +379,12 @@ class RealTimeDetectionManager:
             self.error_message = str(exc)
             logger.error("Error in real-time pipeline execution loop: %s", exc)
         finally:
-            if self.capture_mode == CaptureSourceType.PCAP_REPLAY:
-                # Wait briefly for worker to drain queue
-                time.sleep(0.5)
-                self.stop()
+            if self.capture_mode == CaptureSourceType.PCAP_REPLAY and not self._stop_event.is_set():
+                # Replay completed naturally; drain worker and transition to COMPLETED
+                if self.inference_worker:
+                    self.inference_worker.stop(drain_timeout=5.0)
+                self.state = WorkerState.COMPLETED
+                logger.info("PCAP replay finished and worker drained successfully.")
 
     def get_status(self) -> dict[str, Any]:
         """Aggregate real-time status, health, and metrics for SOC dashboard."""
@@ -375,12 +412,32 @@ class RealTimeDetectionManager:
             # Operational Counters
             "packets_observed": source_metrics.get("packets_read", source_metrics.get("packets_captured", 0)),
             "packets_dropped": source_metrics.get("packets_dropped", 0),
+            "malformed_packets_rejected": source_metrics.get("malformed_packets", 0),
+            "truncated_packets_rejected": source_metrics.get("truncated_packets", 0),
+            "unsupported_packets_rejected": source_metrics.get("unsupported_packets", 0),
+            "rejection_reasons": source_metrics.get("rejection_reasons", {}),
+            "fragment_metrics": source_metrics.get("fragment_metrics", {}),
+            "incompatible_flows_rejected": infer_metrics.get("incompatible_flows_rejected", 0),
             "active_flows_count": flow_metrics.get("active_flows_count", 0),
             "flows_created": flow_metrics.get("flows_created", 0),
             "flows_completed": flow_metrics.get("flows_completed", 0),
+            "flows_flushed": flow_metrics.get("flows_flushed", 0),
+            "flows_closed_tcp": flow_metrics.get("flows_closed_tcp", 0),
+            "flows_expired_timeout": flow_metrics.get("flows_expired_timeout", 0),
+            "flows_evicted_overflow": flow_metrics.get("flows_evicted_overflow", 0),
+            "flows_queued": self.flows_queued,
+            "flows_queue_dropped": self.flows_queue_dropped,
             "flows_scored": infer_metrics.get("flows_scored", 0),
             "anomalies_detected": infer_metrics.get("anomalies_detected", 0),
             "alerts_persisted": infer_metrics.get("alerts_persisted", 0),
+            "validation_errors": infer_metrics.get("validation_errors", 0),
+            "inference_failures": infer_metrics.get("inference_failures", 0),
+            "persistence_failures": infer_metrics.get("persistence_failures", 0),
+            "unprocessed_flows": infer_metrics.get("unprocessed_flows", 0),
+            "pipeline_join_timed_out": self.pipeline_join_timed_out,
+            "drain_timed_out": infer_metrics.get("drain_timed_out", False),
+            "forced_stop": infer_metrics.get("forced_stop", False),
+            "thread_hung": infer_metrics.get("thread_hung", False),
             "queue_depth": self.flow_queue.qsize(),
             "mean_inference_latency_ms": infer_metrics.get("mean_inference_latency_ms", 0.0),
             "source_provenance": (
@@ -390,7 +447,7 @@ class RealTimeDetectionManager:
             "driver_available": driver_ok,
             "driver_message": driver_msg,
             "model_integrity": {
-                "model_name": "RandomForestClassifier",
+                "model_name": "OptunaTuned_XGBoost",
                 "model_version": "1.0.0",
                 "model_sha256": EXPECTED_DETECTOR_SHA256,
                 "preprocessor_sha256": EXPECTED_PREPROCESSOR_SHA256,

@@ -35,6 +35,7 @@ class WorkerState(enum.StrEnum):
     DEGRADED = "DEGRADED"
     FAILED = "FAILED"
     PAUSED = "PAUSED"
+    COMPLETED = "COMPLETED"
 
 
 @dataclass(frozen=True)

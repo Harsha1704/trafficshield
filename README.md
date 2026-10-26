@@ -29,7 +29,15 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M12 | Intelligent monitoring, statistical drift engine, operational alerts, model registry (390 tests) | ✅ Complete |
 | M13 | Production deployment, security hardening, RBAC, tamper detection, release readiness (418 tests) | ✅ Complete |
 | M14 | End-to-end release validation, real-time feature gate, integration tests, final sign-off (444 tests) | ✅ Complete |
-| M14.1 | Real-time network detection, PCAP replay, flow reconstruction, streaming SOC alerts (457 tests) | ✅ Complete |
+| M14.1 | Forensic model identity, feature equivalence & real-time evidence audit (457 tests) | ✅ Complete |
+| M14.2 | Feature fidelity, malformed-packet safety gate & bounded fragment handling (477 tests) | ✅ Complete |
+| M14.2.1 | Frozen model feature contract reconciliation & forensic audit (485 tests) | ✅ Complete |
+| M14.2.2 | Preprocessor output consistency, transformer ordering & trace reconciliation (491 tests) | ✅ Complete |
+| M15 | Live capture enablement, dynamic interface discovery & operational validation (504 tests) | ✅ Complete |
+| M15.1 | Pre-release anomaly investigation, TTL distribution shift & release audit | ✅ Complete |
+| M15.2 | Graceful queue drain, flow accounting reconciliation & capture qualification (511 tests) | ✅ Complete |
+| M15.3 | Post-fix shutdown verification, live smoke test & release gate audit (513 tests) | ✅ Complete |
+| M15.4 | Shutdown edge-case verification, concurrency hardening & flow accounting (526 tests) | ✅ Complete |
 
 ---
 

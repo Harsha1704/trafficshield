@@ -14,6 +14,7 @@ Non-negotiable invariants:
 """
 from __future__ import annotations
 
+import collections
 import logging
 import platform
 import queue
@@ -23,6 +24,11 @@ from collections.abc import Iterator
 from typing import Any
 
 from ingestion.capture.base import CaptureSourceType, PacketEnvelope, PacketSource
+from ingestion.capture.packet_validator import (
+    IPv4PacketValidator,
+    PacketRejectionCategory,
+)
+from ingestion.flow.fragment_reassembler import BoundedFragmentReassembler
 
 logger = logging.getLogger("live_capture_source")
 
@@ -97,24 +103,53 @@ def enumerate_network_interfaces() -> list[dict[str, Any]]:
                 "driver_status": driver_msg,
             })
     except ImportError:
-        # Fallback to standard socket inspection if psutil unavailable
-        import socket
-        hostname = socket.gethostname()
         try:
-            ips = socket.gethostbyname_ex(hostname)[2]
-        except Exception:
-            ips = []
+            from scapy.all import conf
+            if hasattr(conf, "ifaces"):
+                for dev_id, iface in conf.ifaces.items():
+                    name = getattr(iface, "name", str(dev_id))
+                    desc = getattr(iface, "description", name)
+                    ip = getattr(iface, "ip", None)
+                    mac = getattr(iface, "mac", None)
+                    is_loopback = (
+                        "loopback" in name.lower()
+                        or "loopback" in desc.lower()
+                        or (bool(ip) and str(ip).startswith("127."))
+                    )
+                    is_up = bool(ip) and not str(ip).startswith("169.254.")
 
-        interfaces.append({
-            "name": "default",
-            "description": f"Host {hostname}",
-            "ipv4_addresses": ips,
-            "mac_address": None,
-            "is_up": True,
-            "is_loopback": False,
-            "driver_available": driver_ok,
-            "driver_status": driver_msg,
-        })
+                    interfaces.append({
+                        "name": name,
+                        "description": desc,
+                        "ipv4_addresses": [ip] if ip else [],
+                        "mac_address": mac,
+                        "is_up": is_up,
+                        "is_loopback": is_loopback,
+                        "driver_available": driver_ok,
+                        "driver_status": driver_msg,
+                    })
+        except Exception:
+            pass
+
+        if not interfaces:
+            # Fallback to standard socket inspection if neither psutil nor scapy.ifaces work
+            import socket
+            hostname = socket.gethostname()
+            try:
+                ips = socket.gethostbyname_ex(hostname)[2]
+            except Exception:
+                ips = []
+
+            interfaces.append({
+                "name": "default",
+                "description": f"Host {hostname}",
+                "ipv4_addresses": ips,
+                "mac_address": None,
+                "is_up": True,
+                "is_loopback": False,
+                "driver_available": driver_ok,
+                "driver_status": driver_msg,
+            })
 
     return interfaces
 
@@ -146,6 +181,11 @@ class LiveCaptureSource(PacketSource):
         self._packets_captured = 0
         self._packets_dropped = 0
         self._bytes_captured = 0
+        self._malformed_packets = 0
+        self._truncated_packets = 0
+        self._unsupported_packets = 0
+        self._rejection_reasons: dict[str, int] = collections.defaultdict(int)
+        self._fragment_reassembler = BoundedFragmentReassembler()
         self._start_time: float | None = None
         self._last_packet_time: float | None = None
 
@@ -205,14 +245,52 @@ class LiveCaptureSource(PacketSource):
         try:
             from scapy.layers.inet import IP, TCP, UDP
             if not raw_pkt.haslayer(IP):
+                self._unsupported_packets += 1
+                self._rejection_reasons["UNSUPPORTED_NON_IP"] += 1
                 return
+
+            raw_ip_bytes = bytes(raw_pkt[IP])
+            val = IPv4PacketValidator.validate_ipv4_frame(raw_ip_bytes)
+            if not val.is_valid:
+                if val.category == PacketRejectionCategory.MALFORMED:
+                    self._malformed_packets += 1
+                elif val.category == PacketRejectionCategory.TRUNCATED:
+                    self._truncated_packets += 1
+                elif val.category == PacketRejectionCategory.UNSUPPORTED:
+                    self._unsupported_packets += 1
+                if val.reason:
+                    self._rejection_reasons[val.reason.value] += 1
+                return
+
+            if val.is_snaplen_truncated:
+                self._truncated_packets += 1
+                self._rejection_reasons["TRUNCATED_CAPTURE_SNAPLEN"] += 1
+
+            if val.is_fragment:
+                header_len = val.ip_header_len
+                hdr = raw_ip_bytes[:header_len]
+                payload = raw_ip_bytes[header_len:val.ip_total_len]
+                reassembled = self._fragment_reassembler.process_fragment(
+                    src_ip=str(raw_pkt[IP].src),
+                    dst_ip=str(raw_pkt[IP].dst),
+                    ip_id=val.ip_id,
+                    protocol=val.protocol,
+                    frag_offset=val.frag_offset,
+                    more_fragments=val.more_fragments,
+                    header_bytes=hdr,
+                    payload_bytes=payload,
+                )
+                if reassembled is None:
+                    # Waiting for fragments or dropped
+                    return
+                raw_pkt = IP(reassembled)
 
             ip_layer = raw_pkt[IP]
             pkt_ts = float(raw_pkt.time) if hasattr(raw_pkt, "time") else time.time()
             src_ip = str(ip_layer.src)
             dst_ip = str(ip_layer.dst)
-            ttl = int(ip_layer.ttl)
-            byte_len = int(ip_layer.len) if hasattr(ip_layer, "len") else len(raw_pkt)
+            ttl = val.ttl if not val.is_fragment else int(ip_layer.ttl)
+            byte_len = val.ip_total_len if not val.is_fragment else len(raw_pkt)
 
             src_port = 0
             dst_port = 0
@@ -309,6 +387,11 @@ class LiveCaptureSource(PacketSource):
             "packets_captured": self._packets_captured,
             "packets_dropped": self._packets_dropped,
             "bytes_captured": self._bytes_captured,
+            "malformed_packets": self._malformed_packets,
+            "truncated_packets": self._truncated_packets,
+            "unsupported_packets": self._unsupported_packets,
+            "rejection_reasons": dict(self._rejection_reasons),
+            "fragment_metrics": self._fragment_reassembler.get_metrics(),
             "queue_depth": self._queue.qsize(),
             "elapsed_seconds": round(elapsed, 2),
             "capture_pps": round(self._packets_captured / elapsed, 1) if elapsed > 0 else 0.0,
