@@ -79,11 +79,14 @@ Every 60 seconds, the harness samples:
 5. **Inference Latency:** Mean, p50, p95, and p99 inference latencies in milliseconds.
 6. **Alert Commitments:** Persisted alerts, deduplicated alerts, and persistence failures.
 
-### 4.2 Application Drops vs. Kernel Drops
-- **Application Queue Drops (`flows_queue_dropped`):** Flows that were finalized by the flow builder but could not be accepted into `flow_queue` because the inference worker fell behind and the queue reached capacity (10,000 items).
-- **Native Kernel Drops (`pcap_stats`):** Packets dropped by the Npcap/WinPcap kernel ring buffer before user-space Python received them.
-  > [!IMPORTANT]
-  > Native kernel drop polling is an outstanding release task that requires a native C ctypes binding to `pcap_stats()`. The harness explicitly marks native kernel drops as `UNAVAILABLE (Native Npcap C wrapper required)` rather than falsely reporting 0.
+### 4.2 Tiered Drop Accounting (Driver vs Queue Drops)
+TrafficShield strictly isolates three distinct drop tiers:
+1. **Native Driver Drops (`pcap_stats`):** Packets dropped by the Npcap/WinPcap kernel filter ring buffer before reaching user-space Python.
+   - Polled natively via `NativeStatsAdapter` querying `ps_recv`, `ps_drop`, and `ps_ifdrop`.
+   - Reported as `native_kernel_drops` (cumulative) and `native_kernel_drops_delta` (interval delta).
+   - If capture source is offline PCAP replay or the driver handle is closed, the status explicitly reports `UNSUPPORTED_SOURCE` or `UNAVAILABLE` and returns `None` (never false zeros).
+2. **Ingestion Queue Drops (`packets_dropped`):** Valid packets dropped by `LiveCaptureSource` when the 5,000-envelope capture queue saturates.
+3. **Pipeline Flow Queue Drops (`flows_queue_dropped`):** Flows that were finalized by the flow builder but could not be accepted into `flow_queue` because the inference worker fell behind and the queue reached capacity (10,000 items).
 
 ---
 

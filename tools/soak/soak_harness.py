@@ -454,16 +454,37 @@ class SoakTestHarness:
             )
         )
 
-        # Inv 8: Native kernel drops explicitly reported as unavailable
+        # Inv 8: Native kernel drops honesty
         kernel_avail = final_status.get("native_kernel_drops_available", False)
+        kernel_drops = final_status.get("native_kernel_drops")
         kernel_status = final_status.get("kernel_drop_status", "")
+
+        if kernel_avail:
+            passed_inv8 = (
+                kernel_drops is not None
+                and isinstance(kernel_drops, int)
+                and kernel_drops >= 0
+                and "AVAILABLE" in kernel_status
+            )
+            expected_inv8 = "AVAILABLE (integer >= 0)"
+            actual_inv8 = f"{kernel_status} (drops: {kernel_drops})"
+            details_inv8 = "Native kernel drops are active and reported accurately from driver."
+        else:
+            passed_inv8 = (
+                kernel_drops is None
+                and ("UNAVAILABLE" in kernel_status or "UNSUPPORTED" in kernel_status)
+            )
+            expected_inv8 = "UNAVAILABLE or UNSUPPORTED (None)"
+            actual_inv8 = f"{kernel_status} (drops: {kernel_drops})"
+            details_inv8 = "Native kernel drops must be reported as UNAVAILABLE or UNSUPPORTED, never conflated with queue drops."
+
         results.append(
             InvariantResult(
                 name="INV_8_NATIVE_KERNEL_DROPS_HONESTY",
-                passed=(kernel_avail is False and "UNAVAILABLE" in kernel_status),
-                expected="UNAVAILABLE",
-                actual=kernel_status,
-                details="Native kernel drops must be reported as UNAVAILABLE, never conflated with queue drops.",
+                passed=passed_inv8,
+                expected=expected_inv8,
+                actual=actual_inv8,
+                details=details_inv8,
             )
         )
 

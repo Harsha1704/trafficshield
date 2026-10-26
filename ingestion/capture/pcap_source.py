@@ -310,4 +310,10 @@ class PcapReplaySource(PacketSource):
             "elapsed_seconds": round(elapsed, 2),
             "replay_pps": round(self._packets_read / elapsed, 1) if elapsed > 0 else 0.0,
             "last_packet_timestamp": self._last_packet_time,
+            "native_kernel_drops_available": False,
+            "native_kernel_drops": None,
+            "native_kernel_drops_delta": None,
+            "native_packets_received": None,
+            "native_interface_drops": None,
+            "kernel_drop_status": "UNAVAILABLE (PCAP replay is an offline file source)",
         }

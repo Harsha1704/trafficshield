@@ -24,6 +24,7 @@ from collections.abc import Iterator
 from typing import Any
 
 from ingestion.capture.base import CaptureSourceType, PacketEnvelope, PacketSource
+from ingestion.capture.native_stats import NativeCaptureStats, NativeStatsAdapter
 from ingestion.capture.packet_validator import (
     IPv4PacketValidator,
     PacketRejectionCategory,
@@ -165,6 +166,7 @@ class LiveCaptureSource(PacketSource):
         interface: str,
         bpf_filter: str = "ip",
         packet_queue_size: int = 5000,
+        stats_adapter: NativeStatsAdapter | None = None,
     ) -> None:
         self.interface = interface.strip()
         self.bpf_filter = bpf_filter
@@ -176,6 +178,11 @@ class LiveCaptureSource(PacketSource):
         self._stop_event = threading.Event()
         self._queue: queue.Queue[PacketEnvelope | None] = queue.Queue(maxsize=packet_queue_size)
         self._thread: threading.Thread | None = None
+
+        # Native driver capture handle and statistics adapter
+        self._stats_adapter = stats_adapter or NativeStatsAdapter()
+        self._native_handle: Any = None
+        self._opened_socket: Any = None
 
         # Metrics
         self._packets_captured = 0
@@ -345,18 +352,44 @@ class LiveCaptureSource(PacketSource):
     def _capture_worker(self) -> None:
         """Background thread executing passive interface sniffing."""
         try:
-            from scapy.all import sniff
-            sniff(
-                iface=self.interface,
-                filter=self.bpf_filter,
-                prn=self._packet_callback,
-                stop_filter=lambda _: self._stop_event.is_set(),
-                store=False,
-            )
+            from scapy.all import conf, sniff
+            # Reuse native L2pcapListenSocket to maintain a persistent handle for pcap_stats polling
+            socket_cls = getattr(conf, "L2listen", None)
+            if socket_cls is not None:
+                try:
+                    self._opened_socket = socket_cls(
+                        iface=self.interface,
+                        filter=self.bpf_filter,
+                        promisc=conf.sniff_promisc,
+                    )
+                    if hasattr(self._opened_socket, "pcap_fd") and hasattr(self._opened_socket.pcap_fd, "pcap"):
+                        self._native_handle = self._opened_socket.pcap_fd.pcap
+                except Exception as exc:
+                    logger.debug("Could not pre-open socket for stats handle: %s", exc)
+
+            sniff_kwargs: dict[str, Any] = {
+                "prn": self._packet_callback,
+                "stop_filter": lambda _: self._stop_event.is_set(),
+                "store": False,
+            }
+            if self._opened_socket is not None:
+                sniff_kwargs["opened_socket"] = self._opened_socket
+            else:
+                sniff_kwargs["iface"] = self.interface
+                sniff_kwargs["filter"] = self.bpf_filter
+
+            sniff(**sniff_kwargs)
         except Exception as exc:
             logger.error("Live sniffing fatal error on %s: %s", self.interface, exc)
         finally:
             self._running = False
+            if self._opened_socket is not None:
+                try:
+                    self._opened_socket.close()
+                except Exception:
+                    pass
+                self._opened_socket = None
+                self._native_handle = None
             try:
                 self._queue.put_nowait(None)
             except queue.Full:
@@ -373,11 +406,30 @@ class LiveCaptureSource(PacketSource):
             except queue.Empty:
                 continue
 
+    def get_raw_native_stats(self) -> NativeCaptureStats:
+        """Poll and return native driver packet capture statistics object."""
+        return self._stats_adapter.poll(self._native_handle)
+
+    def get_native_stats(self) -> dict[str, Any]:
+        """Poll and return native driver packet capture statistics dictionary."""
+        stats = self.get_raw_native_stats()
+        return {
+            "native_kernel_drops_available": stats.is_available,
+            "native_kernel_drops": stats.ps_drop_cumulative,
+            "native_kernel_drops_delta": stats.ps_drop_delta,
+            "native_packets_received": stats.ps_recv_cumulative,
+            "native_interface_drops": stats.ps_ifdrop_cumulative,
+            "kernel_drop_status": stats.status,
+            "kernel_poll_interval_seconds": stats.poll_interval_seconds,
+            "kernel_driver_name": stats.driver_name,
+            "error_message": stats.error_message,
+        }
+
     def get_metrics(self) -> dict[str, Any]:
         """Return operational telemetry for the live capture stream."""
         now = time.time()
         elapsed = (now - self._start_time) if self._start_time else 0.0
-        return {
+        metrics: dict[str, Any] = {
             "source_type": self.source_type.value,
             "interface": self.interface,
             "driver_available": self._driver_ok,
@@ -397,3 +449,5 @@ class LiveCaptureSource(PacketSource):
             "capture_pps": round(self._packets_captured / elapsed, 1) if elapsed > 0 else 0.0,
             "last_packet_timestamp": self._last_packet_time,
         }
+        metrics.update(self.get_native_stats())
+        return metrics

@@ -94,3 +94,14 @@ class PacketSource(abc.ABC):
     @abc.abstractmethod
     def get_metrics(self) -> dict[str, Any]:
         """Retrieve operational metrics (packets read, dropped, errors)."""
+
+    def get_native_stats(self) -> dict[str, Any]:
+        """Retrieve native driver kernel capture statistics where supported."""
+        return {
+            "native_kernel_drops_available": False,
+            "native_kernel_drops": None,
+            "native_kernel_drops_delta": None,
+            "native_packets_received": None,
+            "native_interface_drops": None,
+            "kernel_drop_status": "UNAVAILABLE (Unsupported capture source)",
+        }

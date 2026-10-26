@@ -339,6 +339,18 @@ class TestMemoryStabilityPolicySemantics:
         passed2, msg2, _ = policy.evaluate(baseline_rss_mb=100.0, final_rss_mb=None)
         assert passed2 is False
 
+    def test_policy_growth_over_both_limits_fails_all_modes(self) -> None:
+        """Growth over both limits (delta 300 MB > 250 MB and 150% > 50%) fails in all modes."""
+        for mode in ("OR", "AND", "ABSOLUTE_ONLY", "RELATIVE_ONLY"):
+            policy = MemoryStabilityPolicy(
+                max_absolute_growth_mb=250.0,
+                max_relative_growth_pct=50.0,
+                rule_mode=mode,
+            )
+            passed, msg, _diag = policy.evaluate(baseline_rss_mb=200.0, final_rss_mb=500.0)
+            assert passed is False, f"Mode {mode} should fail when both limits are breached"
+            assert "breached" in msg
+
     def test_policy_memory_decrease_passes(self) -> None:
         """Negative delta (memory decreased due to OS reclamation) passes."""
         policy = MemoryStabilityPolicy(rule_mode="AND")

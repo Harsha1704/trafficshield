@@ -445,9 +445,17 @@ class RealTimeDetectionManager:
             "latency_p50_ms": infer_metrics.get("latency_p50_ms", 0.0),
             "latency_p95_ms": infer_metrics.get("latency_p95_ms", 0.0),
             "latency_p99_ms": infer_metrics.get("latency_p99_ms", 0.0),
-            "native_kernel_drops_available": False,
-            "native_kernel_drops": None,
-            "kernel_drop_status": "UNAVAILABLE (Native Npcap C wrapper required)",
+            "native_kernel_drops_available": source_metrics.get("native_kernel_drops_available", False),
+            "native_kernel_drops": source_metrics.get("native_kernel_drops", None),
+            "native_kernel_drops_delta": source_metrics.get("native_kernel_drops_delta", None),
+            "native_packets_received": source_metrics.get("native_packets_received", None),
+            "native_interface_drops": source_metrics.get("native_interface_drops", None),
+            "kernel_drop_status": source_metrics.get(
+                "kernel_drop_status",
+                "UNAVAILABLE (Capture source inactive or uninitialized)",
+            ),
+            "kernel_poll_interval_seconds": source_metrics.get("kernel_poll_interval_seconds", None),
+            "kernel_driver_name": source_metrics.get("kernel_driver_name", "Npcap"),
             "source_provenance": (
                 self.capture_mode.value if self.capture_mode else "NONE"
             ),
