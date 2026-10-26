@@ -440,6 +440,12 @@ class RealTimeDetectionManager:
             "thread_hung": infer_metrics.get("thread_hung", False),
             "queue_depth": self.flow_queue.qsize(),
             "mean_inference_latency_ms": infer_metrics.get("mean_inference_latency_ms", 0.0),
+            "latency_p50_ms": infer_metrics.get("latency_p50_ms", 0.0),
+            "latency_p95_ms": infer_metrics.get("latency_p95_ms", 0.0),
+            "latency_p99_ms": infer_metrics.get("latency_p99_ms", 0.0),
+            "native_kernel_drops_available": False,
+            "native_kernel_drops": None,
+            "kernel_drop_status": "UNAVAILABLE (Native Npcap C wrapper required)",
             "source_provenance": (
                 self.capture_mode.value if self.capture_mode else "NONE"
             ),

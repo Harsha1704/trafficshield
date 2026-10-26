@@ -39,6 +39,7 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M15.3 | Post-fix shutdown verification, live smoke test & release gate audit (513 tests) | ✅ Complete |
 | M15.4 | Shutdown edge-case verification, concurrency hardening & flow accounting (526 tests) | ✅ Complete |
 | M16 | Evaluator demonstration package, Windows quick start, and demo readiness | ✅ Complete |
+| M17 | Sustained-soak qualification harness, resource monitoring & live runbook (536 tests) | ✅ Complete |
 
 ---
 

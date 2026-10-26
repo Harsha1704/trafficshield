@@ -356,6 +356,12 @@ class StreamingInferenceWorker:
             if self.inference_latencies_ms
             else 0.0
         )
+        lats = sorted(self.inference_latencies_ms)
+        n = len(lats)
+        p50 = lats[int(n * 0.50)] if n > 0 else 0.0
+        p95 = lats[min(int(n * 0.95), n - 1)] if n > 0 else 0.0
+        p99 = lats[min(int(n * 0.99), n - 1)] if n > 0 else 0.0
+
         return {
             "source_provenance": self.source_provenance,
             "is_running": self.is_running,
@@ -373,5 +379,8 @@ class StreamingInferenceWorker:
             "sentinel_inserted": self.sentinel_inserted,
             "queue_depth": self.flow_queue.qsize(),
             "mean_inference_latency_ms": round(mean_lat, 2),
+            "latency_p50_ms": round(p50, 2),
+            "latency_p95_ms": round(p95, 2),
+            "latency_p99_ms": round(p99, 2),
             "recent_events_buffered": len(self.recent_events),
         }
