@@ -92,6 +92,9 @@ class NativeStatsAdapter:
         try:
             if system == "Windows":
                 from scapy.libs.winpcapy import pcap_stat, pcap_stats
+                # Formally enforce standard C ABI declaration: int pcap_stats(pcap_t *, struct pcap_stat *)
+                pcap_stats.restype = ctypes.c_int
+                pcap_stats.argtypes = [ctypes.c_void_p, ctypes.POINTER(pcap_stat)]
                 self._native_pcap_stats = pcap_stats
                 self._pcap_stat_cls = pcap_stat
                 self.driver_name = "Npcap/WinPcap"

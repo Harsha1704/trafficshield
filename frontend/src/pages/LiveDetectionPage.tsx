@@ -536,15 +536,25 @@ export const LiveDetectionPage: React.FC = () => {
       <div className="p-3.5 rounded-lg bg-slate-900/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-cyan-400" />
-          <span className="text-slate-400">Production Model:</span>
+          <span className="text-slate-400">Model:</span>
           <span className="font-mono text-slate-200">
-            {status?.model_integrity?.model_name ?? 'RandomForest'} ({status?.model_integrity?.model_version ?? '1.0.0'})
+            {status?.model_integrity?.model_name ?? 'OptunaTuned_XGBoost'} (v{status?.model_integrity?.model_version ?? '1.0.0'})
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400">Contract:</span>
+          <span className="font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px]">
+            13 Frozen Features
+          </span>
+          <span className="text-slate-400 ml-2">Gate:</span>
+          <span className="font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">
+            Threshold 0.50
           </span>
         </div>
         <div className="flex items-center gap-2 font-mono text-[11px] text-slate-400">
-          <span>SHA-256:</span>
+          <span>Detector SHA:</span>
           <span className="text-slate-300">
-            {status?.model_integrity?.model_sha256?.substring(0, 16)}...
+            {status?.model_integrity?.model_sha256?.substring(0, 12)}...
           </span>
           <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px]">
             VERIFIED
@@ -558,13 +568,117 @@ export const LiveDetectionPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Tiered Drop Demarcation & Lifecycle Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Tiered Drops Card */}
+        <Card className="border border-slate-800 bg-[#090d16]">
+          <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider font-semibold pb-2 border-b border-slate-800/80">
+            <span>Tiered Drop Demarcation</span>
+            <Activity className="w-4 h-4 text-cyan-400" />
+          </div>
+          <div className="mt-3 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Tier 1 Kernel Drops:</span>
+              <span className="font-mono font-semibold">
+                {status?.native_kernel_drops_available ? (
+                  <span className="text-white">{status.native_kernel_drops ?? 0}</span>
+                ) : (
+                  <Badge variant="slate">
+                    {status?.kernel_drop_status?.includes('UNSUPPORTED') ? 'Unsupported' : 'Unavailable'}
+                  </Badge>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Tier 2 Ingestion Drops:</span>
+              <span className="font-mono font-semibold text-white">
+                {status?.packets_dropped ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Tier 3 Flow Queue Drops:</span>
+              <span className="font-mono font-semibold text-white">
+                {status?.flows_queue_dropped ?? 0}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-slate-800/60 text-[11px] text-slate-500">
+              <span>Driver Status: {status?.kernel_drop_status || 'Unavailable'}</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Terminal Flow Outcomes Card */}
+        <Card className="border border-slate-800 bg-[#090d16]">
+          <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider font-semibold pb-2 border-b border-slate-800/80">
+            <span>Terminal Flow Outcomes</span>
+            <Layers className="w-4 h-4 text-indigo-400" />
+          </div>
+          <div className="mt-3 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Flows Scored:</span>
+              <span className="font-mono font-semibold text-emerald-400">
+                {status?.flows_scored ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Incompatible Rejected:</span>
+              <span className="font-mono font-semibold text-slate-300">
+                {status?.incompatible_flows_rejected ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Validation / Infer Failures:</span>
+              <span className="font-mono font-semibold text-rose-400">
+                {(status?.validation_errors ?? 0) + (status?.inference_failures ?? 0)}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-slate-800/60 text-[11px] text-slate-500 flex justify-between">
+              <span>Unprocessed Flows:</span>
+              <span className="font-mono text-slate-400">{status?.unprocessed_flows ?? 0}</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Alert Persistence Lifecycle Card */}
+        <Card className="border border-slate-800 bg-[#090d16]">
+          <div className="flex items-center justify-between text-slate-400 text-xs uppercase tracking-wider font-semibold pb-2 border-b border-slate-800/80">
+            <span>Alert Persistence Lifecycle</span>
+            <ShieldAlert className="w-4 h-4 text-rose-400" />
+          </div>
+          <div className="mt-3 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Anomalies Detected:</span>
+              <span className="font-mono font-semibold text-rose-400">
+                {status?.anomalies_detected ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Alerts Persisted:</span>
+              <span className="font-mono font-semibold text-cyan-300">
+                {status?.alerts_persisted ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Alerts Deduplicated:</span>
+              <span className="font-mono font-semibold text-slate-300">
+                {status?.alerts_deduplicated ?? 0}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-slate-800/60 text-[11px] text-slate-500 flex justify-between">
+              <span>Persistence Failures:</span>
+              <span className="font-mono text-slate-400">{status?.persistence_failures ?? 0}</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Live Streaming Scored Events Table */}
       <Card className="border border-slate-800 bg-[#090d16]">
         <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
           <div>
             <h2 className="text-base font-bold text-white">Streaming Detections Feed</h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Sub-second scored unidirectional flows evaluated against decision threshold (0.50).
+              Sub-second scored unidirectional flows evaluated against decision threshold (0.50). Detections represent statistical pattern anomalies requiring investigation, not verified attacks.
             </p>
           </div>
           <span className="text-xs font-mono text-slate-400">
