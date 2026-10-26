@@ -27,7 +27,7 @@ Use this checklist to verify system state prior to conducting an evaluator walkt
 | **Graceful Shutdown** | Teardown drains queue; 0 unprocessed flows | Clean 5-stage shutdown; all flows scored | [x] **VERIFIED** |
 | **Process Teardown** | Zero orphaned Python/Node processes | Verified cleanly terminated on `Ctrl+C` | [x] **VERIFIED** |
 | **Browser Console Clean** | No unhandled runtime errors in React | 0 uncaught exceptions in browser devtools console | [x] **VERIFIED** |
-| **Regression Suite Pass** | Full backend & frontend test suites 100% green | **526 / 526 backend**, **22 / 22 frontend** passing | [x] **VERIFIED** |
+| **Regression Suite Pass** | Full backend & frontend test suites 100% green | **579 / 579 backend**, **28 / 28 frontend** passing | [x] **VERIFIED** |
 
 ---
 

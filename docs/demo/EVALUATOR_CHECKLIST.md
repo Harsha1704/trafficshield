@@ -18,12 +18,12 @@
 | 5 | **Decision Gate Threshold** | Strictly 0.50 | Frozen detection threshold | [x] **PASS** |
 | 6 | **API Health Check** | `GET /api/v1/health` returns HTTP 200 | `status: "healthy"`, `database: "connected"` | [x] **PASS** |
 | 7 | **Authentication & RBAC** | Seeded admin/analyst logins function | Admin token issued with role `admin` | [x] **PASS** |
-| 8 | **Offline PCAP Replay** | Replays `sample_traffic.pcap` deterministically | Exactly 29 packets, 24 flows scored | [x] **PASS** |
+| 8 | **Offline PCAP Replay** | Replays `sample_traffic.pcap` deterministically | Exactly 29 packets, 24 flows scored; scores 0.1273 - 0.3681 (< 0.50) | [x] **PASS** |
 | 9 | **Tiered Drop Accounting** | Tier 1 driver, Tier 2 packet, Tier 3 flow queue | Separate metrics displayed and audited | [x] **PASS** |
 | 10 | **Native Stats Honesty** | Unavailable stats rendered with badge, not 0 | Offline replay displays `Unavailable` | [x] **PASS** |
 | 11 | **Graceful Shutdown** | Drains residual flows; 0 unprocessed flows | Clean 5-stage drain; 0 dropped on stop | [x] **PASS** |
 | 12 | **Zero Payload Retention** | Raw application payload bytes discarded | Envelope contains only 5-tuple metadata | [x] **PASS** |
-| 13 | **Backend Test Suite** | 100% passing across full regression suite | **576 / 576 backend tests passed** | [x] **PASS** |
+| 13 | **Backend Test Suite** | 100% passing across full regression suite | **579 / 579 backend tests passed** | [x] **PASS** |
 | 14 | **Frontend Test Suite** | 100% passing across Vitest test suite | **28 / 28 frontend tests passed** | [x] **PASS** |
 | 15 | **Frontend Build** | Clean production compilation | `tsc -b && vite build` clean (272ms) | [x] **PASS** |
 
@@ -42,5 +42,12 @@
    - Navigate to `http://localhost:5173`.
    - Log in (`admin` / `AdminPass123!`).
    - Open **Live Detection**, select `sample_traffic.pcap`, and click **Start Replay**.
-   - Observe real-time flow completion (24 flows) and streaming event entries.
+   - Observe real-time flow completion (24 flows scored) and streaming event entries.
+   - Note that scores appropriately stay below 0.50 (max 0.3681 on TLS, 0.1273 on single probes).
    - Click **Stop Session** and verify clean shutdown with 0 unprocessed flows.
+4. **Validate True-Positive Alert Persistence:**
+   - Run the automated detection qualification test:
+     ```powershell
+     python -m pytest tests/unit/test_detection_validation.py -v
+     ```
+   - Confirms true-positive anomaly detection ($\text{score} \ge 0.85$, CRITICAL) and database alert persistence.

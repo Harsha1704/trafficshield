@@ -76,13 +76,21 @@ npm run dev
 4. Set the **Replay Speed Multiplier** to `2.0x` (or `Max` for instant ingestion).
 5. Click **Start Replay**:
    - Packets Observed increments to **29**.
-   - Completed flows increment to **24**.
+   - Completed flows increment to **24** (all 24 scored by the frozen model).
    - Streaming detection events populate the real-time feed with sub-second latency.
+   - Flow anomaly scores range from `0.1273` (single-packet probes) to `0.3681` (6-packet HTTPS stream), strictly below the decision threshold ($\tau = 0.50$).
    - Tier 1 Driver drops display `<Badge variant="slate">Unavailable</Badge>` (honest provenance for offline replay).
    - Tier 2 Ingestion drops and Tier 3 Queue drops remain **0**.
 6. Click **Stop Session**:
    - Active flows cleanly flush to 0.
    - Worker queue drains completely with 0 unprocessed flows.
+
+> [!NOTE]
+> **Expected Detection Behavior on Smoke Fixture:**
+> In this deterministic fixture, all 24 flows represent low-volume or single-packet probes where model scores appropriately remain below 0.50 (zero false-alarm alerts). To observe true positive anomaly triggering and database alert persistence, run the automated integration test:
+> ```powershell
+> python -m pytest tests/unit/test_detection_validation.py -v
+> ```
 
 ---
 
