@@ -277,6 +277,7 @@ class SoakTestHarness:
             baseline_rss=baseline_rss,
             final_rss=final_rss,
             peak_rss=peak_rss,
+            require_memory_check=True,
         )
         all_passed = all(inv.passed for inv in invariants) and (hashes_ok_pre and hashes_ok_post)
         if self._interrupted:
@@ -328,6 +329,7 @@ class SoakTestHarness:
         baseline_rss: float | None = None,
         final_rss: float | None = None,
         peak_rss: float | None = None,
+        require_memory_check: bool = False,
     ) -> list[InvariantResult]:
         """Verify strict accounting conservation and lifecycle invariants."""
         results: list[InvariantResult] = []
@@ -493,19 +495,19 @@ class SoakTestHarness:
         f_rss = final_rss if final_rss is not None else final_status.get("resource_final_rss_mb")
         p_rss = peak_rss if peak_rss is not None else final_status.get("resource_peak_rss_mb")
 
-        if b_rss is not None and f_rss is not None:
+        if require_memory_check or (b_rss is not None and f_rss is not None):
             mem_ok, mem_msg, _diag = self.config.memory_policy.evaluate(
                 baseline_rss_mb=b_rss,
                 final_rss_mb=f_rss,
                 peak_rss_mb=p_rss,
             )
-            d_rss = round(f_rss - b_rss, 2)
+            d_rss = round(f_rss - b_rss, 2) if (b_rss is not None and f_rss is not None) else None
             results.append(
                 InvariantResult(
                     name="INV_9_MEMORY_DRIFT_STABILITY",
                     passed=mem_ok,
                     expected=f"Delta <= {self.config.memory_policy.max_absolute_growth_mb}MB (or <= {self.config.memory_policy.max_relative_growth_pct}%)",
-                    actual=f"Delta {d_rss}MB",
+                    actual=f"Delta {d_rss}MB" if d_rss is not None else f"baseline={b_rss}, final={f_rss}",
                     details=mem_msg,
                 )
             )

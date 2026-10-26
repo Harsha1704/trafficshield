@@ -450,6 +450,8 @@ class RealTimeDetectionManager:
             "native_kernel_drops_delta": source_metrics.get("native_kernel_drops_delta", None),
             "native_packets_received": source_metrics.get("native_packets_received", None),
             "native_interface_drops": source_metrics.get("native_interface_drops", None),
+            "native_interface_drops_supported": source_metrics.get("native_interface_drops_supported", False),
+            "native_interface_drops_status": source_metrics.get("native_interface_drops_status", "UNAVAILABLE"),
             "kernel_drop_status": source_metrics.get(
                 "kernel_drop_status",
                 "UNAVAILABLE (Capture source inactive or uninitialized)",

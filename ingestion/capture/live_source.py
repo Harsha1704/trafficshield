@@ -383,13 +383,13 @@ class LiveCaptureSource(PacketSource):
             logger.error("Live sniffing fatal error on %s: %s", self.interface, exc)
         finally:
             self._running = False
+            self._native_handle = None
             if self._opened_socket is not None:
                 try:
                     self._opened_socket.close()
                 except Exception:
                     pass
                 self._opened_socket = None
-                self._native_handle = None
             try:
                 self._queue.put_nowait(None)
             except queue.Full:
@@ -419,6 +419,8 @@ class LiveCaptureSource(PacketSource):
             "native_kernel_drops_delta": stats.ps_drop_delta,
             "native_packets_received": stats.ps_recv_cumulative,
             "native_interface_drops": stats.ps_ifdrop_cumulative,
+            "native_interface_drops_supported": stats.ps_ifdrop_supported,
+            "native_interface_drops_status": stats.ps_ifdrop_status,
             "kernel_drop_status": stats.status,
             "kernel_poll_interval_seconds": stats.poll_interval_seconds,
             "kernel_driver_name": stats.driver_name,

@@ -40,6 +40,8 @@ class NativeCaptureStats:
     ps_recv_cumulative: int | None = None
     ps_drop_cumulative: int | None = None
     ps_ifdrop_cumulative: int | None = None
+    ps_ifdrop_supported: bool = True
+    ps_ifdrop_status: str = "AVAILABLE"
     ps_recv_delta: int | None = None
     ps_drop_delta: int | None = None
     ps_ifdrop_delta: int | None = None
@@ -132,16 +134,27 @@ class NativeStatsAdapter:
                     status="UNAVAILABLE (No active capture handle)",
                     driver_name=self.driver_name,
                     error_message="Capture handle is None or uninitialized",
+                    ps_ifdrop_supported=False,
+                    ps_ifdrop_status="UNAVAILABLE (No active capture handle)",
                 )
+
+            ifdrop_supported = True
+            ifdrop_status = "AVAILABLE"
 
             # Query raw counters
             try:
                 if self._custom_provider is not None:
-                    recv, drop, ifdrop = self._custom_provider(handle)
+                    recv, drop, ifdrop_raw = self._custom_provider(handle)
+                    ifdrop = ifdrop_raw
                 elif self._native_pcap_stats is not None and self._pcap_stat_cls is not None:
                     stat_struct = self._pcap_stat_cls()
                     # Resolve handle to ctypes void pointer if wrapped in Scapy object
-                    native_ptr = getattr(handle, "pcap", handle)
+                    native_ptr = handle
+                    if hasattr(native_ptr, "pcap_fd"):
+                        native_ptr = native_ptr.pcap_fd
+                    if hasattr(native_ptr, "pcap"):
+                        native_ptr = native_ptr.pcap
+
                     res = self._native_pcap_stats(native_ptr, ctypes.byref(stat_struct))
                     if res != 0:
                         return NativeCaptureStats(
@@ -149,16 +162,28 @@ class NativeStatsAdapter:
                             status="DRIVER_QUERY_ERROR",
                             driver_name=self.driver_name,
                             error_message=f"pcap_stats() returned native error code {res}",
+                            ps_ifdrop_supported=False,
+                            ps_ifdrop_status="DRIVER_QUERY_ERROR",
                         )
                     recv = int(stat_struct.ps_recv)
                     drop = int(stat_struct.ps_drop)
-                    ifdrop = int(stat_struct.ps_ifdrop)
+                    if platform.system() == "Windows":
+                        # On Windows, Npcap/WinPcap kernel driver does not support NIC/interface drops.
+                        # The ps_ifdrop field is always returned as 0 by packet.sys / npcap.sys.
+                        # Reporting 0 would falsely imply 0 drops occurred at the NIC level.
+                        ifdrop_supported = False
+                        ifdrop_status = "UNSUPPORTED (Npcap/WinPcap does not provide NIC drop counters on Windows)"
+                        ifdrop = None
+                    else:
+                        ifdrop = int(stat_struct.ps_ifdrop)
                 else:
                     return NativeCaptureStats(
                         is_available=False,
                         status="UNAVAILABLE (Native library not bound)",
                         driver_name=self.driver_name,
                         error_message="libpcap / Npcap C symbols unavailable in runtime environment",
+                        ps_ifdrop_supported=False,
+                        ps_ifdrop_status="UNAVAILABLE (Native library not bound)",
                     )
             except Exception as exc:
                 logger.warning("Error invoking native pcap_stats: %s", exc)
@@ -167,6 +192,8 @@ class NativeStatsAdapter:
                     status="DRIVER_EXCEPTION",
                     driver_name=self.driver_name,
                     error_message=str(exc),
+                    ps_ifdrop_supported=False,
+                    ps_ifdrop_status="DRIVER_EXCEPTION",
                 )
 
             # Calculate interval deltas
@@ -180,28 +207,33 @@ class NativeStatsAdapter:
                 status = "AVAILABLE (Counter Reset Observed)"
                 recv_delta = recv
                 drop_delta = drop
-                ifdrop_delta = ifdrop
-            elif self._last_recv is not None and self._last_drop is not None and self._last_ifdrop is not None:
+                ifdrop_delta = ifdrop if ifdrop_supported else None
+            elif self._last_recv is not None and self._last_drop is not None:
                 recv_delta = max(0, recv - self._last_recv)
                 drop_delta = max(0, drop - self._last_drop)
-                ifdrop_delta = max(0, ifdrop - self._last_ifdrop)
+                if ifdrop_supported and ifdrop is not None and self._last_ifdrop is not None:
+                    ifdrop_delta = max(0, ifdrop - self._last_ifdrop)
+                else:
+                    ifdrop_delta = None if not ifdrop_supported else ifdrop
             else:
                 # First successful poll: interval delta equals cumulative
                 recv_delta = recv
                 drop_delta = drop
-                ifdrop_delta = ifdrop
+                ifdrop_delta = ifdrop if ifdrop_supported else None
 
             self._last_poll_time = now
             self._last_recv = recv
             self._last_drop = drop
-            self._last_ifdrop = ifdrop
+            self._last_ifdrop = ifdrop if ifdrop_supported else None
 
             return NativeCaptureStats(
                 is_available=True,
                 status=status,
                 ps_recv_cumulative=recv,
                 ps_drop_cumulative=drop,
-                ps_ifdrop_cumulative=ifdrop,
+                ps_ifdrop_cumulative=ifdrop if ifdrop_supported else None,
+                ps_ifdrop_supported=ifdrop_supported,
+                ps_ifdrop_status=ifdrop_status,
                 ps_recv_delta=recv_delta,
                 ps_drop_delta=drop_delta,
                 ps_ifdrop_delta=ifdrop_delta,

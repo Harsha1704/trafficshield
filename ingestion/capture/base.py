@@ -103,5 +103,7 @@ class PacketSource(abc.ABC):
             "native_kernel_drops_delta": None,
             "native_packets_received": None,
             "native_interface_drops": None,
+            "native_interface_drops_supported": False,
+            "native_interface_drops_status": "UNAVAILABLE (Unsupported capture source)",
             "kernel_drop_status": "UNAVAILABLE (Unsupported capture source)",
         }

@@ -85,9 +85,12 @@ class MemoryStabilityPolicy:
             "relative_growth_pct": None,
         }
 
-        # 1. Check measurement availability
-        if baseline_rss_mb is None or final_rss_mb is None:
-            msg = "Memory stability evaluation FAILED: Missing or unavailable RSS measurements."
+        # 1. Check measurement availability and validity
+        if baseline_rss_mb is None or final_rss_mb is None or baseline_rss_mb <= 0.0 or final_rss_mb < 0.0:
+            msg = (
+                f"Memory stability evaluation FAILED: Missing, zero, invalid, or unavailable RSS measurements "
+                f"(baseline: {baseline_rss_mb}, final: {final_rss_mb})."
+            )
             return False, msg, diagnostics
 
         # 2. Compute deltas

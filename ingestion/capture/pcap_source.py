@@ -315,5 +315,23 @@ class PcapReplaySource(PacketSource):
             "native_kernel_drops_delta": None,
             "native_packets_received": None,
             "native_interface_drops": None,
+            "native_interface_drops_supported": False,
+            "native_interface_drops_status": "UNAVAILABLE (PCAP replay is an offline file source)",
             "kernel_drop_status": "UNAVAILABLE (PCAP replay is an offline file source)",
+        }
+
+    def get_native_stats(self) -> dict[str, Any]:
+        """PCAP replay is an offline file source with no native driver or kernel drops."""
+        return {
+            "native_kernel_drops_available": False,
+            "native_kernel_drops": None,
+            "native_kernel_drops_delta": None,
+            "native_packets_received": None,
+            "native_interface_drops": None,
+            "native_interface_drops_supported": False,
+            "native_interface_drops_status": "UNAVAILABLE (PCAP replay is an offline file source)",
+            "kernel_drop_status": "UNAVAILABLE (PCAP replay is an offline file source)",
+            "kernel_poll_interval_seconds": None,
+            "kernel_driver_name": "None (Offline PCAP)",
+            "error_message": None,
         }

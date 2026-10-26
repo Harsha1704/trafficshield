@@ -42,6 +42,7 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M17 | Sustained-soak qualification harness, resource monitoring & live runbook (536 tests) | ✅ Complete |
 | M17.1 | Accounting invariant audit, memory stability criteria & resource telemetry (550 tests) | ✅ Complete |
 | M18 | Memory policy review, native Npcap kernel-drop statistics & adapter (561 tests) | ✅ Complete |
+| M19 | Frozen artifact integrity, memory policy audit & native Npcap safety review (576 tests) | ✅ Complete |
 
 ---
 
