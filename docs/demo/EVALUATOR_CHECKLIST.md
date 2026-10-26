@@ -45,9 +45,9 @@
    - Observe real-time flow completion (24 flows scored) and streaming event entries.
    - Note that scores appropriately stay below 0.50 (max 0.3681 on TLS, 0.1273 on single probes).
    - Click **Stop Session** and verify clean shutdown with 0 unprocessed flows.
-4. **Validate True-Positive Alert Persistence:**
-   - Run the automated detection qualification test:
+4. **Exercise Controlled High-Load Scoring & Alert Persistence:**
+   - Run the automated test command:
      ```powershell
      python -m pytest tests/unit/test_detection_validation.py -v
      ```
-   - Confirms true-positive anomaly detection ($\text{score} \ge 0.85$, CRITICAL) and database alert persistence.
+   - Confirms controlled high-load test input exercises scoring ($\text{score} \ge 0.85$, CRITICAL) and database alert persistence. (Field detection effectiveness on routed links remains unvalidated).

@@ -87,10 +87,11 @@ npm run dev
 
 > [!NOTE]
 > **Expected Detection Behavior on Smoke Fixture:**
-> In this deterministic fixture, all 24 flows represent low-volume or single-packet probes where model scores appropriately remain below 0.50 (zero false-alarm alerts). To observe true positive anomaly triggering and database alert persistence, run the automated integration test:
+> In this deterministic fixture, all 24 flows represent low-volume or single-packet probes where model scores appropriately remain below 0.50 (zero false-alarm alerts). To observe controlled high-load scoring and database alert persistence, run the automated integration test:
 > ```powershell
 > python -m pytest tests/unit/test_detection_validation.py -v
 > ```
+> *Note: Representative field detection effectiveness on live SPAN/TAP links remains unvalidated.*
 
 ---
 

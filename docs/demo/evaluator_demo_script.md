@@ -80,16 +80,16 @@ flowchart LR
   
   In this deterministic fixture, we observe that the multi-packet HTTPS stream evaluates to an anomaly score of `0.3681` (LOW risk), while isolated single-packet probes (DNS, LAND probe, and SYN scans) evaluate to `0.1273` (LOW risk). Because all 24 flows remain strictly below the decision threshold ($\tau = 0.50$), zero false-positive alerts are generated. This demonstrates clean baseline discrimination on low-volume single-packet probes without false-positive alert fatigue.
   
-  When volumetric bursts or anomalous flow rates occur—as verified in our automated test suite `tests/unit/test_detection_validation.py`—the model scores them $\ge 0.85$ (CRITICAL), triggering immediate deduplicated database alert persistence."*
+  When controlled high-load inputs with elevated rates and volume are presented—as verified in our automated test suite `tests/unit/test_detection_validation.py`—the model scores them $\ge 0.85$ (CRITICAL), exercising scoring and deduplicated database alert persistence. Field detection effectiveness on routed links remains unvalidated."*
 - **Visible Action:**  
   1. Scroll through the **Real-Time Detection Event Stream** on the Live Detection page.
   2. Point out individual flows and score distributions:
      - Multi-packet HTTPS flow (`192.168.1.25:49152 -> 104.244.42.1:443`): `anomaly_score = 0.3681`, `risk_level: LOW`.
      - Isolated single-packet flows (DNS, LAND probe `192.168.1.50:8080`, and SYN probes): `anomaly_score = 0.1273`, `risk_level: LOW`.
   3. Explain the honest model behavior: isolated single-packet probes without high duration or rate correctly do not cross $\tau = 0.50$, preventing false alarms.
-  4. Reference automated verification test `tests/unit/test_detection_validation.py::test_volumetric_burst_anomaly_detection_and_persistence` demonstrating end-to-end alert triggering and database persistence on true volumetric anomalies.
+  4. Reference automated verification test `tests/unit/test_detection_validation.py::test_volumetric_burst_anomaly_detection_and_persistence` demonstrating controlled high-load input exercising scoring and alert persistence.
 - **Evidence Point:**  
-  Flow accounting displays 24 flows completed and 24 flows scored; 0 drops across all three tiers; exact score bounds verified: min 0.1273, median 0.1273, max 0.3681; test suite confirms alert persistence on true attacks.
+  Flow accounting displays 24 flows completed and 24 flows scored; 0 drops across all three tiers; exact score bounds verified: min 0.1273, median 0.1273, max 0.3681; automated test confirms scoring and alert persistence on controlled high-load input.
 
 ---
 
@@ -113,7 +113,7 @@ flowchart LR
 ### Stage 7: Honest Limitations & Engineering Roadmap (5:30 – 6:30, 60s)
 
 - **Presenter Narration:**  
-  *"To maintain scientific rigor, we explicitly communicate current operational boundaries. During live Wi-Fi testing, we observed an elevated anomaly rate (~52%). Our M15.3 feature audit established that this is not attack traffic, but domain feature shift: consumer Wi-Fi packets carry default OS initial TTLs (128 for Windows, 255 for multicast), whereas the model's learned decision tree split clusters at TTL 62 based on multi-hop routed datasets. Therefore, TrafficShield is certified as READY FOR LOCAL DEMONSTRATION, but requires multi-hour soak testing, Npcap kernel-drop telemetry, and routed SPAN link evaluation before release candidate promotion."*
+  *"To maintain scientific rigor, we explicitly communicate current operational boundaries. During live Wi-Fi testing, we observed an elevated anomaly rate (~52%). Our M15.3 feature audit established that this is domain feature shift: consumer Wi-Fi packets carry default OS initial TTLs (128 for Windows, 255 for multicast), whereas the model's learned decision tree split clusters at TTL 62 based on multi-hop routed datasets. Automated software quality gates pass completely, but representative field detection effectiveness (SPAN/TAP ground-truth evaluation) remains unvalidated. Therefore, TrafficShield is certified as READY FOR LOCAL DEMONSTRATION with documented limitations."*
 - **Visible Action:**  
   Show the final gate verdict in [`reports/m15_4_shutdown_edge_case_qualification/final_gate_verdict.md`](file:///d:/projects/trafficshield/reports/m15_4_shutdown_edge_case_qualification/final_gate_verdict.md).
 - **Evidence Point:**  
