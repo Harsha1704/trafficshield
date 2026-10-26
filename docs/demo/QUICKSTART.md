@@ -101,5 +101,5 @@ npm run dev
 | :--- | :--- | :--- |
 | **`Connection Refused` on login** | Backend server is not running on port 5000 | Verify Terminal 1 is running `python run.py`. Check that port 5000 is not blocked. |
 | **`Model Integrity Check Failed`** | Joblib file modified or truncated | Re-verify SHA-256: Detector must match `c43bb5...`, Preprocessor must match `effe96...`. |
-| **`Driver Unavailable` warning** | Npcap is not installed on host machine | Expected on developer machines without Npcap. Offline PCAP replay functions 100% without drivers. |
+| **`Tier 1 Drops Unavailable` badge** | Capture mode is PCAP Replay (offline file source) or host lacks Npcap driver | Expected for offline PCAP replay; kernel drop telemetry requires an active live capture handle. |
 | **Database locked error** | Concurrent SQLite processes accessing db | Restart backend process; SQLite locks release immediately upon termination. |

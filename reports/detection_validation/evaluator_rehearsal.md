@@ -101,7 +101,7 @@ Queried via `GET /api/v1/capture/status`:
 | **Anomalies Detected** | **0** | Baseline smoke-test outcome |
 | **Alerts Persisted** | **0** | Zero false alarms generated |
 | **Unprocessed Flows** | **0** | Zero flow leakage |
-| **Tier 1 Driver Drops** | `None` (`Unavailable`) | Honest provenance without Npcap driver |
+| **Tier 1 Driver Drops** | `None` (`Unavailable`) | Honest provenance for offline file replay (no active live capture handle) |
 | **Tier 2 Ingestion Drops** | **0** | Zero dropped packets |
 | **Tier 3 Flow Queue Drops** | **0** | Zero dropped flows |
 | **Model Hash Verified** | `True` | Runtime cryptographic integrity check |
@@ -126,6 +126,7 @@ Queried via `GET /api/v1/capture/status`:
   - Synthetic input: $35,000$ packets, $50\,\text{MB}$, duration $1.0\,\text{s}$, sload $400\,\text{Mbps}$.
   - **Inference Score:** `0.8588` (`CRITICAL` risk tier).
   - **Outcome:** `StreamingInferenceWorker` successfully detected anomaly, passed deduplication, incremented `anomalies_detected`, and committed a `SecurityAlert` row with status `NEW`.
+- **Database Isolation & Visibility Notice:** The automated test executes against an isolated, temporary SQLite test database (via pytest's `tmp_path / "det_val_test.db"`), completely decoupled from the running application's development database (`trafficshield_dev.db`), and drops all tables on fixture teardown. Consequently, this test-generated record is not visible in the running application's development dashboard; it validates the persistence engine and deduplication logic in an isolated, idempotent test harness.
 - **Labeling Notice:** This is explicitly a synthetic test input verifying scoring logic and alert persistence; it does not constitute field-validated attack detection accuracy.
 
 ### 3.6 Graceful Teardown & Residual State Check
@@ -146,7 +147,7 @@ Queried via `GET /api/v1/capture/status`:
 | **0:00 – 1:00** | **Operational Problem & Threat Model** | TrafficShield targets critical infrastructure and OT networks using unidirectional data diodes where return traffic is physically blocked. Explain why bidirectional flow tools (like Zeek or standard NetFlow) break on one-way taps. | **Overview Dashboard** (`localhost:5173`): Show operational badges and Model Intelligence card confirming 13 features and threshold $\tau = 0.50$. |
 | **1:00 – 2:00** | **Architecture & 13-Feature Contract** | Introduce the decoupled 3-tier pipeline: packet ingestion $\to$ unidirectional flow reconstruction $\to$ background worker scoring. Detail the One-Way Feature Policy enforcing 10 forward observables and 3 causal rate derivations without future leakage. | **Model Governance Ribbon**: Display frozen detector hash `c43bb5...` and verified preprocessor hash `effe96...`. |
 | **2:00 – 3:15** | **Offline Replay & Honest Baseline Scoring** | Replay `sample_traffic.pcap` at 2.0x. Walk through the 29 packets and 24 reconstructed flows. Explain why scores cluster at $0.1273$ and max at $0.3681$: low-volume single-packet probes legitimately do not trigger false alarms. Highlight Tier 1 Driver drop honesty (`Unavailable` badge). | **Live Detection Tab**: Click **Start Replay**. Watch 24 flows complete and populate the ring buffer table with sub-millisecond latencies. Click **Stop Session** to show 0 unprocessed flows. |
-| **3:15 – 4:15** | **Controlled Scoring & Alert Persistence** | Demonstrate that scoring and alert persistence function when anomalous volume is present by running the automated qualification test. Explain the deduplication window preventing SOC alert flooding. | **Terminal & Security Alerts Page**: Run `pytest tests/unit/test_detection_validation.py -v`. Show passing test and review committed alert records in the database. |
+| **3:15 – 4:15** | **Controlled Scoring & Alert Persistence** | Demonstrate that scoring and alert persistence function when anomalous volume is present by running the automated qualification test. Explain the deduplication window preventing SOC alert flooding, noting that unit tests intentionally operate on isolated transient databases rather than polluting development storage. | **Terminal & Overview / Alerts**: Run `pytest tests/unit/test_detection_validation.py -v`. Demonstrate passing test asserting score $\ge 0.85$ and database alert creation in the isolated test harness. Note that the dashboard alerts table displays persistent development records. |
 | **4:15 – 5:00** | **Honest Boundaries & Qualification Roadmap** | Conclude with scientific integrity: software quality gates (579 backend tests, 28 frontend tests) pass 100%, but field detection effectiveness on routed SPAN/TAP links remains unvalidated due to observed TTL domain shift on consumer Wi-Fi. | **Architecture / Roadblocks Summary**: Point to current gate verdict: `READY FOR LOCAL DEMONSTRATION`. |
 
 ---
@@ -156,7 +157,7 @@ Queried via `GET /api/v1/capture/status`:
 1. **Items Not Tested in this Rehearsal (By Safety Constraint):**
    - No multi-hour live soak test executed.
    - No live packet transmission or attack injection against an active interface.
-   - No native Npcap kernel-drop polling on Windows host (driver not installed on host; correctly flagged as `Unavailable`).
+   - No live capture session or active native Npcap kernel-drop polling: Npcap is installed and active on the host (verified via C bindings and interface discovery), but native drop polling requires an active live capture handle. During offline PCAP replay, the capture source is an offline file reader, so the dashboard truthfully displays the `Unavailable` badge.
 2. **Documented Limitations:**
    - **Domain Feature Shift:** The frozen XGBoost model was trained on multi-hop routed datasets where normal TTLs cluster at 62. On unrouted local links (e.g. Wi-Fi with initial TTLs of 128 or 255), benign flows may receive elevated anomaly scores.
    - **Horizontal Port Scan Limitation:** Because TrafficShield reconstructs unidirectional 5-tuple flows without cross-flow state aggregation, single-packet SYN scans across multiple ports appear as independent 1-packet flows scoring $0.1273$.
