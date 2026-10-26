@@ -38,6 +38,12 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 | M15.2 | Graceful queue drain, flow accounting reconciliation & capture qualification (511 tests) | ✅ Complete |
 | M15.3 | Post-fix shutdown verification, live smoke test & release gate audit (513 tests) | ✅ Complete |
 | M15.4 | Shutdown edge-case verification, concurrency hardening & flow accounting (526 tests) | ✅ Complete |
+| M16 | Evaluator demonstration package, Windows quick start, and demo readiness | ✅ Complete |
+
+---
+
+> [!TIP]
+> For a step-by-step evaluator walkthrough and Windows setup guide, see [docs/demo/quick_start_windows.md](file:///d:/projects/trafficshield/docs/demo/quick_start_windows.md) and the [5-to-7 minute demonstration script](file:///d:/projects/trafficshield/docs/demo/evaluator_demo_script.md).
 
 ---
 
