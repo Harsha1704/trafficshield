@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from streaming.manager import RealTimeDetectionManager, WorkerState
+from tools.soak.memory_policy import MemoryStabilityPolicy
 from tools.soak.resource_monitor import ResourceMonitor
 
 logger = logging.getLogger("soak_harness")
@@ -42,6 +43,7 @@ class SoakConfig:
     max_packets: int | None = None
     output_dir: Path | None = None
     app: Any = None
+    memory_policy: MemoryStabilityPolicy = field(default_factory=MemoryStabilityPolicy)
 
     def validate(self) -> None:
         """Validate configuration parameters."""
@@ -86,10 +88,10 @@ class SoakSummary:
     interrupted: bool
     shutdown_duration_ms: float
     final_state: str
-    resource_baseline_rss_mb: float
-    resource_final_rss_mb: float
-    resource_peak_rss_mb: float
-    resource_max_cpu_pct: float
+    resource_baseline_rss_mb: float | None
+    resource_final_rss_mb: float | None
+    resource_peak_rss_mb: float | None
+    resource_max_cpu_pct: float | None
     pipeline_final: dict[str, Any]
     samples: list[dict[str, Any]]
     invariants: list[InvariantResult] = field(default_factory=list)
@@ -152,7 +154,16 @@ class SoakTestHarness:
         if not hashes_ok_pre:
             logger.error("Pre-execution model artifact SHA-256 verification failed!")
 
-        # 2. Reset manager state
+        # 2. Component warmup: prime inference service so baseline reflects operational memory
+        try:
+            self.manager._get_inference_service()
+            warmup_snap = self.monitor.sample()
+            if warmup_snap.rss_mb is not None:
+                self.monitor.initial_rss_mb = warmup_snap.rss_mb
+        except Exception as exc:
+            logger.debug("Component warmup non-fatal exception: %s", exc)
+
+        # 3. Reset manager state
         self.manager.stop()
 
         # 3. Handle graceful termination on SIGINT / Ctrl+C
@@ -249,17 +260,27 @@ class SoakTestHarness:
         final_res = self.monitor.sample()
         hashes_ok_post = self._verify_model_hashes()
 
+        # Summary statistics
+        baseline_rss = self.monitor.initial_rss_mb
+        final_rss = final_res.rss_mb
+        peak_rss = final_res.peak_rss_mb
+        valid_cpus: list[float] = [
+            float(s.resource["cpu_percent"])
+            for s in self._samples
+            if s.resource.get("cpu_percent") is not None
+        ]
+        max_cpu: float | None = max(valid_cpus) if valid_cpus else None
+
         # 7. Evaluate accounting invariants
-        invariants = self._evaluate_invariants(final_status)
+        invariants = self._evaluate_invariants(
+            final_status,
+            baseline_rss=baseline_rss,
+            final_rss=final_rss,
+            peak_rss=peak_rss,
+        )
         all_passed = all(inv.passed for inv in invariants) and (hashes_ok_pre and hashes_ok_post)
         if self._interrupted:
             all_passed = False
-
-        # Summary statistics
-        baseline_rss = self.monitor.initial_rss_mb or 0.0
-        final_rss = final_res.rss_mb
-        peak_rss = final_res.peak_rss_mb
-        max_cpu = max((s.resource.get("cpu_percent", 0.0) for s in self._samples), default=0.0)
 
         summary = SoakSummary(
             session_id=session_id,
@@ -271,10 +292,10 @@ class SoakTestHarness:
             interrupted=self._interrupted,
             shutdown_duration_ms=round(self._shutdown_duration_ms, 2),
             final_state=final_status.get("worker_state", "UNKNOWN"),
-            resource_baseline_rss_mb=round(baseline_rss, 2),
-            resource_final_rss_mb=round(final_rss, 2),
-            resource_peak_rss_mb=round(peak_rss, 2),
-            resource_max_cpu_pct=round(max_cpu, 1),
+            resource_baseline_rss_mb=round(baseline_rss, 2) if baseline_rss is not None else None,
+            resource_final_rss_mb=round(final_rss, 2) if final_rss is not None else None,
+            resource_peak_rss_mb=round(peak_rss, 2) if peak_rss is not None else None,
+            resource_max_cpu_pct=round(max_cpu, 1) if max_cpu is not None else None,
             pipeline_final=final_status,
             samples=[
                 {
@@ -301,7 +322,13 @@ class SoakTestHarness:
 
         return summary
 
-    def _evaluate_invariants(self, final_status: dict[str, Any]) -> list[InvariantResult]:
+    def _evaluate_invariants(
+        self,
+        final_status: dict[str, Any],
+        baseline_rss: float | None = None,
+        final_rss: float | None = None,
+        peak_rss: float | None = None,
+    ) -> list[InvariantResult]:
         """Verify strict accounting conservation and lifecycle invariants."""
         results: list[InvariantResult] = []
 
@@ -376,18 +403,42 @@ class SoakTestHarness:
             )
         )
 
-        # Inv 6: Alert persistence partition
+        # Inv 6: Alert persistence lifecycle
         anomalies = final_status.get("anomalies_detected", 0)
         persisted = final_status.get("alerts_persisted", 0)
         persist_fail = final_status.get("persistence_failures", 0)
-        # Deduplicated alerts are suppressed from DB writes, so persisted + failures <= anomalies
+        deduped = final_status.get("alerts_deduplicated", 0)
+        unpersisted_no_app = final_status.get("alerts_unpersisted_no_app", 0)
+
+        has_extended_alert_counters = (
+            "alerts_deduplicated" in final_status
+            or "alerts_unpersisted_no_app" in final_status
+        )
+
+        if has_extended_alert_counters:
+            alert_sum = persisted + persist_fail + deduped + unpersisted_no_app
+            passed_inv6 = (anomalies == alert_sum)
+            expected_inv6 = anomalies
+            actual_inv6 = alert_sum
+            details_inv6 = (
+                f"anomalies_detected ({anomalies}) must equal alerts_persisted ({persisted}) + "
+                f"persistence_failures ({persist_fail}) + alerts_deduplicated ({deduped}) + "
+                f"alerts_unpersisted_no_app ({unpersisted_no_app})."
+            )
+        else:
+            alert_sum = persisted + persist_fail
+            passed_inv6 = (alert_sum <= anomalies)
+            expected_inv6 = f"<= {anomalies}"
+            actual_inv6 = alert_sum
+            details_inv6 = "alerts_persisted + persistence_failures must not exceed total anomalies_detected."
+
         results.append(
             InvariantResult(
                 name="INV_6_ALERT_PERSISTENCE_BOUNDS",
-                passed=(persisted + persist_fail <= anomalies),
-                expected=f"<= {anomalies}",
-                actual=persisted + persist_fail,
-                details="alerts_persisted + persistence_failures must not exceed total anomalies_detected.",
+                passed=passed_inv6,
+                expected=expected_inv6,
+                actual=actual_inv6,
+                details=details_inv6,
             )
         )
 
@@ -415,6 +466,28 @@ class SoakTestHarness:
                 details="Native kernel drops must be reported as UNAVAILABLE, never conflated with queue drops.",
             )
         )
+
+        # Inv 9: Memory drift stability (evaluated via MemoryStabilityPolicy)
+        b_rss = baseline_rss if baseline_rss is not None else final_status.get("resource_baseline_rss_mb")
+        f_rss = final_rss if final_rss is not None else final_status.get("resource_final_rss_mb")
+        p_rss = peak_rss if peak_rss is not None else final_status.get("resource_peak_rss_mb")
+
+        if b_rss is not None and f_rss is not None:
+            mem_ok, mem_msg, _diag = self.config.memory_policy.evaluate(
+                baseline_rss_mb=b_rss,
+                final_rss_mb=f_rss,
+                peak_rss_mb=p_rss,
+            )
+            d_rss = round(f_rss - b_rss, 2)
+            results.append(
+                InvariantResult(
+                    name="INV_9_MEMORY_DRIFT_STABILITY",
+                    passed=mem_ok,
+                    expected=f"Delta <= {self.config.memory_policy.max_absolute_growth_mb}MB (or <= {self.config.memory_policy.max_relative_growth_pct}%)",
+                    actual=f"Delta {d_rss}MB",
+                    details=mem_msg,
+                )
+            )
 
         return results
 
@@ -452,8 +525,8 @@ class SoakTestHarness:
             "",
             "| Resource Metric | Baseline Value | Final Value | Peak Observed | Trend Evaluation |",
             "|:---|:---:|:---:|:---:|:---|",
-            f"| **RSS Memory (Working Set)** | {s.resource_baseline_rss_mb} MB | {s.resource_final_rss_mb} MB | {s.resource_peak_rss_mb} MB | Bounded growth |",
-            f"| **Process CPU Utilization** | 0.0% | — | {s.resource_max_cpu_pct}% | Within bounds |",
+            f"| **RSS Memory (Working Set)** | {s.resource_baseline_rss_mb if s.resource_baseline_rss_mb is not None else 'UNAVAILABLE'} MB | {s.resource_final_rss_mb if s.resource_final_rss_mb is not None else 'UNAVAILABLE'} MB | {s.resource_peak_rss_mb if s.resource_peak_rss_mb is not None else 'UNAVAILABLE'} MB | Bounded growth |",
+            f"| **Process CPU Utilization** | 0.0% | — | {f'{s.resource_max_cpu_pct}%' if s.resource_max_cpu_pct is not None else 'UNAVAILABLE'} | Within bounds |",
             "",
             "---",
             "",

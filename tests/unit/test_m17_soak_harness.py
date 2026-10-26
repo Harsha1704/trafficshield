@@ -69,14 +69,16 @@ class TestSoakResourceMonitor:
             with patch.object(monitor._psapi, "GetProcessMemoryInfo", side_effect=RuntimeError("PSAPI failure")):
                 snap = monitor.sample()
                 assert isinstance(snap, ResourceSnapshot)
-                assert snap.rss_mb == 0.0
+                assert snap.rss_mb is None
+                assert snap.is_available is False
                 assert "error" in snap.measurement_source
 
         if hasattr(monitor, "_psutil_proc") and monitor._psutil_proc is not None:
             with patch.object(monitor._psutil_proc, "memory_info", side_effect=RuntimeError("psutil failure")):
                 snap = monitor.sample()
                 assert isinstance(snap, ResourceSnapshot)
-                assert snap.rss_mb == 0.0
+                assert snap.rss_mb is None
+                assert snap.is_available is False
                 assert "error" in snap.measurement_source
 
 

@@ -50,23 +50,27 @@ class ResourceSnapshot:
     """Timestamped snapshot of process hardware resource consumption."""
     timestamp: float
     elapsed_seconds: float
-    rss_mb: float
-    peak_rss_mb: float
-    private_mb: float
-    cpu_percent: float
+    rss_mb: float | None
+    peak_rss_mb: float | None
+    private_mb: float | None
+    cpu_percent: float | None
     active_threads: int
     measurement_source: str
+    is_available: bool = True
+    error_message: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "timestamp": round(self.timestamp, 3),
             "elapsed_seconds": round(self.elapsed_seconds, 1),
-            "rss_mb": round(self.rss_mb, 2),
-            "peak_rss_mb": round(self.peak_rss_mb, 2),
-            "private_mb": round(self.private_mb, 2),
-            "cpu_percent": round(self.cpu_percent, 1),
+            "rss_mb": round(self.rss_mb, 2) if self.rss_mb is not None else None,
+            "peak_rss_mb": round(self.peak_rss_mb, 2) if self.peak_rss_mb is not None else None,
+            "private_mb": round(self.private_mb, 2) if self.private_mb is not None else None,
+            "cpu_percent": round(self.cpu_percent, 1) if self.cpu_percent is not None else None,
             "active_threads": self.active_threads,
             "measurement_source": self.measurement_source,
+            "is_available": self.is_available,
+            "error_message": self.error_message,
         }
 
 
@@ -134,11 +138,13 @@ class ResourceMonitor:
         self.prev_wall_time = now_wall
         self.prev_cpu_time = now_cpu
 
-        rss_mb = 0.0
-        peak_rss_mb = 0.0
-        private_mb = 0.0
+        rss_mb: float | None = None
+        peak_rss_mb: float | None = None
+        private_mb: float | None = None
         threads_count = threading.active_count()
         source = self.backend
+        is_avail = True
+        err_msg: str | None = None
 
         try:
             if self.backend == "psutil" and self._psutil_proc is not None:
@@ -160,23 +166,33 @@ class ResourceMonitor:
                     private_mb = counters.PrivateUsage / (1024 * 1024)
                 else:
                     source = "windows_psapi_query_failed"
+                    is_avail = False
+                    err_msg = "GetProcessMemoryInfo returned non-zero error"
             else:
-                # Basic fallback
                 source = "standard_library_basic"
+                # Standard library without psutil/win32 cannot read working set directly
+                is_avail = False
+                err_msg = "No direct memory sampling backend available (psutil or psapi required)"
         except Exception as exc:
             logger.warning("Resource sampling error: %s", exc)
             source = f"error: {exc}"
+            is_avail = False
+            err_msg = str(exc)
 
-        if rss_mb > self.peak_observed_rss_mb:
+        if rss_mb is not None and rss_mb > self.peak_observed_rss_mb:
             self.peak_observed_rss_mb = rss_mb
+
+        final_peak = max(peak_rss_mb, self.peak_observed_rss_mb) if peak_rss_mb is not None else None
 
         return ResourceSnapshot(
             timestamp=time.time(),
             elapsed_seconds=elapsed,
             rss_mb=rss_mb,
-            peak_rss_mb=max(peak_rss_mb, self.peak_observed_rss_mb),
+            peak_rss_mb=final_peak,
             private_mb=private_mb,
             cpu_percent=cpu_pct,
             active_threads=threads_count,
             measurement_source=source,
+            is_available=is_avail,
+            error_message=err_msg,
         )

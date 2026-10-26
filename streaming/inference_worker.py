@@ -82,6 +82,8 @@ class StreamingInferenceWorker:
         self.validation_errors = 0
         self.inference_failures = 0
         self.persistence_failures = 0
+        self.alerts_deduplicated = 0
+        self.alerts_unpersisted_no_app = 0
         self.incompatible_flows_rejected = 0
         self.unprocessed_flows = 0
         self.inference_latencies_ms: list[float] = []
@@ -235,57 +237,62 @@ class StreamingInferenceWorker:
         try:
             # Score using frozen production inference service
             res = self.service.predict_single(flow)
-            t_infer = (time.perf_counter() - t0) * 1000.0
-
-            anomaly_score = float(res["anomaly_score"])
-            is_anomaly = anomaly_score >= self.decision_threshold
-            risk_level = res.get("risk_level", "LOW")
-            top_features = res.get("top_contributing_features", [])
-
-            self.flows_scored += 1
-            if is_anomaly:
-                self.anomalies_detected += 1
-
-            self.inference_latencies_ms.append(t_infer)
-            if len(self.inference_latencies_ms) > 1000:
-                self.inference_latencies_ms = self.inference_latencies_ms[-500:]
-
-            event_id = str(uuid.uuid4())
-            timestamp_iso = _utcnow().isoformat()
-
-            event_record = {
-                "event_id": event_id,
-                "timestamp": timestamp_iso,
-                "flow_id": flow_id,
-                "src_ip": flow.get("src_ip"),
-                "dst_ip": flow.get("dst_ip"),
-                "src_port": flow.get("src_port"),
-                "dst_port": flow.get("dst_port"),
-                "protocol": flow.get("protocol"),
-                "source_provenance": self.source_provenance,
-                "anomaly_score": round(anomaly_score, 4),
-                "decision_threshold": self.decision_threshold,
-                "is_anomaly": is_anomaly,
-                "risk_level": risk_level,
-                "inference_latency_ms": round(t_infer, 2),
-                "model_name": self.service.model_name,
-                "model_version": self.service.version,
-                "top_features": top_features,
-                "is_provisional": False,
-            }
-
-            self.recent_events.append(event_record)
-
-            # Persist alert if anomalous and within database context
-            if is_anomaly and self.app:
-                self._persist_alert(flow, event_record)
-
         except Exception as exc:
             if isinstance(exc, (ValueError, KeyError)):
                 self.validation_errors += 1
             else:
                 self.inference_failures += 1
             logger.warning("Flow scoring exception for %s: %s", flow_id, exc)
+            return
+
+        # Flow successfully scored by model
+        self.flows_scored += 1
+        t_infer = (time.perf_counter() - t0) * 1000.0
+
+        anomaly_score = float(res["anomaly_score"])
+        is_anomaly = anomaly_score >= self.decision_threshold
+        risk_level = res.get("risk_level", "LOW")
+        top_features = res.get("top_contributing_features", [])
+
+        if is_anomaly:
+            self.anomalies_detected += 1
+
+        self.inference_latencies_ms.append(t_infer)
+        if len(self.inference_latencies_ms) > 1000:
+            self.inference_latencies_ms = self.inference_latencies_ms[-500:]
+
+        event_id = str(uuid.uuid4())
+        timestamp_iso = _utcnow().isoformat()
+
+        event_record = {
+            "event_id": event_id,
+            "timestamp": timestamp_iso,
+            "flow_id": flow_id,
+            "src_ip": flow.get("src_ip"),
+            "dst_ip": flow.get("dst_ip"),
+            "src_port": flow.get("src_port"),
+            "dst_port": flow.get("dst_port"),
+            "protocol": flow.get("protocol"),
+            "source_provenance": self.source_provenance,
+            "anomaly_score": round(anomaly_score, 4),
+            "decision_threshold": self.decision_threshold,
+            "is_anomaly": is_anomaly,
+            "risk_level": risk_level,
+            "inference_latency_ms": round(t_infer, 2),
+            "model_name": self.service.model_name,
+            "model_version": self.service.version,
+            "top_features": top_features,
+            "is_provisional": False,
+        }
+
+        self.recent_events.append(event_record)
+
+        # Reconcile alert persistence lifecycle
+        if is_anomaly:
+            if self.app:
+                self._persist_alert(flow, event_record)
+            else:
+                self.alerts_unpersisted_no_app += 1
 
     def _persist_alert(self, flow: dict[str, Any], event_record: dict[str, Any]) -> None:
         """Deduplicate and insert SecurityAlert record in SQLite/PostgreSQL."""
@@ -295,6 +302,7 @@ class StreamingInferenceWorker:
 
         # Skip duplicate database write if identical pattern alerted within window
         if (now - last_seen) < self._dedup_window_seconds:
+            self.alerts_deduplicated += 1
             return
 
         self._dedup_cache[dedup_key] = now
@@ -368,9 +376,11 @@ class StreamingInferenceWorker:
             "flows_scored": self.flows_scored,
             "anomalies_detected": self.anomalies_detected,
             "alerts_persisted": self.alerts_persisted,
+            "persistence_failures": self.persistence_failures,
+            "alerts_deduplicated": self.alerts_deduplicated,
+            "alerts_unpersisted_no_app": self.alerts_unpersisted_no_app,
             "validation_errors": self.validation_errors,
             "inference_failures": self.inference_failures,
-            "persistence_failures": self.persistence_failures,
             "incompatible_flows_rejected": self.incompatible_flows_rejected,
             "unprocessed_flows": self.unprocessed_flows,
             "drain_timed_out": self.drain_timed_out,

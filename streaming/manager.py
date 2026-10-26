@@ -430,6 +430,8 @@ class RealTimeDetectionManager:
             "flows_scored": infer_metrics.get("flows_scored", 0),
             "anomalies_detected": infer_metrics.get("anomalies_detected", 0),
             "alerts_persisted": infer_metrics.get("alerts_persisted", 0),
+            "alerts_deduplicated": infer_metrics.get("alerts_deduplicated", 0),
+            "alerts_unpersisted_no_app": infer_metrics.get("alerts_unpersisted_no_app", 0),
             "validation_errors": infer_metrics.get("validation_errors", 0),
             "inference_failures": infer_metrics.get("inference_failures", 0),
             "persistence_failures": infer_metrics.get("persistence_failures", 0),
