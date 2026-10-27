@@ -102,7 +102,11 @@ class BaseAppSettings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        for vercel_domain in [r"https://.*\.vercel\.app", "https://trafficshield.vercel.app"]:
+            if vercel_domain not in origins:
+                origins.append(vercel_domain)
+        return origins
 
     def to_flask_config(self) -> dict:
         """Return a dict suitable for app.config.update()."""

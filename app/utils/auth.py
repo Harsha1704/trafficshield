@@ -189,25 +189,50 @@ def bootstrap_initial_users(app) -> None:
                 logger.info("Bootstrapped default dev users if missing: 'admin' and 'analyst'")
             else:
                 # Production / Staging: read initial credentials from environment if provided
-                adm_user = app.config.get("ADMIN_INITIAL_USERNAME") or getattr(settings, "admin_initial_username", "admin") or "admin"
-                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD") or getattr(settings, "admin_initial_password", "")
+                adm_user = app.config.get("ADMIN_INITIAL_USERNAME")
+                if adm_user is None:
+                    adm_user = getattr(settings, "admin_initial_username", "admin")
+                adm_user = adm_user or "admin"
 
-                if adm_pass and len(adm_pass) >= 12 and User.query.filter_by(username=adm_user).first() is None:
-                    admin = User(username=adm_user, role="admin", is_active=True)
-                    admin.set_password(adm_pass)
-                    db.session.add(admin)
-                    logger.info("Bootstrapped initial production admin user '%s'", adm_user)
+                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD")
+                if adm_pass is None:
+                    adm_pass = getattr(settings, "admin_initial_password", "")
 
-                ana_user = app.config.get("ANALYST_INITIAL_USERNAME") or getattr(settings, "analyst_initial_username", "analyst") or "analyst"
-                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD") or getattr(settings, "analyst_initial_password", "")
+                if adm_pass and len(adm_pass) >= 8:
+                    admin = User.query.filter_by(username=adm_user).first()
+                    if admin is None:
+                        admin = User(username=adm_user, role="admin", is_active=True)
+                        admin.set_password(adm_pass)
+                        db.session.add(admin)
+                        logger.info("Bootstrapped initial production admin user '%s'", adm_user)
+                    else:
+                        admin.set_password(adm_pass)
+                        admin.is_active = True
+                        logger.info("Synchronized production admin user '%s' password from environment", adm_user)
 
-                if ana_pass and len(ana_pass) >= 12 and User.query.filter_by(username=ana_user).first() is None:
-                    analyst = User(username=ana_user, role="analyst", is_active=True)
-                    analyst.set_password(ana_pass)
-                    db.session.add(analyst)
-                    logger.info("Bootstrapped initial production analyst user '%s'", ana_user)
+                ana_user = app.config.get("ANALYST_INITIAL_USERNAME")
+                if ana_user is None:
+                    ana_user = getattr(settings, "analyst_initial_username", "analyst")
+                ana_user = ana_user or "analyst"
+
+                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD")
+                if ana_pass is None:
+                    ana_pass = getattr(settings, "analyst_initial_password", "")
+
+                if ana_pass and len(ana_pass) >= 8:
+                    analyst = User.query.filter_by(username=ana_user).first()
+                    if analyst is None:
+                        analyst = User(username=ana_user, role="analyst", is_active=True)
+                        analyst.set_password(ana_pass)
+                        db.session.add(analyst)
+                        logger.info("Bootstrapped initial production analyst user '%s'", ana_user)
+                    else:
+                        analyst.set_password(ana_pass)
+                        analyst.is_active = True
+                        logger.info("Synchronized production analyst user '%s' password from environment", ana_user)
 
                 db.session.commit()
+                db.session.expire_all()
         except Exception as exc:
             db.session.rollback()
             logger.warning("User bootstrap encountered non-fatal error: %s", exc)

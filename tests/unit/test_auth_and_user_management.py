@@ -155,15 +155,19 @@ class TestAuthLifecycleAndReset:
             assert analyst.role == "analyst"
             assert analyst.check_password("StrongAnalystPass2026!")
 
-            # Verify existing users are not overwritten
-            analyst.set_password("AnalystUpdatedManually123!")
-            db.session.commit()
-
-            # Re-running bootstrap must preserve the updated password
+            # Verify that re-running bootstrap with updated config synchronizes the password
+            app.config["ANALYST_INITIAL_PASSWORD"] = "UpdatedViaEnvPass2026!"
             bootstrap_initial_users(app)
+            db.session.expire_all()
             analyst_recheck = User.query.filter_by(username="custom_analyst").first()
-            assert analyst_recheck.check_password("AnalystUpdatedManually123!")
-            assert not analyst_recheck.check_password("StrongAnalystPass2026!")
+            assert analyst_recheck.check_password("UpdatedViaEnvPass2026!")
+
+            # Verify that re-running bootstrap with empty password leaves existing user untouched
+            app.config["ANALYST_INITIAL_PASSWORD"] = ""
+            bootstrap_initial_users(app)
+            db.session.expire_all()
+            analyst_recheck2 = User.query.filter_by(username="custom_analyst").first()
+            assert analyst_recheck2.check_password("UpdatedViaEnvPass2026!")
 
             db.session.remove()
             db.drop_all()
