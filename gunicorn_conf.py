@@ -52,6 +52,18 @@ def on_starting(server):
     server.log.info(f"Binding: {bind} | Workers: {workers} ({worker_class}, {threads} threads/worker)")
 
 
+def post_fork(server, worker):
+    """Dispose inherited SQLAlchemy connection pool after worker process is forked."""
+    try:
+        from app.extensions import db
+
+        if db and hasattr(db, "engine") and db.engine:
+            db.engine.dispose()
+            server.log.info(f"Worker {worker.pid}: Disposed DB engine connection pool after fork.")
+    except Exception as exc:
+        server.log.warning(f"Worker {worker.pid}: Database pool cleanup notice: {exc}")
+
+
 def worker_exit(server, worker):
     """Log worker termination."""
     server.log.info(f"Worker {worker.pid} exited cleanly.")

@@ -114,6 +114,11 @@ class BaseAppSettings(BaseSettings):
             "SECRET_KEY": self.secret_key,
             "SQLALCHEMY_DATABASE_URI": self.database_url,
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+            "SQLALCHEMY_ENGINE_OPTIONS": {
+                "pool_pre_ping": True,
+                "pool_recycle": 300,
+                "pool_timeout": 30,
+            },
             "MAX_CONTENT_LENGTH": self.max_upload_bytes,
             "RATELIMIT_DEFAULT": self.ratelimit_default,
             "RATELIMIT_STORAGE_URI": self.ratelimit_storage_url,

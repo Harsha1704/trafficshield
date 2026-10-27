@@ -105,6 +105,10 @@ def get_current_user_from_request() -> User | None:
             g.current_user = user
             return user
     except Exception as exc:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         logger.error("Error retrieving user from database: %s", exc)
         return None
 
