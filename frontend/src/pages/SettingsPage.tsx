@@ -12,7 +12,7 @@ import {
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
-import { getApiBaseUrl, setApiBaseUrl, api } from '../services/api';
+import { getApiBaseUrl, getDefaultApiBaseUrl, setApiBaseUrl, api } from '../services/api';
 
 interface SettingsPageProps {
   onRefreshData: () => void;
@@ -55,10 +55,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   const handleResetDefault = () => {
-    const defaultUrl = 'http://localhost:5000/api/v1';
+    const defaultUrl = getDefaultApiBaseUrl();
     setApiUrlState(defaultUrl);
     setApiBaseUrl(defaultUrl);
-    setConnectionStatus({ ok: true, message: 'Reset API URL to default (http://localhost:5000/api/v1).' });
+    setConnectionStatus({ ok: true, message: `Reset API URL to default (${defaultUrl}).` });
     onRefreshData();
   };
 
@@ -78,7 +78,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 type="text"
                 value={apiUrl}
                 onChange={(e) => setApiUrlState(e.target.value)}
-                placeholder="http://localhost:5000/api/v1"
+                placeholder={getDefaultApiBaseUrl()}
                 className="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-500/50"
               />
               <Button size="sm" onClick={handleSaveApiUrl}>
