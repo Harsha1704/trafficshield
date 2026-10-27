@@ -184,3 +184,14 @@ def model_info() -> Any:
     service = get_inference_service()
     info = service.get_info()
     return success_response(data=info, status_code=200)
+
+
+@predict_bp.route("/model/evaluation", methods=["GET"])
+@require_role("analyst", "admin")
+def model_evaluation() -> Any:
+    """Return comprehensive model evaluation benchmarks, confusion matrix, and comparisons."""
+    from ml.evaluation_service import get_evaluation_service
+
+    service = get_evaluation_service()
+    report = service.get_evaluation_report()
+    return success_response(data=report, status_code=200)

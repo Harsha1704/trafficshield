@@ -75,13 +75,17 @@ def create_app(env: str | None = None) -> Flask:
 
     # ─── Database tables & Initial Bootstrap ──────────────────────────────────
     with app.app_context():
-        # Import models so SQLAlchemy sees them before create_all
+        # Import models so SQLAlchemy sees them
         from app.database import models  # noqa: F401
-        db.create_all()
 
-        # Bootstrap default admin and analyst users if empty
-        from app.utils.auth import bootstrap_initial_users
-        bootstrap_initial_users(app)
+        is_prod = getattr(settings, "is_production", False)
+        is_migration = os.getenv("ALEMBIC_MIGRATION_RUN") == "1"
+        if not is_prod and not is_migration:
+            db.create_all()
+
+            # Bootstrap default admin and analyst users if empty
+            from app.utils.auth import bootstrap_initial_users
+            bootstrap_initial_users(app)
 
     # ─── Request Correlation & Security Headers ───────────────────────────────
     _configure_security_and_tracing(app, settings)

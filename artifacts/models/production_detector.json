@@ -1,0 +1,23 @@
+{
+  "model_name": "OptunaTuned_XGBoost",
+  "version": "1.0.0",
+  "accuracy": 0.9858,
+  "attack_recall": 0.9998,
+  "attack_precision": 0.9539,
+  "threshold": 0.5,
+  "features": [
+    "duration_seconds",
+    "fwd_bytes",
+    "sttl",
+    "sload",
+    "fwd_packets",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "is_sm_ips_ports"
+  ]
+}

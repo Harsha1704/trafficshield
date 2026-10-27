@@ -16,7 +16,7 @@ import { Button } from '../components/common/Button';
 import { SeverityBadge, Badge } from '../components/common/Badge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { api, ApiClientError } from '../services/api';
-import type { BatchPredictResponse, SinglePredictRequest, SinglePredictResponse } from '../types/api';
+import type { BatchPredictResponse, SinglePredictRequest } from '../types/api';
 
 const REQUIRED_FORWARD_FEATURES = [
   'duration_seconds',
@@ -31,16 +31,73 @@ const REQUIRED_FORWARD_FEATURES = [
   'is_sm_ips_ports',
 ];
 
+// The 49 canonical column names in exact CSV file order (1 to 49) for headerless UNSW-NB15 raw dumps
+const UNSW15_49_COLUMNS: string[] = [
+  'srcip', 'sport', 'dstip', 'dsport', 'proto', 'state', 'dur', 'sbytes', 'dbytes',
+  'sttl', 'dttl', 'sloss', 'dloss', 'service', 'Sload', 'Dload', 'Spkts', 'Dpkts',
+  'swin', 'dwin', 'stcpb', 'dtcpb', 'smeansz', 'dmeansz', 'trans_depth', 'res_bdy_len',
+  'Sjit', 'Djit', 'Stime', 'Ltime', 'Sintpkt', 'Dintpkt', 'tcprtt', 'synack', 'ackdat',
+  'is_sm_ips_ports', 'ct_state_ttl', 'ct_flw_http_mthd', 'is_ftp_login', 'ct_ftp_cmd',
+  'ct_srv_src', 'ct_srv_dst', 'ct_dst_ltm', 'ct_src_ ltm', 'ct_src_dport_ltm',
+  'ct_dst_sport_ltm', 'ct_dst_src_ltm', 'attack_cat', 'Label',
+];
+
+// Map from raw UNSW-NB15 / alternate column names to TrafficShield canonical forward features
+const RAW_TO_CANONICAL_MAP: Record<string, string> = {
+  // duration
+  dur: 'duration_seconds',
+  duration: 'duration_seconds',
+  duration_seconds: 'duration_seconds',
+  // fwd_bytes
+  sbytes: 'fwd_bytes',
+  src_bytes: 'fwd_bytes',
+  fwd_bytes: 'fwd_bytes',
+  // sttl
+  sttl: 'sttl',
+  src_ttl: 'sttl',
+  // sload
+  sload: 'sload',
+  src_load: 'sload',
+  // fwd_packets
+  spkts: 'fwd_packets',
+  src_pkts: 'fwd_packets',
+  fwd_packets: 'fwd_packets',
+  // swin
+  swin: 'swin',
+  src_win: 'swin',
+  // smeansz
+  smeansz: 'smeansz',
+  src_mean_sz: 'smeansz',
+  // sjit
+  sjit: 'sjit',
+  src_jit: 'sjit',
+  // sintpkt
+  sintpkt: 'sintpkt',
+  src_intpkt: 'sintpkt',
+  // is_sm_ips_ports
+  is_sm_ips_ports: 'is_sm_ips_ports',
+};
+
 const FORBIDDEN_REVERSE_COLUMNS = [
   'dbytes',
   'dpkts',
   'dttl',
   'dload',
+  'dwin',
+  'dtcpb',
+  'dmeansz',
+  'djit',
+  'dintpkt',
   'tcprtt',
   'synack',
   'ackdat',
   'label',
   'attack_cat',
+  'sloss',
+  'dloss',
+  'trans_depth',
+  'res_bdy_len',
+  'is_ftp_login',
 ];
 
 // Demonstration sample batches for instant analyst validation
@@ -111,9 +168,9 @@ export const TrafficAnalysisPage: React.FC<{
   onAlertsPersisted?: () => void;
 }> = ({ onAlertsPersisted }) => {
   const [parsedRows, setParsedRows] = useState<SinglePredictRequest[]>([]);
-  const [columnsDetected, setColumnsDetected] = useState<string[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [forbiddenDetected, setForbiddenDetected] = useState<string[]>([]);
+  const [sanitizedColumns, setSanitizedColumns] = useState<string[]>([]);
+  const [detectedFormat, setDetectedFormat] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
   const [scoring, setScoring] = useState<boolean>(false);
@@ -126,70 +183,101 @@ export const TrafficAnalysisPage: React.FC<{
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Validate columns against feature policy
-  const validateHeadersAndRows = (headers: string[], rows: Record<string, number>[]) => {
-    const forbidden = headers.filter((h) => FORBIDDEN_REVERSE_COLUMNS.includes(h.toLowerCase().trim()));
-    setForbiddenDetected(forbidden);
-
-    const missing = REQUIRED_FORWARD_FEATURES.filter((req) => !headers.includes(req));
-    const errors: string[] = [];
-
-    if (forbidden.length > 0) {
-      errors.push(
-        `Feature policy violation: Input contains prohibited reverse/label columns: ${forbidden.join(', ')}`
-      );
-    }
-    if (missing.length > 0) {
-      errors.push(
-        `Schema incomplete: Missing required forward observable features: ${missing.join(', ')}`
-      );
-    }
-
-    setValidationErrors(errors);
-
-    if (errors.length === 0) {
-      const validRequests: SinglePredictRequest[] = rows.map((r) => {
-        const item: Record<string, number> = {};
-        for (const f of REQUIRED_FORWARD_FEATURES) {
-          item[f] = Number(r[f]) || 0;
-        }
-        return item as unknown as SinglePredictRequest;
-      });
-      setParsedRows(validRequests);
-    } else {
-      setParsedRows([]);
-    }
-  };
-
-  // CSV Text Parser
+  // CSV Text Parser with Unidirectional Policy Filtering & Headerless UNSW-NB15 Support
   const parseCSVText = (text: string, name: string) => {
     setFileName(name);
     setBatchResult(null);
     setPersistSuccess(null);
+    setValidationErrors([]);
+    setSanitizedColumns([]);
+    setDetectedFormat(null);
 
     const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-    if (lines.length < 2) {
-      setValidationErrors(['CSV file must have a header row and at least one data row.']);
+    if (lines.length < 1) {
+      setValidationErrors(['CSV file is empty.']);
+      setParsedRows([]);
       return;
     }
 
-    const headers = lines[0].split(',').map((h) => h.trim().replace(/^["']|["']$/g, ''));
-    setColumnsDetected(headers);
+    const firstLineTokens = lines[0].split(',').map((v) => v.trim().replace(/^["']|["']$/g, ''));
 
-    const rows: Record<string, number>[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (rows.length >= 5000) break; // API max limit
-      const values = lines[i].split(',').map((v) => v.trim());
-      if (values.length !== headers.length) continue;
+    // Check if file is standard 49-column raw UNSW-NB15 format (UNSW-NB15_1.csv to UNSW-NB15_4.csv)
+    const isUnsw49 = firstLineTokens.length === 49;
+    const isIpAddress = (val: string) => /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(val);
+    const isHeaderlessUnsw = isUnsw49 && (isIpAddress(firstLineTokens[0]) || firstLineTokens[0].toLowerCase() !== 'srcip');
 
-      const rowObj: Record<string, number> = {};
-      headers.forEach((h, idx) => {
-        rowObj[h] = parseFloat(values[idx]) || 0;
-      });
-      rows.push(rowObj);
+    let effectiveHeaders: string[] = [];
+    let startRowIndex = 1;
+
+    if (isHeaderlessUnsw) {
+      effectiveHeaders = [...UNSW15_49_COLUMNS];
+      startRowIndex = 0; // Line 0 is actual data
+      setDetectedFormat('UNSW-NB15 Raw Testbed Stream (49 Features, Headerless)');
+    } else if (isUnsw49 && firstLineTokens[0].toLowerCase() === 'srcip') {
+      effectiveHeaders = firstLineTokens;
+      startRowIndex = 1;
+      setDetectedFormat('UNSW-NB15 Flow Dataset (49 Features with Headers)');
+    } else {
+      effectiveHeaders = firstLineTokens;
+      startRowIndex = 1;
+      setDetectedFormat('Standard Flow Record CSV');
     }
 
-    validateHeadersAndRows(headers, rows);
+    // Map detected headers to canonical forward feature names
+    const headerToCanonicalIndex: Record<string, number> = {};
+    const excludedColumns: string[] = [];
+
+    effectiveHeaders.forEach((rawCol, idx) => {
+      const lower = rawCol.trim().toLowerCase();
+      // Check if this column is a forbidden reverse/label field
+      if (FORBIDDEN_REVERSE_COLUMNS.includes(lower)) {
+        excludedColumns.push(rawCol);
+      }
+
+      // Check if this column maps to one of our 10 forward features
+      if (RAW_TO_CANONICAL_MAP[lower]) {
+        headerToCanonicalIndex[RAW_TO_CANONICAL_MAP[lower]] = idx;
+      } else if (REQUIRED_FORWARD_FEATURES.includes(lower)) {
+        headerToCanonicalIndex[lower] = idx;
+      }
+    });
+
+    setSanitizedColumns(excludedColumns);
+
+    // Validate that all 10 forward features are resolvable
+    const missing = REQUIRED_FORWARD_FEATURES.filter((req) => headerToCanonicalIndex[req] === undefined);
+    if (missing.length > 0) {
+      setValidationErrors([
+        `Schema incomplete: Missing required forward-observable features: ${missing.join(', ')}.`,
+      ]);
+      setParsedRows([]);
+      return;
+    }
+
+    // Extract valid rows strictly containing the 10 forward-observable causal features
+    const rows: SinglePredictRequest[] = [];
+    for (let i = startRowIndex; i < lines.length; i++) {
+      if (rows.length >= 5000) break; // Backend API batch capacity limit
+      const values = lines[i].split(',').map((v) => v.trim().replace(/^["']|["']$/g, ''));
+      if (values.length !== effectiveHeaders.length) continue;
+
+      const rowObj: Record<string, number> = {};
+      for (const feat of REQUIRED_FORWARD_FEATURES) {
+        const colIdx = headerToCanonicalIndex[feat];
+        const rawVal = values[colIdx];
+        const numVal = parseFloat(rawVal);
+        rowObj[feat] = isNaN(numVal) ? 0 : numVal;
+      }
+      rows.push(rowObj as unknown as SinglePredictRequest);
+    }
+
+    if (rows.length === 0) {
+      setValidationErrors(['No valid data rows could be parsed from the provided CSV file.']);
+      setParsedRows([]);
+      return;
+    }
+
+    setParsedRows(rows);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,8 +314,8 @@ export const TrafficAnalysisPage: React.FC<{
 
   const loadSampleBatch = () => {
     setFileName('sample_traffic_demonstration.csv');
-    setColumnsDetected(REQUIRED_FORWARD_FEATURES);
-    setForbiddenDetected([]);
+    setSanitizedColumns([]);
+    setDetectedFormat('Synthetic Demonstration Batch (10 Features)');
     setValidationErrors([]);
     setParsedRows(SAMPLE_MIXED_BATCH);
     setBatchResult(null);
@@ -396,18 +484,27 @@ export const TrafficAnalysisPage: React.FC<{
               </div>
             )}
 
+            {detectedFormat && (
+              <div className="flex items-center justify-between p-2 rounded bg-slate-900/80 border border-slate-800">
+                <span className="text-slate-400">Format:</span>
+                <span className="text-cyan-300 font-mono text-[11px] truncate max-w-[180px]">{detectedFormat}</span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between p-2 rounded bg-slate-900/80 border border-slate-800">
               <span className="text-slate-400">Valid Rows Ready:</span>
               <span className="text-cyan-400 font-mono font-semibold">{parsedRows.length}</span>
             </div>
 
-            {forbiddenDetected.length > 0 && (
-              <div className="p-2.5 rounded bg-rose-950/40 border border-rose-800/60 text-rose-300 space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Prohibited Columns Detected</span>
+            {sanitizedColumns.length > 0 && (
+              <div className="p-2.5 rounded bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                  <span>Unidirectional Policy Enforced</span>
                 </div>
-                <p className="text-[11px] font-mono">{forbiddenDetected.join(', ')}</p>
+                <p className="text-[11px] text-slate-300">
+                  Safely filtered out <span className="text-emerald-300 font-mono font-semibold">{sanitizedColumns.length}</span> reverse/label fields ({sanitizedColumns.slice(0, 4).join(', ')}{sanitizedColumns.length > 4 ? '...' : ''}) to ensure strict causal compliance.
+                </p>
               </div>
             )}
 

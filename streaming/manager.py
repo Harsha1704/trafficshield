@@ -20,6 +20,7 @@ import logging
 import queue
 import threading
 import time
+from collections import deque
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -84,6 +85,13 @@ class RealTimeDetectionManager:
         # Shared production inference service singleton
         self._inference_service: ProductionInferenceService | None = None
 
+        # Operational interval telemetry tracking (aligned 5-second UTC intervals)
+        self._interval_history: deque[dict[str, Any]] = deque(maxlen=120)
+        self._current_window_start: float | None = None
+        self._window_start_totals: dict[str, Any] = {}
+        self._session_summary: dict[str, Any] | None = None
+        self._interval_lock = threading.Lock()
+
     def _get_inference_service(self) -> ProductionInferenceService:
         """Lazily initialize or return production inference service with verified checksums."""
         if self._inference_service is None:
@@ -96,6 +104,243 @@ class RealTimeDetectionManager:
                 verify_checksums=True,
             )
         return self._inference_service
+
+    def _init_session_telemetry_locked(self) -> None:
+        """Initialize telemetry baseline and aligned 5-second window tracker."""
+        now_epoch = time.time()
+        self._interval_history.clear()
+        self._current_window_start = float(int(now_epoch // 5) * 5)
+        self._window_start_totals = {
+            "packets_observed": 0,
+            "bytes_observed": 0,
+            "flows_created": 0,
+            "flows_scored": 0,
+            "anomalies_detected": 0,
+            "alerts_persisted": 0,
+            "alerts_deduplicated": 0,
+            "drops": 0,
+            "errors": 0,
+            "native_stats_available": False,
+        }
+        self._session_summary = None
+
+    def _collect_current_totals_locked(self) -> dict[str, Any]:
+        """Aggregate cumulative counter snapshots across all pipeline subsystems."""
+        source_metrics = self.packet_source.get_metrics() if self.packet_source else {}
+        flow_metrics = self.flow_builder.get_metrics() if self.flow_builder else {}
+        infer_metrics = self.inference_worker.get_metrics() if self.inference_worker else {}
+
+        packets_observed = int(source_metrics.get("packets_read", source_metrics.get("packets_captured", 0)))
+        bytes_observed = int(source_metrics.get("bytes_read", source_metrics.get("bytes_captured", 0)))
+        flows_created = int(flow_metrics.get("flows_created", 0))
+        flows_scored = int(infer_metrics.get("flows_scored", 0))
+        anomalies_detected = int(infer_metrics.get("anomalies_detected", 0))
+        alerts_persisted = int(infer_metrics.get("alerts_persisted", 0))
+        alerts_deduplicated = int(infer_metrics.get("alerts_deduplicated", 0))
+        packet_drops = int(source_metrics.get("packets_dropped", 0))
+        total_drops = packet_drops + self.flows_queue_dropped
+        total_errors = int(infer_metrics.get("validation_errors", 0)) + int(infer_metrics.get("inference_failures", 0))
+        native_stats_available = bool(source_metrics.get("native_kernel_drops_available", False))
+
+        return {
+            "packets_observed": packets_observed,
+            "bytes_observed": bytes_observed,
+            "flows_created": flows_created,
+            "flows_scored": flows_scored,
+            "anomalies_detected": anomalies_detected,
+            "alerts_persisted": alerts_persisted,
+            "alerts_deduplicated": alerts_deduplicated,
+            "drops": total_drops,
+            "errors": total_errors,
+            "native_stats_available": native_stats_available,
+        }
+
+    def _update_intervals_locked(self, now: float, finalize: bool = False) -> list[dict[str, Any]]:
+        """
+        Advance aligned 5-second UTC windows, sealing completed intervals with counter deltas.
+        Returns the rolling interval history (plus current partial interval if actively running).
+        """
+        if self._current_window_start is None:
+            return list(self._interval_history)
+
+        current_totals = self._collect_current_totals_locked()
+        target_window = int(now // 5) * 5
+
+        # Check if one or more 5s windows completed
+        if target_window > self._current_window_start:
+            delta_pkts = max(0, current_totals["packets_observed"] - self._window_start_totals.get("packets_observed", 0))
+            delta_bytes = max(0, current_totals["bytes_observed"] - self._window_start_totals.get("bytes_observed", 0))
+            delta_fc = max(0, current_totals["flows_created"] - self._window_start_totals.get("flows_created", 0))
+            delta_fs = max(0, current_totals["flows_scored"] - self._window_start_totals.get("flows_scored", 0))
+            delta_anom = max(0, current_totals["anomalies_detected"] - self._window_start_totals.get("anomalies_detected", 0))
+            delta_ap = max(0, current_totals["alerts_persisted"] - self._window_start_totals.get("alerts_persisted", 0))
+            delta_ad = max(0, current_totals["alerts_deduplicated"] - self._window_start_totals.get("alerts_deduplicated", 0))
+            delta_dr = max(0, current_totals["drops"] - self._window_start_totals.get("drops", 0))
+            delta_er = max(0, current_totals["errors"] - self._window_start_totals.get("errors", 0))
+
+            interval_sec = 5.0
+            mbps = round((delta_bytes * 8.0) / (interval_sec * 1_000_000.0), 6)
+            ts_str = datetime.fromtimestamp(self._current_window_start, tz=UTC).isoformat()
+
+            self._interval_history.append({
+                "timestamp": ts_str,
+                "interval_seconds": interval_sec,
+                "packets_captured": delta_pkts,
+                "bytes_captured": delta_bytes,
+                "throughput_mbps": mbps,
+                "flows_created": delta_fc,
+                "flows_scored": delta_fs,
+                "anomalies_detected": delta_anom,
+                "alerts_persisted": delta_ap,
+                "alerts_deduplicated": delta_ad,
+                "drops": delta_dr,
+                "errors": delta_er,
+                "native_stats_available": current_totals["native_stats_available"],
+            })
+
+            # For any intermediate windows if there was a multi-window skip
+            for intermediate_w in range(int(self._current_window_start + 5), target_window, 5):
+                ts_int = datetime.fromtimestamp(intermediate_w, tz=UTC).isoformat()
+                self._interval_history.append({
+                    "timestamp": ts_int,
+                    "interval_seconds": 5.0,
+                    "packets_captured": 0,
+                    "bytes_captured": 0,
+                    "throughput_mbps": 0.0,
+                    "flows_created": 0,
+                    "flows_scored": 0,
+                    "anomalies_detected": 0,
+                    "alerts_persisted": 0,
+                    "alerts_deduplicated": 0,
+                    "drops": 0,
+                    "errors": 0,
+                    "native_stats_available": current_totals["native_stats_available"],
+                })
+
+            self._current_window_start = float(target_window)
+            self._window_start_totals = dict(current_totals)
+
+        if finalize:
+            c_pkts = max(0, current_totals["packets_observed"] - self._window_start_totals.get("packets_observed", 0))
+            c_bytes = max(0, current_totals["bytes_observed"] - self._window_start_totals.get("bytes_observed", 0))
+            c_fc = max(0, current_totals["flows_created"] - self._window_start_totals.get("flows_created", 0))
+            c_fs = max(0, current_totals["flows_scored"] - self._window_start_totals.get("flows_scored", 0))
+            c_anom = max(0, current_totals["anomalies_detected"] - self._window_start_totals.get("anomalies_detected", 0))
+            c_ap = max(0, current_totals["alerts_persisted"] - self._window_start_totals.get("alerts_persisted", 0))
+            c_ad = max(0, current_totals["alerts_deduplicated"] - self._window_start_totals.get("alerts_deduplicated", 0))
+            c_dr = max(0, current_totals["drops"] - self._window_start_totals.get("drops", 0))
+            c_er = max(0, current_totals["errors"] - self._window_start_totals.get("errors", 0))
+
+            elapsed = max(0.1, round(now - self._current_window_start, 2))
+            if c_pkts > 0 or c_bytes > 0 or c_fs > 0 or c_anom > 0 or len(self._interval_history) == 0:
+                mbps = round((c_bytes * 8.0) / (elapsed * 1_000_000.0), 6)
+                ts_str = datetime.fromtimestamp(self._current_window_start, tz=UTC).isoformat()
+                self._interval_history.append({
+                    "timestamp": ts_str,
+                    "interval_seconds": elapsed,
+                    "packets_captured": c_pkts,
+                    "bytes_captured": c_bytes,
+                    "throughput_mbps": mbps,
+                    "flows_created": c_fc,
+                    "flows_scored": c_fs,
+                    "anomalies_detected": c_anom,
+                    "alerts_persisted": c_ap,
+                    "alerts_deduplicated": c_ad,
+                    "drops": c_dr,
+                    "errors": c_er,
+                    "native_stats_available": current_totals["native_stats_available"],
+                })
+                self._window_start_totals = dict(current_totals)
+            return list(self._interval_history)
+
+        result = list(self._interval_history)
+        if self.state in (WorkerState.RUNNING, WorkerState.STARTING, WorkerState.PAUSED):
+            elapsed = max(0.1, round(now - self._current_window_start, 2))
+            c_pkts = max(0, current_totals["packets_observed"] - self._window_start_totals.get("packets_observed", 0))
+            c_bytes = max(0, current_totals["bytes_observed"] - self._window_start_totals.get("bytes_observed", 0))
+            c_fc = max(0, current_totals["flows_created"] - self._window_start_totals.get("flows_created", 0))
+            c_fs = max(0, current_totals["flows_scored"] - self._window_start_totals.get("flows_scored", 0))
+            c_anom = max(0, current_totals["anomalies_detected"] - self._window_start_totals.get("anomalies_detected", 0))
+            c_ap = max(0, current_totals["alerts_persisted"] - self._window_start_totals.get("alerts_persisted", 0))
+            c_ad = max(0, current_totals["alerts_deduplicated"] - self._window_start_totals.get("alerts_deduplicated", 0))
+            c_dr = max(0, current_totals["drops"] - self._window_start_totals.get("drops", 0))
+            c_er = max(0, current_totals["errors"] - self._window_start_totals.get("errors", 0))
+            cur_mbps = round((c_bytes * 8.0) / (elapsed * 1_000_000.0), 6)
+            cur_ts = datetime.fromtimestamp(self._current_window_start, tz=UTC).isoformat()
+
+            result.append({
+                "timestamp": cur_ts,
+                "interval_seconds": elapsed,
+                "packets_captured": c_pkts,
+                "bytes_captured": c_bytes,
+                "throughput_mbps": cur_mbps,
+                "flows_created": c_fc,
+                "flows_scored": c_fs,
+                "anomalies_detected": c_anom,
+                "alerts_persisted": c_ap,
+                "alerts_deduplicated": c_ad,
+                "drops": c_dr,
+                "errors": c_er,
+                "native_stats_available": current_totals["native_stats_available"],
+            })
+
+        return result
+
+    def _finalize_session_summary_locked(self) -> None:
+        """Freeze final session metrics and mark session summary as HISTORICAL."""
+        source_metrics = self.packet_source.get_metrics() if self.packet_source else {}
+        infer_metrics = self.inference_worker.get_metrics() if self.inference_worker else {}
+        total_drops = int(source_metrics.get("packets_dropped", 0)) + self.flows_queue_dropped
+        total_errors = int(infer_metrics.get("validation_errors", 0)) + int(infer_metrics.get("inference_failures", 0))
+
+        self._session_summary = {
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": _utcnow().isoformat(),
+            "is_historical": True,
+            "total_packets": int(source_metrics.get("packets_read", source_metrics.get("packets_captured", 0))),
+            "total_bytes": int(source_metrics.get("bytes_read", source_metrics.get("bytes_captured", 0))),
+            "total_flows_scored": int(infer_metrics.get("flows_scored", 0)),
+            "total_anomalies": int(infer_metrics.get("anomalies_detected", 0)),
+            "total_alerts_persisted": int(infer_metrics.get("alerts_persisted", 0)),
+            "total_alerts_deduplicated": int(infer_metrics.get("alerts_deduplicated", 0)),
+            "mean_inference_latency_ms": infer_metrics.get("mean_inference_latency_ms", 0.0),
+            "latency_p50_ms": infer_metrics.get("latency_p50_ms", 0.0),
+            "latency_p95_ms": infer_metrics.get("latency_p95_ms", 0.0),
+            "latency_p99_ms": infer_metrics.get("latency_p99_ms", 0.0),
+            "total_drops": total_drops,
+            "total_errors": total_errors,
+        }
+
+    def _get_current_session_summary_locked(self) -> dict[str, Any] | None:
+        """Return frozen historical summary or live cumulative summary of current session."""
+        if self._session_summary and self._session_summary.get("is_historical"):
+            return self._session_summary
+
+        if self.state not in (WorkerState.RUNNING, WorkerState.STARTING, WorkerState.PAUSED):
+            return self._session_summary
+
+        source_metrics = self.packet_source.get_metrics() if self.packet_source else {}
+        infer_metrics = self.inference_worker.get_metrics() if self.inference_worker else {}
+        total_drops = int(source_metrics.get("packets_dropped", 0)) + self.flows_queue_dropped
+        total_errors = int(infer_metrics.get("validation_errors", 0)) + int(infer_metrics.get("inference_failures", 0))
+
+        return {
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": None,
+            "is_historical": False,
+            "total_packets": int(source_metrics.get("packets_read", source_metrics.get("packets_captured", 0))),
+            "total_bytes": int(source_metrics.get("bytes_read", source_metrics.get("bytes_captured", 0))),
+            "total_flows_scored": int(infer_metrics.get("flows_scored", 0)),
+            "total_anomalies": int(infer_metrics.get("anomalies_detected", 0)),
+            "total_alerts_persisted": int(infer_metrics.get("alerts_persisted", 0)),
+            "total_alerts_deduplicated": int(infer_metrics.get("alerts_deduplicated", 0)),
+            "mean_inference_latency_ms": infer_metrics.get("mean_inference_latency_ms", 0.0),
+            "latency_p50_ms": infer_metrics.get("latency_p50_ms", 0.0),
+            "latency_p95_ms": infer_metrics.get("latency_p95_ms", 0.0),
+            "latency_p99_ms": infer_metrics.get("latency_p99_ms", 0.0),
+            "total_drops": total_drops,
+            "total_errors": total_errors,
+        }
 
     def start_pcap_replay(
         self,
@@ -163,6 +408,8 @@ class RealTimeDetectionManager:
                 )
                 self._pipeline_thread.start()
                 self.state = WorkerState.RUNNING
+                with self._interval_lock:
+                    self._init_session_telemetry_locked()
 
                 logger.info("Real-time pipeline started in PCAP_REPLAY mode: %s", pcap_file.name)
                 return self.get_status()
@@ -244,6 +491,8 @@ class RealTimeDetectionManager:
                 )
                 self._pipeline_thread.start()
                 self.state = WorkerState.RUNNING
+                with self._interval_lock:
+                    self._init_session_telemetry_locked()
 
                 logger.info("Real-time pipeline started in LIVE_CAPTURE mode on: %s", interface)
                 return self.get_status()
@@ -330,6 +579,10 @@ class RealTimeDetectionManager:
             elif self.state != WorkerState.FAILED:
                 self.state = WorkerState.STOPPED
 
+            with self._interval_lock:
+                self._update_intervals_locked(time.time(), finalize=True)
+                self._finalize_session_summary_locked()
+
             logger.info("Real-time pipeline stopped. State: %s", self.state.value)
             return self.get_status()
 
@@ -384,6 +637,9 @@ class RealTimeDetectionManager:
                 if self.inference_worker:
                     self.inference_worker.stop(drain_timeout=5.0)
                 self.state = WorkerState.COMPLETED
+                with self._interval_lock:
+                    self._update_intervals_locked(time.time(), finalize=True)
+                    self._finalize_session_summary_locked()
                 logger.info("PCAP replay finished and worker drained successfully.")
 
     def get_status(self) -> dict[str, Any]:
@@ -398,6 +654,10 @@ class RealTimeDetectionManager:
         start_ts = self.start_time.timestamp() if self.start_time else now
         uptime = max(0.0, now - start_ts) if self.state in (WorkerState.RUNNING, WorkerState.PAUSED) else 0.0
 
+        with self._interval_lock:
+            intervals = self._update_intervals_locked(now)
+            session_summary = self._get_current_session_summary_locked()
+
         # Model and checksum status
         driver_ok, driver_msg = is_capture_driver_available()
 
@@ -411,6 +671,7 @@ class RealTimeDetectionManager:
             "last_packet_timestamp": self.last_packet_timestamp,
             # Operational Counters
             "packets_observed": source_metrics.get("packets_read", source_metrics.get("packets_captured", 0)),
+            "bytes_observed": source_metrics.get("bytes_read", source_metrics.get("bytes_captured", 0)),
             "packets_dropped": source_metrics.get("packets_dropped", 0),
             "malformed_packets_rejected": source_metrics.get("malformed_packets", 0),
             "truncated_packets_rejected": source_metrics.get("truncated_packets", 0),
@@ -461,6 +722,9 @@ class RealTimeDetectionManager:
             "source_provenance": (
                 self.capture_mode.value if self.capture_mode else "NONE"
             ),
+            # Aligned 5-Second Telemetry & Session Summary
+            "intervals": intervals,
+            "session_summary": session_summary,
             # Driver & Integrity
             "driver_available": driver_ok,
             "driver_message": driver_msg,
@@ -473,4 +737,17 @@ class RealTimeDetectionManager:
             },
             # Real-time event stream (latest 50 events for UI)
             "recent_events": recent[-50:],
+        }
+
+    def get_telemetry(self) -> dict[str, Any]:
+        """Return aligned 5-second interval history and session summary."""
+        status = self.get_status()
+        return {
+            "worker_state": status.get("worker_state"),
+            "capture_mode": status.get("capture_mode"),
+            "selected_target": status.get("selected_target"),
+            "bytes_observed": status.get("bytes_observed", 0),
+            "packets_observed": status.get("packets_observed", 0),
+            "intervals": status.get("intervals", []),
+            "session_summary": status.get("session_summary"),
         }

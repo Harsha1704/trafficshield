@@ -17,7 +17,18 @@ import {
   HardDrive,
   Network,
   Info,
+  TrendingUp,
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+} from 'recharts';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { SeverityBadge, Badge } from '../components/common/Badge';
@@ -25,10 +36,19 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { api, ApiClientError } from '../services/api';
 import type {
   CaptureStatusResponse,
+  IntervalTelemetryItem,
   NetworkInterfaceItem,
   SamplePcapItem,
   StreamingEventRecord,
 } from '../types/api';
+
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}
 
 export const LiveDetectionPage: React.FC = () => {
   // Capture session status
@@ -226,6 +246,14 @@ export const LiveDetectionPage: React.FC = () => {
           </span>
         );
       default:
+        if (status?.session_summary?.is_historical) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+              <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+              HISTORICAL
+            </span>
+          );
+        }
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
             <span className="w-2 h-2 rounded-full bg-slate-500"></span>
@@ -234,6 +262,22 @@ export const LiveDetectionPage: React.FC = () => {
         );
     }
   };
+
+  const chartData = (status?.intervals || []).slice(-12).map((item) => {
+    const timeStr = item.timestamp.includes('T')
+      ? item.timestamp.split('T')[1].substring(0, 8)
+      : item.timestamp.substring(11, 19);
+    const flowsPerSec = item.interval_seconds > 0 ? Number((item.flows_scored / item.interval_seconds).toFixed(2)) : 0;
+    const anomPerSec = item.interval_seconds > 0 ? Number((item.anomalies_detected / item.interval_seconds).toFixed(2)) : 0;
+    return {
+      time: timeStr,
+      mbps: Number(item.throughput_mbps.toFixed(4)),
+      flowsPerSec,
+      anomPerSec,
+      packets: item.packets_captured,
+      drops: item.drops,
+    };
+  });
 
   if (loading) {
     return (
@@ -565,6 +609,342 @@ export const LiveDetectionPage: React.FC = () => {
           <span className="font-semibold text-slate-200">
             {status?.selected_target || 'None Selected'}
           </span>
+        </div>
+      </div>
+
+      {/* Live Telemetry & Anomaly Correlation Hub */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Rolling Live Traffic & Anomaly Correlation Chart */}
+        <Card
+          className="lg:col-span-2 border border-slate-800 bg-[#090d16]"
+          title="Live Traffic & Anomaly Correlation Stream (Rolling Timeline)"
+          subtitle="Real-time post-BPF captured throughput (Mbps) correlated with model scoring rate and anomaly flags/sec"
+        >
+          {chartData.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center text-xs font-mono text-slate-500">
+              <Activity className="w-8 h-8 text-slate-600 mb-2 animate-pulse" />
+              <span>No telemetry intervals recorded yet.</span>
+              <span className="text-[11px] text-slate-600 mt-0.5">Start capture to observe incoming throughput and anomaly correlation.</span>
+            </div>
+          ) : (
+            <div className="h-64 w-full font-mono text-xs mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <XAxis dataKey="time" stroke="#64748b" fontSize={10} tickLine={false} />
+                  <YAxis
+                    yAxisId="left"
+                    orientation="left"
+                    stroke="#06b6d4"
+                    fontSize={10}
+                    tickLine={false}
+                    unit=" Mbps"
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#a855f7"
+                    fontSize={10}
+                    tickLine={false}
+                    unit="/s"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#090d16',
+                      borderColor: '#1e293b',
+                      borderRadius: '8px',
+                      color: '#f8fafc',
+                      fontSize: '11px',
+                    }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="mbps"
+                    name="Captured Throughput (Mbps)"
+                    stroke="#06b6d4"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="flowsPerSec"
+                    name="Scored Flows / sec"
+                    stroke="#a855f7"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="anomPerSec"
+                    name="Anomaly Flags / sec"
+                    stroke="#f43f5e"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+
+        {/* Capture Session Summary Card */}
+        <Card
+          className="border border-slate-800 bg-[#090d16]"
+          title="Capture Session Summary"
+          subtitle="Cumulative session totals and SLA latency percentiles"
+          badge={
+            <Badge variant={status?.session_summary?.is_historical ? 'indigo' : isActive ? 'emerald' : 'slate'}>
+              {status?.session_summary?.is_historical ? 'HISTORICAL' : isActive ? 'ACTIVE' : 'IDLE'}
+            </Badge>
+          }
+        >
+          <div className="space-y-2.5 text-xs font-mono mt-1">
+            <div className="flex items-center justify-between py-1 border-b border-slate-800/60">
+              <span className="text-slate-400">Session Span:</span>
+              <span className="text-slate-200">
+                {status?.session_summary?.start_time
+                  ? `${status.session_summary.start_time.substring(11, 19)} UTC`
+                  : 'N/A'}{' '}
+                &rarr;{' '}
+                {status?.session_summary?.end_time
+                  ? `${status.session_summary.end_time.substring(11, 19)} UTC`
+                  : isActive
+                  ? 'Live'
+                  : 'N/A'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-slate-800/60">
+              <span className="text-slate-400">Total Packets / Bytes:</span>
+              <span className="text-white font-semibold">
+                {(status?.session_summary?.total_packets ?? status?.packets_observed ?? 0).toLocaleString()} pkts /{' '}
+                {formatBytes(status?.session_summary?.total_bytes ?? status?.bytes_observed ?? 0)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-slate-800/60">
+              <span className="text-slate-400">Flows Scored:</span>
+              <span className="text-cyan-300 font-semibold">
+                {(status?.session_summary?.total_flows_scored ?? status?.flows_scored ?? 0).toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-slate-800/60">
+              <span className="text-slate-400">Total Anomalies:</span>
+              <span className="text-rose-400 font-bold">
+                {(status?.session_summary?.total_anomalies ?? status?.anomalies_detected ?? 0).toLocaleString()}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-slate-800/60">
+              <span className="text-slate-400">Alerts Persisted / Dedup:</span>
+              <span className="text-slate-200">
+                <span className="text-cyan-300 font-semibold">
+                  {status?.session_summary?.total_alerts_persisted ?? status?.alerts_persisted ?? 0}
+                </span>{' '}
+                /{' '}
+                <span className="text-slate-400">
+                  {status?.session_summary?.total_alerts_deduplicated ?? status?.alerts_deduplicated ?? 0}
+                </span>
+              </span>
+            </div>
+            <div className="py-1 border-b border-slate-800/60">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-slate-400">Latency Percentiles:</span>
+                <span className="text-amber-300 font-semibold">
+                  Mean {(status?.session_summary?.mean_inference_latency_ms ?? status?.mean_inference_latency_ms ?? 0).toFixed(1)} ms
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-[11px] text-center">
+                <div className="p-1 rounded bg-slate-900 border border-slate-800">
+                  <div className="text-slate-500">p50</div>
+                  <div className="text-slate-300 font-bold">{status?.session_summary?.latency_p50_ms ?? status?.latency_p50_ms ?? 0}ms</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900 border border-slate-800">
+                  <div className="text-slate-500">p95</div>
+                  <div className="text-slate-300 font-bold">{status?.session_summary?.latency_p95_ms ?? status?.latency_p95_ms ?? 0}ms</div>
+                </div>
+                <div className="p-1 rounded bg-slate-900 border border-slate-800">
+                  <div className="text-slate-500">p99</div>
+                  <div className="text-amber-400 font-bold">{status?.session_summary?.latency_p99_ms ?? status?.latency_p99_ms ?? 0}ms</div>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-1 text-[11px]">
+              <span className="text-slate-400">Drops / Errors:</span>
+              <span className="text-slate-300">
+                Drops: <span className="font-semibold">{status?.session_summary?.total_drops ?? status?.packets_dropped ?? 0}</span> |{' '}
+                Errors: <span className="font-semibold text-rose-400">{status?.session_summary?.total_errors ?? 0}</span>
+              </span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* 5-Second Interval Telemetry Ledger */}
+      <Card
+        className="border border-slate-800 bg-[#090d16]"
+        title="Aligned 5-Second Interval Telemetry Ledger"
+        subtitle="Counter differences per aligned 5-second UTC interval — strictly decoupling interval deltas from cumulative totals"
+      >
+        {status?.intervals && status.intervals.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider font-mono text-[11px]">
+                  <th className="py-2.5 px-3">Timestamp (UTC)</th>
+                  <th className="py-2.5 px-3">Captured Packets</th>
+                  <th className="py-2.5 px-3">Captured Mbps</th>
+                  <th className="py-2.5 px-3">New Flows</th>
+                  <th className="py-2.5 px-3">Scored Flows</th>
+                  <th className="py-2.5 px-3">New Anomalies</th>
+                  <th className="py-2.5 px-3">New Alerts</th>
+                  <th className="py-2.5 px-3">Drops</th>
+                  <th className="py-2.5 px-3">Errors</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 font-mono text-xs">
+                {status.intervals
+                  .slice()
+                  .reverse()
+                  .slice(0, 15)
+                  .map((interval: IntervalTelemetryItem, idx: number) => {
+                    const timePart = interval.timestamp.includes('T')
+                      ? interval.timestamp.split('T')[1].substring(0, 8)
+                      : interval.timestamp.substring(11, 19);
+                    return (
+                      <tr
+                        key={`${interval.timestamp}-${idx}`}
+                        className={`hover:bg-slate-800/30 transition-colors ${
+                          interval.anomalies_detected > 0 ? 'bg-rose-950/10' : ''
+                        }`}
+                      >
+                        <td className="py-2 px-3 text-cyan-300 font-semibold whitespace-nowrap">
+                          {timePart} UTC
+                        </td>
+                        <td className="py-2 px-3 text-slate-200">
+                          {interval.packets_captured.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 font-semibold text-white">
+                          {interval.throughput_mbps.toFixed(4)} <span className="text-[10px] text-slate-500 font-normal">Mbps</span>
+                        </td>
+                        <td className="py-2 px-3 text-slate-300">
+                          {interval.flows_created}
+                        </td>
+                        <td className="py-2 px-3 text-indigo-300 font-semibold">
+                          {interval.flows_scored}
+                        </td>
+                        <td className="py-2 px-3">
+                          {interval.anomalies_detected > 0 ? (
+                            <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
+                              +{interval.anomalies_detected}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">0</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-slate-300">
+                          <span className="text-cyan-300 font-semibold">+{interval.alerts_persisted}</span>
+                          {interval.alerts_deduplicated > 0 && (
+                            <span className="text-slate-500 text-[10px] ml-1">({interval.alerts_deduplicated} dedup)</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          {interval.drops > 0 ? (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">
+                              {interval.drops}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">0</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          {interval.errors > 0 ? (
+                            <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-semibold">
+                              {interval.errors}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">0</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="py-8 text-center text-slate-500 text-xs font-mono">
+            No interval slices recorded yet. Interval metrics will stream every 5 seconds once capture is initiated.
+          </div>
+        )}
+      </Card>
+
+      {/* Network Protocol & Hardware Throughput Demarcation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Post-BPF vs Task Manager Discrepancy Card */}
+        <Card className="border border-slate-800 bg-[#090d16]">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80 text-xs font-semibold text-cyan-300 uppercase tracking-wider">
+            <Info className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span>Post-BPF Throughput vs. Windows Task Manager</span>
+          </div>
+          <div className="mt-3 text-xs text-slate-300 space-y-2 leading-relaxed">
+            <p>
+              <strong>Measurement Demarcation:</strong> Windows Task Manager Wi-Fi throughput reflects the total raw physical network adapter payload across all hardware queues.
+            </p>
+            <p className="text-slate-400 text-[11px]">
+              In contrast, TrafficShield measures only packets that pass the kernel capture filter (<code className="text-cyan-300">ip</code>) and reach user space. Task Manager counters incorporate non-IPv4 traffic (ARP, link-local IPv6, LLDP), host OS tunnels, multicast discovery, and retransmitted frames that do not form valid IPv4 flows.
+            </p>
+            <div className="p-2 rounded bg-slate-900/80 border border-slate-800 text-[11px] text-cyan-300/90 font-mono">
+              Captured Throughput (Mbps) = (Interval IPv4 Bytes &times; 8) / (5.0s &times; 1,000,000)
+            </div>
+          </div>
+        </Card>
+
+        {/* Link-Local Multicast Out-of-Distribution Diagnostics */}
+        <Card className="border border-slate-800 bg-[#090d16]">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80 text-xs font-semibold text-amber-300 uppercase tracking-wider">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Multicast Out-of-Distribution Diagnosis (mDNS / SSDP)</span>
+          </div>
+          <div className="mt-3 text-xs text-slate-300 space-y-2 leading-relaxed">
+            <p>
+              <strong>Why Background LAN Broadcasts Trigger Anomalies:</strong> Protocols like mDNS (<code className="text-amber-300">224.0.0.251:5353</code>) and SSDP (<code className="text-amber-300">239.255.255.250:1900</code>) exhibit statistical properties outside the UNSW-NB15 benchmark training distribution.
+            </p>
+            <ul className="text-slate-400 text-[11px] list-disc list-inside space-y-1">
+              <li><strong>RFC 6762 Multicast TTL:</strong> Mandates <code className="text-slate-300">sttl=255</code> to restrict packets to the local link. In the benchmark training set, <code className="text-slate-300">sttl &ge; 254</code> indicates synthetic attack tools.</li>
+              <li><strong>Zero Window &amp; Burst Load:</strong> UDP transport lacks flow control (<code className="text-slate-300">swin=0</code>), and microsecond durations cause elevated instantaneous <code className="text-slate-300">sload</code>.</li>
+            </ul>
+          </div>
+        </Card>
+      </div>
+
+      {/* 4-Tier Security Triage Framework Banner */}
+      <div className="p-4 rounded-lg bg-slate-900/80 border border-slate-800 text-xs">
+        <h4 className="font-semibold text-slate-200 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-2">
+          <ShieldAlert className="w-4 h-4 text-rose-400" />
+          Strict 4-Tier Anomaly Triage Framework
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[11px]">
+          <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
+            <div className="font-bold text-rose-300 mb-1">1. Model Anomaly</div>
+            <p className="text-slate-400">Statistical pattern deviation exceeding threshold (&tau;=0.50). Identifies out-of-distribution traffic profile.</p>
+          </div>
+          <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
+            <div className="font-bold text-amber-300 mb-1">2. Benign False Positive</div>
+            <p className="text-slate-400">Harmless protocol (e.g. mDNS/SSDP) exhibiting high TTL or burst rate not seen in unicast training data.</p>
+          </div>
+          <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
+            <div className="font-bold text-emerald-300 mb-1">3. Confirmed Attack</div>
+            <p className="text-slate-400">Analyst-verified malicious intrusion or denial-of-service, supported by ground truth and forensic corroboration.</p>
+          </div>
+          <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
+            <div className="font-bold text-slate-300 mb-1">4. Uninvestigated Event</div>
+            <p className="text-slate-400">Candidate scored flow queued for security operations triage and disposition verification.</p>
+          </div>
         </div>
       </div>
 

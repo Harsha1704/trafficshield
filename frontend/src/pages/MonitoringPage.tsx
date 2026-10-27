@@ -63,7 +63,7 @@ export const MonitoringPage: React.FC = () => {
   const fetchMonitoringData = useCallback(async () => {
     setError(null);
     try {
-      const [st, dr, al, hist, reg, fb] = await Promise.all([
+      const [st, dr, al, hist, reg, fb] = await Promise.allSettled([
         api.getMonitoringStatus(),
         api.getDriftReport(),
         api.listMonitoringAlerts({ page: 1, per_page: 15 }),
@@ -72,14 +72,20 @@ export const MonitoringPage: React.FC = () => {
         api.getFeedbackMetrics(),
       ]);
 
-      setStatusData(st);
-      setDriftReport(dr);
-      setAlerts(al.data);
-      setHistory(hist);
-      setRegistry(reg);
-      setFeedbackEval(fb);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load monitoring telemetry.');
+      if (st.status === 'fulfilled') setStatusData(st.value);
+      if (dr.status === 'fulfilled') setDriftReport(dr.value);
+      if (al.status === 'fulfilled') setAlerts(al.value.data);
+      if (hist.status === 'fulfilled') setHistory(hist.value);
+      if (reg.status === 'fulfilled') setRegistry(reg.value);
+      if (fb.status === 'fulfilled') setFeedbackEval(fb.value);
+
+      const rejected = [st, dr, al, hist, reg, fb].find((r) => r.status === 'rejected') as PromiseRejectedResult | undefined;
+      if (rejected && !st.status && !dr.status) {
+        const reason = rejected.reason;
+        setError(reason?.message || 'Failed to load monitoring telemetry.');
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load monitoring telemetry.');
     } finally {
       setLoading(false);
       setRefreshing(false);

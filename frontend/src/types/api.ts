@@ -354,6 +354,40 @@ export interface StreamingEventRecord {
   is_provisional: boolean;
 }
 
+export interface IntervalTelemetryItem {
+  timestamp: string;
+  interval_seconds: number;
+  packets_captured: number;
+  bytes_captured: number;
+  throughput_mbps: number;
+  flows_created: number;
+  flows_scored: number;
+  anomalies_detected: number;
+  alerts_persisted: number;
+  alerts_deduplicated: number;
+  drops: number;
+  errors: number;
+  native_stats_available: boolean;
+}
+
+export interface CaptureSessionSummary {
+  start_time: string | null;
+  end_time: string | null;
+  is_historical: boolean;
+  total_packets: number;
+  total_bytes: number;
+  total_flows_scored: number;
+  total_anomalies: number;
+  total_alerts_persisted: number;
+  total_alerts_deduplicated: number;
+  mean_inference_latency_ms: number;
+  latency_p50_ms: number;
+  latency_p95_ms: number;
+  latency_p99_ms: number;
+  total_drops: number;
+  total_errors: number;
+}
+
 export interface CaptureStatusResponse {
   worker_state: WorkerState;
   capture_mode: CaptureMode;
@@ -363,6 +397,7 @@ export interface CaptureStatusResponse {
   start_time: string | null;
   last_packet_timestamp: number | null;
   packets_observed: number;
+  bytes_observed?: number;
   packets_dropped: number;
   active_flows_count: number;
   flows_created: number;
@@ -409,6 +444,8 @@ export interface CaptureStatusResponse {
     preprocessor_sha256: string;
     checksum_verified: boolean;
   };
+  intervals?: IntervalTelemetryItem[];
+  session_summary?: CaptureSessionSummary | null;
   recent_events: StreamingEventRecord[];
 }
 
@@ -416,4 +453,131 @@ export interface SamplePcapItem {
   filename: string;
   path: string;
   size_bytes: number;
+}
+
+export interface ConfusionMatrixData {
+  tn: number;
+  fp: number;
+  fn: number;
+  tp: number;
+  total: number;
+  tn_pct: number;
+  fp_pct: number;
+  fn_pct: number;
+  tp_pct: number;
+}
+
+export interface MetricCardData {
+  accuracy: number;
+  precision: number;
+  recall: number;
+  specificity: number;
+  f1_score: number;
+  balanced_accuracy: number;
+  roc_auc: number;
+  pr_auc: number;
+  false_positive_rate: number;
+  inference_latency_us: number;
+}
+
+export interface FeatureContractItem {
+  name: string;
+  type: string;
+  role: string;
+  timing: string;
+  desc: string;
+}
+
+export interface AttackCategoryMetricItem {
+  category: string;
+  test_flows: number;
+  detected_tp: number;
+  missed_fn: number;
+  recall_rate: number;
+  status: string;
+  notes: string;
+}
+
+export interface CandidateModelComparisonItem {
+  model_name: string;
+  model_type: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  specificity: number;
+  fpr: number;
+  f1_score: number;
+  balanced_accuracy: number;
+  roc_auc: number;
+  pr_auc: number;
+  latency_us: number;
+  flagged_pct: number;
+  is_production: boolean;
+  status: string;
+}
+
+export interface ModelEvaluationResponse {
+  production_model: {
+    model_name: string;
+    model_version: string;
+    algorithm: string;
+    family: string;
+    framework: string;
+    decision_threshold: number;
+    status: string;
+    feature_count: number;
+    required_features: string[];
+    engineered_features: string[];
+    feature_details: FeatureContractItem[];
+    artifact_integrity: {
+      verified: boolean;
+      detector_sha256: string;
+      preprocessor_sha256: string;
+      metadata_sha256: string;
+    };
+  };
+  evaluation_provenance: {
+    dataset_name: string;
+    split_description: string;
+    separation_type: string;
+    total_test_flows: number;
+    normal_flows: number;
+    normal_pct: number;
+    attack_flows: number;
+    attack_pct: number;
+    audit_milestone: string;
+    verification_status: string;
+    evaluation_date: string;
+  };
+  operational_metrics: MetricCardData;
+  confusion_matrix: ConfusionMatrixData;
+  optimal_tournament_metrics: {
+    threshold: number;
+    accuracy: number;
+    precision: number;
+    recall: number;
+    specificity: number;
+    f1_score: number;
+    balanced_accuracy: number;
+    roc_auc: number;
+    confusion_matrix: { tn: number; fp: number; fn: number; tp: number };
+  };
+  temporal_holdout_metrics: {
+    split_description: string;
+    total_flows: number;
+    accuracy: number;
+    recall: number;
+    precision: number;
+    specificity: number;
+    f1_score: number;
+    confusion_matrix: { tn: number; fp: number; fn: number; tp: number };
+  };
+  category_metrics: AttackCategoryMetricItem[];
+  comparison_models: CandidateModelComparisonItem[];
+  methodology_and_limitations: {
+    causal_policy: string;
+    unidirectional_horizon: string;
+    impossibility_of_100_percent: string[];
+    cross_dataset_boundaries: string[];
+  };
 }

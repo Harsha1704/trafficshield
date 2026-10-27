@@ -56,10 +56,16 @@ datasets/canonical/
 *.csv.gz
 *.nfcapd
 
-# Model artifacts — never commit large binaries
-artifacts/
+# Model artifacts — never commit large binaries or untracked runs
+artifacts/*
+!artifacts/models/
+artifacts/models/*
+!artifacts/models/production_detector.joblib
+!artifacts/models/production_preprocessor.joblib
+!artifacts/models/production_detector.json
 *.pkl
 *.joblib
+!artifacts/models/*.joblib
 *.pt
 *.pth
 *.onnx

@@ -8,6 +8,7 @@ import type {
   CaptureStatusResponse,
   DriftReportResponse,
   HistoricalBatchMetricItem,
+  ModelEvaluationResponse,
   ModelInfoResponse,
   ModelRegistryResponse,
   MonitoringAlertItem,
@@ -33,6 +34,63 @@ export function setApiBaseUrl(url: string): void {
   localStorage.setItem('trafficshield_api_url', url);
 }
 
+let onUnauthorizedCallback: (() => void) | null = null;
+
+export function setOnUnauthorizedCallback(cb: (() => void) | null): void {
+  onUnauthorizedCallback = cb;
+}
+
+export function getStoredToken(): string | null {
+  try {
+    return localStorage.getItem('trafficshield_session_token') || sessionStorage.getItem('trafficshield_session_token');
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem('trafficshield_session_token', token);
+      sessionStorage.setItem('trafficshield_session_token', token);
+    } else {
+      localStorage.removeItem('trafficshield_session_token');
+      sessionStorage.removeItem('trafficshield_session_token');
+    }
+  } catch {
+    // Ignore storage exceptions
+  }
+}
+
+export interface AuthUserInfo {
+  id: string;
+  username: string;
+  role: string;
+}
+
+export function getStoredUser(): AuthUserInfo | null {
+  try {
+    const raw = localStorage.getItem('trafficshield_user') || sessionStorage.getItem('trafficshield_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUser(user: AuthUserInfo | null): void {
+  try {
+    if (user) {
+      localStorage.setItem('trafficshield_user', JSON.stringify(user));
+      sessionStorage.setItem('trafficshield_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('trafficshield_user');
+      sessionStorage.removeItem('trafficshield_user');
+    }
+  } catch {
+    // Ignore storage exceptions
+  }
+}
+
 export class ApiClientError extends Error {
   code: string;
   status: number;
@@ -51,12 +109,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   const baseUrl = getApiBaseUrl().replace(/\/$/, '');
   const url = `${baseUrl}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 
-  let authToken: string | null = null;
-  try {
-    authToken = sessionStorage.getItem('trafficshield_session_token');
-  } catch {
-    // SessionStorage may be restricted in sandboxes
-  }
+  const authToken = getStoredToken();
 
   const defaultHeaders: HeadersInit = {
     'Accept': 'application/json',
@@ -81,6 +134,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   try {
     const res = await fetch(url, config);
+
+    if (res.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/logout')) {
+      setStoredToken(null);
+      setStoredUser(null);
+      if (onUnauthorizedCallback) {
+        onUnauthorizedCallback();
+      }
+    }
     let data: unknown;
     try {
       data = await res.json();
@@ -122,6 +183,11 @@ export const api = {
 
   async getModelInfo(): Promise<ModelInfoResponse> {
     const res = await request<ApiResponse<ModelInfoResponse>>('/model/info');
+    return res.data;
+  },
+
+  async getModelEvaluation(): Promise<ModelEvaluationResponse> {
+    const res = await request<ApiResponse<ModelEvaluationResponse>>('/model/evaluation');
     return res.data;
   },
 
@@ -297,28 +363,31 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
-    try {
-      if (res.data?.token) {
-        sessionStorage.setItem('trafficshield_session_token', res.data.token);
-      }
-    } catch {
-      // Ignore sessionStorage exceptions
+    if (res.data?.token) {
+      setStoredToken(res.data.token);
+    }
+    if (res.data?.user) {
+      setStoredUser(res.data.user);
     }
     return res.data;
   },
 
   async logout(): Promise<void> {
+    setStoredToken(null);
+    setStoredUser(null);
     try {
-      sessionStorage.removeItem('trafficshield_session_token');
+      await request<ApiResponse<any>>('/auth/logout', { method: 'POST' });
     } catch {
-      // Ignore
+      // Ignore network errors on logout
     }
-    await request<ApiResponse<any>>('/auth/logout', { method: 'POST' });
   },
 
   async getMe(): Promise<{ id: string; username: string; role: string } | null> {
     try {
       const res = await request<ApiResponse<{ id: string; username: string; role: string }>>('/auth/me');
+      if (res.data) {
+        setStoredUser(res.data);
+      }
       return res.data;
     } catch {
       return null;
@@ -328,6 +397,19 @@ export const api = {
   // Real-Time Capture & PCAP Replay (Milestone 14)
   async getCaptureStatus(): Promise<CaptureStatusResponse> {
     const res = await request<ApiResponse<CaptureStatusResponse>>('/capture/status');
+    return res.data;
+  },
+
+  async getCaptureTelemetry(): Promise<{
+    worker_state: string;
+    capture_mode: string;
+    selected_target: string | null;
+    bytes_observed: number;
+    packets_observed: number;
+    intervals: any[];
+    session_summary: any;
+  }> {
+    const res = await request<ApiResponse<any>>('/capture/telemetry');
     return res.data;
   },
 

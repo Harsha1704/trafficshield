@@ -1,19 +1,31 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Sidebar, type NavTab } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
+import { LoginPage } from './pages/LoginPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { TrafficAnalysisPage } from './pages/TrafficAnalysisPage';
 import { LiveDetectionPage } from './pages/LiveDetectionPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { FlowInspectorPage } from './pages/FlowInspectorPage';
+import { ModelPerformancePage } from './pages/ModelPerformancePage';
 import { ModelIntelligencePage } from './pages/ModelIntelligencePage';
 import { MonitoringPage } from './pages/MonitoringPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { api } from './services/api';
+import {
+  api,
+  getStoredToken,
+  getStoredUser,
+  setOnUnauthorizedCallback,
+  type AuthUserInfo,
+} from './services/api';
 import type { AlertStats, ModelInfoResponse, SecurityAlert } from './types/api';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
 
 export function App() {
+  const [currentUser, setCurrentUser] = useState<AuthUserInfo | null>(getStoredUser());
+  const [authChecking, setAuthChecking] = useState<boolean>(true);
+
   const [activeTab, setActiveTab] = useState<NavTab>('overview');
   const [collapsed, setCollapsed] = useState<boolean>(false);
 
@@ -38,6 +50,36 @@ export function App() {
 
   // Selected Alert for Investigation Modal Drawer
   const [selectedAlert, setSelectedAlert] = useState<SecurityAlert | null>(null);
+
+  // Set up unauthorized listener and verify active token session on startup
+  useEffect(() => {
+    setOnUnauthorizedCallback(() => {
+      setCurrentUser(null);
+    });
+
+    const verifyActiveSession = async () => {
+      const token = getStoredToken();
+      if (!token) {
+        setCurrentUser(null);
+        setAuthChecking(false);
+        return;
+      }
+      try {
+        const me = await api.getMe();
+        if (me) {
+          setCurrentUser(me);
+        } else {
+          setCurrentUser(null);
+        }
+      } catch {
+        setCurrentUser(null);
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+
+    verifyActiveSession();
+  }, []);
 
   // Fetch Global Stats & Health
   const fetchGlobalData = useCallback(async () => {
@@ -92,14 +134,24 @@ export function App() {
   );
 
   useEffect(() => {
-    fetchGlobalData();
-  }, [fetchGlobalData]);
+    if (currentUser) {
+      fetchGlobalData();
+    }
+  }, [currentUser, fetchGlobalData]);
 
   useEffect(() => {
-    if (activeTab === 'alerts' || activeTab === 'overview') {
+    if (currentUser && (activeTab === 'alerts' || activeTab === 'overview')) {
       fetchAlertsList(currentPage);
     }
-  }, [activeTab, currentPage, fetchAlertsList]);
+  }, [currentUser, activeTab, currentPage, fetchAlertsList]);
+
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } finally {
+      setCurrentUser(null);
+    }
+  };
 
   // Seed 5 Demonstration Alerts
   const handleSeedDemo = async () => {
@@ -121,6 +173,29 @@ export function App() {
     setRecentAlerts((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
     api.getAlertStats().then(setStats).catch(() => {});
   };
+
+  // While checking auth token on page load, show lightweight tactical loader
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col items-center justify-center bg-tactical-grid">
+        <LoadingSpinner size="lg" />
+        <p className="mt-4 text-xs font-mono tracking-widest text-slate-400 uppercase">
+          Verifying Operator Credentials...
+        </p>
+      </div>
+    );
+  }
+
+  // If not authenticated, render dedicated Login Portal
+  if (!currentUser) {
+    return (
+      <LoginPage
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#07090e] text-slate-100 flex flex-col bg-tactical-grid">
@@ -146,6 +221,8 @@ export function App() {
         }}
         refreshing={refreshing}
         collapsed={collapsed}
+        user={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Viewport */}
@@ -210,6 +287,8 @@ export function App() {
               }}
             />
           )}
+
+          {activeTab === 'evaluation' && <ModelPerformancePage />}
 
           {activeTab === 'model' && <ModelIntelligencePage modelInfo={modelInfo} />}
 

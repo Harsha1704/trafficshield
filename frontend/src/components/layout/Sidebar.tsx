@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Gauge,
   Radio,
+  Award,
 } from 'lucide-react';
 
 export type NavTab =
@@ -21,6 +22,7 @@ export type NavTab =
   | 'alerts'
   | 'monitoring'
   | 'inspector'
+  | 'evaluation'
   | 'model'
   | 'reports'
   | 'settings';
@@ -49,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'alerts' as NavTab, label: 'Alerts & Triage', icon: ShieldAlert, badge: unreadAlertCount },
     { id: 'monitoring' as NavTab, label: 'Monitoring & Drift', icon: Gauge, badge: activeDriftAlertCount },
     { id: 'inspector' as NavTab, label: 'Flow Inspector', icon: Search },
+    { id: 'evaluation' as NavTab, label: 'Model Performance', icon: Award },
     { id: 'model' as NavTab, label: 'Model Intelligence', icon: Cpu },
     { id: 'reports' as NavTab, label: 'Reports', icon: FileSpreadsheet },
     { id: 'settings' as NavTab, label: 'Settings', icon: Settings },

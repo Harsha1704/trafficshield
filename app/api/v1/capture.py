@@ -44,6 +44,14 @@ def get_capture_status() -> Any:
     return success_response(data=status, status_code=200)
 
 
+@capture_bp.route("/telemetry", methods=["GET"])
+def get_capture_telemetry() -> Any:
+    """Retrieve aligned 5-second interval metrics and session summary."""
+    manager = RealTimeDetectionManager.get_instance()
+    telemetry = manager.get_telemetry()
+    return success_response(data=telemetry, status_code=200)
+
+
 @capture_bp.route("/interfaces", methods=["GET"])
 def get_interfaces() -> Any:
     """Enumerate host network interfaces and kernel packet filter availability."""
