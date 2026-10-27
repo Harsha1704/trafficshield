@@ -88,6 +88,13 @@ def create_app(env: str | None = None) -> Flask:
             from app.utils.auth import bootstrap_initial_users
             bootstrap_initial_users(app)
 
+            # Dispose DB engine connection pool in production so master process does not retain open sockets across fork
+            if is_prod:
+                try:
+                    db.engine.dispose()
+                except Exception:
+                    pass
+
     # ─── Register CLI Commands ────────────────────────────────────────────────
     from app.cli import register_cli_commands
     register_cli_commands(app)
