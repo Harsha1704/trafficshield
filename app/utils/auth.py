@@ -167,41 +167,41 @@ def require_role(*allowed_roles: str) -> Callable:
 
 
 def bootstrap_initial_users(app) -> None:
-    """Bootstrap default admin and analyst users if user table is empty."""
+    """Bootstrap default admin and analyst users if user accounts are missing."""
     with app.app_context():
         try:
-            # Check if users already exist
-            if User.query.count() > 0:
-                return
-
             settings = app.config.get("TRAFFICSHIELD_SETTINGS")
             is_prod = getattr(settings, "is_production", False)
 
             if not is_prod:
-                # Seed standard development/testing users
-                admin = User(username="admin", role="admin", is_active=True)
-                admin.set_password("AdminPass123!")
+                # Seed standard development/testing users if missing
+                if User.query.filter_by(username="admin").first() is None:
+                    admin = User(username="admin", role="admin", is_active=True)
+                    admin.set_password("AdminPass123!")
+                    db.session.add(admin)
 
-                analyst = User(username="analyst", role="analyst", is_active=True)
-                analyst.set_password("AnalystPass123!")
+                if User.query.filter_by(username="analyst").first() is None:
+                    analyst = User(username="analyst", role="analyst", is_active=True)
+                    analyst.set_password("AnalystPass123!")
+                    db.session.add(analyst)
 
-                db.session.add_all([admin, analyst])
                 db.session.commit()
-                logger.info("Bootstrapped default dev users: 'admin' and 'analyst'")
+                logger.info("Bootstrapped default dev users if missing: 'admin' and 'analyst'")
             else:
-                # Production: read initial credentials from environment if provided
-                adm_user = app.config.get("ADMIN_INITIAL_USERNAME") or "admin"
-                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD")
+                # Production / Staging: read initial credentials from environment if provided
+                adm_user = app.config.get("ADMIN_INITIAL_USERNAME") or getattr(settings, "admin_initial_username", "admin") or "admin"
+                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD") or getattr(settings, "admin_initial_password", "")
 
-                if adm_pass and len(adm_pass) >= 12:
+                if adm_pass and len(adm_pass) >= 12 and User.query.filter_by(username=adm_user).first() is None:
                     admin = User(username=adm_user, role="admin", is_active=True)
                     admin.set_password(adm_pass)
                     db.session.add(admin)
                     logger.info("Bootstrapped initial production admin user '%s'", adm_user)
 
-                ana_user = app.config.get("ANALYST_INITIAL_USERNAME") or "analyst"
-                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD")
-                if ana_pass and len(ana_pass) >= 12:
+                ana_user = app.config.get("ANALYST_INITIAL_USERNAME") or getattr(settings, "analyst_initial_username", "analyst") or "analyst"
+                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD") or getattr(settings, "analyst_initial_password", "")
+
+                if ana_pass and len(ana_pass) >= 12 and User.query.filter_by(username=ana_user).first() is None:
                     analyst = User(username=ana_user, role="analyst", is_active=True)
                     analyst.set_password(ana_pass)
                     db.session.add(analyst)

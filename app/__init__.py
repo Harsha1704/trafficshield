@@ -80,12 +80,17 @@ def create_app(env: str | None = None) -> Flask:
 
         is_prod = getattr(settings, "is_production", False)
         is_migration = os.getenv("ALEMBIC_MIGRATION_RUN") == "1"
-        if not is_prod and not is_migration:
-            db.create_all()
+        if not is_migration:
+            if not is_prod:
+                db.create_all()
 
-            # Bootstrap default admin and analyst users if empty
+            # Bootstrap default admin and analyst users if accounts are missing
             from app.utils.auth import bootstrap_initial_users
             bootstrap_initial_users(app)
+
+    # ─── Register CLI Commands ────────────────────────────────────────────────
+    from app.cli import register_cli_commands
+    register_cli_commands(app)
 
     # ─── Request Correlation & Security Headers ───────────────────────────────
     _configure_security_and_tracing(app, settings)
