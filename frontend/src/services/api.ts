@@ -22,16 +22,41 @@ import type {
   SinglePredictResponse,
 } from '../types/api';
 
-const DEFAULT_API_BASE = 'http://localhost:5000/api/v1';
+export const PRODUCTION_API_BASE = 'https://trafficshield-staging-backend.onrender.com/api/v1';
+export const LOCAL_DEV_API_BASE = 'http://localhost:5000/api/v1';
+
+export function getDefaultApiBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '') {
+    return import.meta.env.VITE_API_URL.trim();
+  }
+  if (import.meta.env.PROD || import.meta.env.MODE === 'production') {
+    return PRODUCTION_API_BASE;
+  }
+  return LOCAL_DEV_API_BASE;
+}
 
 export function getApiBaseUrl(): string {
-  const custom = localStorage.getItem('trafficshield_api_url');
-  if (custom) return custom;
-  return import.meta.env.VITE_API_URL || DEFAULT_API_BASE;
+  try {
+    const custom = localStorage.getItem('trafficshield_api_url');
+    if (custom && custom.trim() !== '') {
+      if ((import.meta.env.PROD || import.meta.env.MODE === 'production') && custom.includes('localhost:5000')) {
+        localStorage.removeItem('trafficshield_api_url');
+      } else {
+        return custom.trim();
+      }
+    }
+  } catch {
+    // Ignore storage access errors
+  }
+  return getDefaultApiBaseUrl();
 }
 
 export function setApiBaseUrl(url: string): void {
-  localStorage.setItem('trafficshield_api_url', url);
+  try {
+    localStorage.setItem('trafficshield_api_url', url);
+  } catch {
+    // Ignore storage access errors
+  }
 }
 
 let onUnauthorizedCallback: (() => void) | null = null;
