@@ -1,0 +1,122 @@
+{
+  "started_at": "2026-11-05T18:16:28.960Z",
+  "backend_startup": {
+    "status": "READY",
+    "url": "http://127.0.0.1:5000",
+    "server": "Waitress WSGI"
+  },
+  "frontend_startup": {
+    "status": "READY",
+    "url": "http://localhost:5173",
+    "server": "Vite"
+  },
+  "pages_tested": {
+    "LoginPage": {
+      "status": "PASS",
+      "screenshot": "01_login_page.png"
+    },
+    "OverviewDashboard": {
+      "status": "PASS",
+      "details": {
+        "online": true,
+        "model": true,
+        "threshold": true
+      },
+      "screenshot": "02_overview_dashboard.png"
+    },
+    "AlertsPage": {
+      "status": "PASS",
+      "details": {
+        "has_filters": true,
+        "has_alerts": true,
+        "has_search": false
+      },
+      "screenshot": "05_alerts_page.png"
+    },
+    "ModelPerformancePage": {
+      "status": "PASS",
+      "details": {
+        "has_overview": true,
+        "has_accuracy": true,
+        "has_cm": true,
+        "has_contract": true
+      },
+      "screenshot": "06_model_performance.png"
+    },
+    "MonitoringPage": {
+      "status": "FAIL",
+      "details": {
+        "has_alerts_kpi": false,
+        "has_flows_kpi": false,
+        "has_latency_kpi": false,
+        "has_drift": true
+      },
+      "screenshot": "07_monitoring_drift.png"
+    },
+    "LiveDetectionPage": {
+      "status": "PASS",
+      "details": {
+        "has_tap": true,
+        "has_contract": true
+      },
+      "screenshot": "08_live_detection.png"
+    },
+    "ModelIntelligencePage": {
+      "status": "PASS",
+      "screenshot": "09_model_intelligence.png"
+    }
+  },
+  "workflows_tested": {
+    "InvalidLoginRejection": {
+      "status": "FAIL",
+      "screenshot": "01b_login_error.png"
+    },
+    "AnalystAuthentication": {
+      "status": "PASS",
+      "role": "ANALYST"
+    },
+    "WorkflowA_NormalTraffic": {
+      "status": "PASS",
+      "classification": "NORMAL_TRAFFIC",
+      "verdict": "NORMAL BENIGN FLOW",
+      "risk_verified": true,
+      "screenshot": "03a_normal_traffic_result.png"
+    },
+    "WorkflowB_AttackTraffic": {
+      "status": "PASS",
+      "classification": "DUAL_CONFIRMED",
+      "risk_verified": true,
+      "screenshot": "03b_attack_traffic_result.png"
+    },
+    "WorkflowC_AlertCreation": {
+      "status": "PASS",
+      "screenshot": "03c_alert_created.png"
+    },
+    "WorkflowD_BatchInference": {
+      "status": "PASS",
+      "details": {
+        "has_anomalies": true,
+        "has_mean_score": true,
+        "has_table": true
+      },
+      "screenshot": "04b_batch_results.png"
+    },
+    "WorkflowE_RBAC": {
+      "status": "PASS",
+      "analyst_check": {
+        "status_code": 403,
+        "error_code": "FORBIDDEN"
+      },
+      "admin_check": {
+        "status_code": 400,
+        "error_code": "MISSING_APPROVAL_FIELDS"
+      },
+      "screenshot_analyst": "02_overview_dashboard.png",
+      "screenshot_admin": "11_admin_dashboard.png"
+    }
+  },
+  "console_errors": [],
+  "network_errors": [],
+  "all_passed": false,
+  "completed_at": "2026-11-05T18:17:27.208Z"
+}

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import type { AlertStatus, RiskLevel, SecurityAlert } from '../types/api';
 import { Card } from '../components/common/Card';
-import { SeverityBadge, StatusBadge, Badge } from '../components/common/Badge';
+import { SeverityBadge, StatusBadge, Badge, HybridBadge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { EmptyState } from '../components/common/EmptyState';
@@ -197,7 +197,8 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                   <th className="py-2.5 px-3">Alert ID / Request</th>
                   <th className="py-2.5 px-3">Timestamp (UTC)</th>
                   <th className="py-2.5 px-3">Severity</th>
-                  <th className="py-2.5 px-3">Anomaly Score</th>
+                  <th className="py-2.5 px-3">Classification</th>
+                  <th className="py-2.5 px-3">XGBoost Score</th>
                   <th className="py-2.5 px-3">Status</th>
                   <th className="py-2.5 px-3">Top Attribution</th>
                   <th className="py-2.5 px-3 text-right">Triage</th>
@@ -221,6 +222,15 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                       </td>
                       <td className="py-3 px-3">
                         <SeverityBadge severity={alert.risk_level} />
+                      </td>
+                      <td className="py-3 px-3">
+                        {alert.hybrid_classification ? (
+                          <HybridBadge classification={alert.hybrid_classification} />
+                        ) : (
+                          <span className="text-[11px] text-slate-500">
+                            {alert.anomaly_score >= 0.5 ? 'SUPERVISED' : 'LEGACY'}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3 px-3">
                         <span className={`font-semibold ${alert.anomaly_score >= 0.5 ? 'text-rose-400' : 'text-emerald-400'}`}>
@@ -304,20 +314,63 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
         >
           <div className="space-y-5">
             {/* Top Score Banner */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center font-mono">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-center font-mono">
               <div>
-                <span className="block text-[11px] text-slate-400">Anomaly Score</span>
+                <span className="block text-[11px] text-slate-400">XGBoost Attack Prob</span>
                 <span className={`text-xl font-bold ${selectedAlert.anomaly_score >= 0.5 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                  {selectedAlert.anomaly_score.toFixed(6)}
+                  {(selectedAlert.anomaly_score * 100).toFixed(1)}%
+                </span>
+                <span className="block text-[10px] text-slate-500">τ = {selectedAlert.decision_threshold}</span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-slate-400">IForest Anomaly Score</span>
+                <span className="text-xl font-bold text-purple-400">
+                  {selectedAlert.unsupervised?.anomaly_score != null
+                    ? selectedAlert.unsupervised.anomaly_score.toFixed(4)
+                    : 'N/A'}
+                </span>
+                <span className="block text-[10px] text-slate-500">
+                  τ = {selectedAlert.unsupervised?.threshold != null ? selectedAlert.unsupervised.threshold.toFixed(4) : '0.7279'}
                 </span>
               </div>
               <div>
-                <span className="block text-[11px] text-slate-400">Decision Threshold</span>
-                <span className="text-xl font-bold text-amber-400">τ = {selectedAlert.decision_threshold}</span>
+                <span className="block text-[11px] text-slate-400">Hybrid Classification</span>
+                <div className="mt-1">
+                  {selectedAlert.hybrid_classification ? (
+                    <HybridBadge classification={selectedAlert.hybrid_classification} />
+                  ) : (
+                    <span className="text-xs text-slate-500 font-semibold">LEGACY ALERT</span>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="block text-[11px] text-slate-400">Model Artifact</span>
-                <span className="text-xs text-cyan-300 font-semibold">{selectedAlert.model_name} (v{selectedAlert.model_version})</span>
+                <span className="text-xs text-cyan-300 font-semibold">{selectedAlert.model_name}</span>
+                <span className="block text-[10px] text-slate-500">v{selectedAlert.model_version}</span>
+              </div>
+            </div>
+
+            {/* Network Coordinates Banner */}
+            <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 text-xs font-mono">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400">Endpoints:</span>
+                  <span className="font-semibold text-slate-200">
+                    {selectedAlert.src_ip || 'N/A'}:{selectedAlert.src_port ?? '—'}
+                  </span>
+                  <span className="text-slate-500">➔</span>
+                  <span className="font-semibold text-slate-200">
+                    {selectedAlert.dst_ip || 'N/A'}:{selectedAlert.dst_port ?? '—'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px]">
+                  <span className="text-slate-400">
+                    Protocol: <span className="text-cyan-300 font-semibold">{selectedAlert.protocol || 'IP'}</span>
+                  </span>
+                  <span className="text-slate-400">
+                    Source: <span className="text-slate-300">{selectedAlert.source || 'N/A'}</span>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -354,12 +407,14 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
                 Validated Input Features (Forward Link Direction)
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-                {Object.entries(selectedAlert.input_features || {}).map(([k, v]) => (
-                  <div key={k} className="p-2 rounded bg-slate-900/50 border border-slate-800">
-                    <span className="block text-[10px] text-slate-400 truncate" title={k}>{k}</span>
-                    <span className="font-semibold text-slate-200">{typeof v === 'number' ? (v > 1000 ? v.toLocaleString() : v) : String(v)}</span>
-                  </div>
-                ))}
+                {Object.entries(selectedAlert.input_features || {})
+                  .filter(([k]) => !k.startsWith('_'))
+                  .map(([k, v]) => (
+                    <div key={k} className="p-2 rounded bg-slate-900/50 border border-slate-800">
+                      <span className="block text-[10px] text-slate-400 truncate" title={k}>{k}</span>
+                      <span className="font-semibold text-slate-200">{typeof v === 'number' ? (v > 1000 ? v.toLocaleString() : v) : String(v)}</span>
+                    </div>
+                  ))}
               </div>
             </div>
 

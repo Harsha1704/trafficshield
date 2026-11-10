@@ -127,6 +127,16 @@ class SecurityAlert(AuditMixin, db.Model):  # type: ignore[name-defined]
     source: Mapped[str] = mapped_column(String(32), default="batch_upload", nullable=False)
 
     def to_dict(self) -> dict:
+        hybrid_info = (
+            self.input_features.get("_hybrid_evidence")
+            if isinstance(self.input_features, dict)
+            else None
+        )
+        coords = (
+            self.input_features.get("_network_coordinates")
+            if isinstance(self.input_features, dict)
+            else None
+        )
         return {
             "id": self.id,
             "request_id": self.request_id,
@@ -147,8 +157,13 @@ class SecurityAlert(AuditMixin, db.Model):  # type: ignore[name-defined]
             "protocol": self.protocol,
             "src_port": self.src_port,
             "dst_port": self.dst_port,
+            "src_ip": coords.get("src_ip") if isinstance(coords, dict) else None,
+            "dst_ip": coords.get("dst_ip") if isinstance(coords, dict) else None,
             "is_demo": self.is_demo,
             "source": self.source,
+            "hybrid_classification": hybrid_info.get("hybrid_classification") if hybrid_info else None,
+            "supervised": hybrid_info.get("supervised") if hybrid_info else None,
+            "unsupervised": hybrid_info.get("unsupervised") if hybrid_info else None,
         }
 
 

@@ -63,6 +63,7 @@ artifacts/models/*
 !artifacts/models/production_detector.joblib
 !artifacts/models/production_preprocessor.joblib
 !artifacts/models/production_detector.json
+!artifacts/models/production_iforest.json
 *.pkl
 *.joblib
 !artifacts/models/*.joblib

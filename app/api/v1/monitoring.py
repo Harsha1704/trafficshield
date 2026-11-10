@@ -315,8 +315,13 @@ def update_monitoring_alert(alert_id: str) -> Any:
     else:
         alert = db.session.get(MonitoringAlert, alert_id)
         if alert:
-            alert.status = "SUPPRESSED"
-            db.session.commit()
+            try:
+                alert.status = "SUPPRESSED"
+                db.session.commit()
+            except Exception as exc:
+                db.session.rollback()
+                logger.error("Failed to suppress monitoring alert %s: %s", alert_id, exc)
+                raise
 
     if not alert:
         return error_response(

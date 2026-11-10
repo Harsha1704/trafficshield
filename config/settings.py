@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -61,7 +61,7 @@ class BaseAppSettings(BaseSettings):
 
     # ─── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: str = Field(
-        default="http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,https://.*\\.vercel\\.app,https://trafficshield.vercel.app"
+        default="http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000,http://localhost:5000,http://127.0.0.1:5000"
     )
 
     # ─── Logging ──────────────────────────────────────────────────────────────
@@ -83,6 +83,33 @@ class BaseAppSettings(BaseSettings):
     monitoring_retention_days: int = Field(default=30)
     monitoring_stale_hours: int = Field(default=24)
 
+    # ─── Production Server / WSGI ─────────────────────────────────────────────
+    server_host: str = Field(default="127.0.0.1")
+    server_port: int = Field(default=5000)
+    server_threads: int = Field(default=4)
+
+    @field_validator("server_port")
+    @classmethod
+    def validate_server_port(cls, v: int) -> int:
+        if not (1 <= v <= 65535):
+            raise ValueError(f"server_port must be between 1 and 65535, got {v}")
+        return v
+
+    @field_validator("server_threads")
+    @classmethod
+    def validate_server_threads(cls, v: int) -> int:
+        if v < 1:
+            raise ValueError(f"server_threads must be at least 1, got {v}")
+        return v
+
+    @field_validator("server_host")
+    @classmethod
+    def validate_server_host(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("server_host must not be empty")
+        return s
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:
@@ -102,23 +129,26 @@ class BaseAppSettings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
-        for vercel_domain in [r"https://.*\.vercel\.app", "https://trafficshield.vercel.app"]:
-            if vercel_domain not in origins:
-                origins.append(vercel_domain)
-        return origins
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     def to_flask_config(self) -> dict:
         """Return a dict suitable for app.config.update()."""
+        if self.database_url.startswith("sqlite"):
+            engine_opts: dict[str, Any] = {
+                "connect_args": {"check_same_thread": False, "timeout": 15.0}
+            }
+        else:
+            engine_opts = {
+                "pool_pre_ping": True,
+                "pool_recycle": 300,
+                "pool_timeout": 30,
+            }
+
         return {
             "SECRET_KEY": self.secret_key,
             "SQLALCHEMY_DATABASE_URI": self.database_url,
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-            "SQLALCHEMY_ENGINE_OPTIONS": {
-                "pool_pre_ping": True,
-                "pool_recycle": 300,
-                "pool_timeout": 30,
-            },
+            "SQLALCHEMY_ENGINE_OPTIONS": engine_opts,
             "MAX_CONTENT_LENGTH": self.max_upload_bytes,
             "RATELIMIT_DEFAULT": self.ratelimit_default,
             "RATELIMIT_STORAGE_URI": self.ratelimit_storage_url,
@@ -131,6 +161,9 @@ class BaseAppSettings(BaseSettings):
             "ADMIN_INITIAL_PASSWORD": self.admin_initial_password,
             "ANALYST_INITIAL_USERNAME": self.analyst_initial_username,
             "ANALYST_INITIAL_PASSWORD": self.analyst_initial_password,
+            "SERVER_HOST": self.server_host,
+            "SERVER_PORT": self.server_port,
+            "SERVER_THREADS": self.server_threads,
         }
 
 
@@ -140,6 +173,9 @@ class DevelopmentSettings(BaseAppSettings):
     flask_debug: bool = Field(default=True)
     log_level: str = Field(default="DEBUG")
     log_format: Literal["json", "text"] = Field(default="text")
+
+    def to_flask_config(self) -> dict:
+        return super().to_flask_config()
 
 
 class TestingSettings(BaseAppSettings):
@@ -156,7 +192,6 @@ class TestingSettings(BaseAppSettings):
         cfg = super().to_flask_config()
         cfg["TESTING"] = True
         cfg["WTF_CSRF_ENABLED"] = False
-        cfg["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"check_same_thread": False}}
         return cfg
 
 
@@ -228,5 +263,6 @@ def get_settings(env: str | None = None) -> BaseAppSettings:
 
 
 def get_testing_settings() -> TestingSettings:
-    """Return a fresh TestingSettings instance (not cached)."""
-    return TestingSettings()
+    """Return a fresh TestingSettings instance (not cached) isolated to SQLite memory."""
+    test_db = os.getenv("TEST_DATABASE_URL", "sqlite:///:memory:")
+    return TestingSettings(database_url=test_db)

@@ -16,6 +16,7 @@ from typing import Any
 
 from flask import Blueprint, request
 
+from app.extensions import db
 from app.utils.auth import require_role
 from app.utils.response import error_response, success_response
 from features.policy import PolicyViolationError
@@ -35,15 +36,18 @@ def get_inference_service() -> ProductionInferenceService:
     if _SERVICE_INSTANCE is None:
         model_path = Path("artifacts/models/production_detector.joblib")
         prep_path = Path("artifacts/models/production_preprocessor.joblib")
+        iforest_path = Path("artifacts/models/production_iforest.joblib")
         _SERVICE_INSTANCE = ProductionInferenceService(
             model_path=model_path,
             preprocessor_path=prep_path,
+            iforest_path=iforest_path,
             threshold=0.5,
         )
     return _SERVICE_INSTANCE
 
 
 @predict_bp.route("/predict", methods=["POST"])
+@predict_bp.route("/predict/single", methods=["POST"])
 @require_role("analyst", "admin")
 def predict_single() -> Any:
     """
@@ -86,6 +90,13 @@ def predict_single() -> Any:
             message=str(ve),
             status_code=400,
             error_code="SCHEMA_VALIDATION_ERROR",
+        )
+    except RuntimeError as re:
+        logger.error("Inference runtime error: %s", re)
+        return error_response(
+            message="Inference engine is unavailable or uninitialized.",
+            status_code=503,
+            error_code="INFERENCE_ENGINE_UNAVAILABLE",
         )
     except Exception as exc:
         logger.error("Inference internal error: %s", exc, exc_info=True)
@@ -153,6 +164,10 @@ def predict_batch() -> Any:
                 source=request.headers.get("X-Source", "batch_upload"),
             )
         except Exception as mon_err:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
             logger.warning("Monitoring telemetry recording non-fatal error: %s", mon_err)
 
         return success_response(data=batch_result, status_code=200)
@@ -169,6 +184,13 @@ def predict_batch() -> Any:
             status_code=400,
             error_code="SCHEMA_VALIDATION_ERROR",
         )
+    except RuntimeError as re:
+        logger.error("Batch inference runtime error: %s", re)
+        return error_response(
+            message="Inference engine is unavailable or uninitialized.",
+            status_code=503,
+            error_code="INFERENCE_ENGINE_UNAVAILABLE",
+        )
     except Exception as exc:
         logger.error("Batch inference internal error: %s", exc, exc_info=True)
         return error_response(
@@ -179,6 +201,7 @@ def predict_batch() -> Any:
 
 
 @predict_bp.route("/model/info", methods=["GET"])
+@predict_bp.route("/predict/info", methods=["GET"])
 def model_info() -> Any:
     """Return deployed model architecture, version, threshold, and feature metadata."""
     service = get_inference_service()

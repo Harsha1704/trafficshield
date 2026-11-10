@@ -179,15 +179,24 @@ def bootstrap_initial_users(app) -> None:
 
             if not is_prod:
                 # Seed standard development/testing users if missing
-                if User.query.filter_by(username="admin").first() is None:
+                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD") or "AdminPass123!"
+                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD") or "AnalystPass123!"
+                
+                admin = User.query.filter_by(username="admin").first()
+                if admin is None:
                     admin = User(username="admin", role="admin", is_active=True)
-                    admin.set_password("AdminPass123!")
+                    admin.set_password(adm_pass)
                     db.session.add(admin)
+                elif app.config.get("ADMIN_INITIAL_PASSWORD") and not admin.check_password(adm_pass):
+                    admin.set_password(adm_pass)
 
-                if User.query.filter_by(username="analyst").first() is None:
+                analyst = User.query.filter_by(username="analyst").first()
+                if analyst is None:
                     analyst = User(username="analyst", role="analyst", is_active=True)
-                    analyst.set_password("AnalystPass123!")
+                    analyst.set_password(ana_pass)
                     db.session.add(analyst)
+                elif app.config.get("ANALYST_INITIAL_PASSWORD") and not analyst.check_password(ana_pass):
+                    analyst.set_password(ana_pass)
 
                 db.session.commit()
                 logger.info("Bootstrapped default dev users if missing: 'admin' and 'analyst'")
@@ -207,12 +216,12 @@ def bootstrap_initial_users(app) -> None:
                     if admin is None:
                         admin = User(username=adm_user, role="admin", is_active=True)
                         admin.set_password(adm_pass)
+                        admin.is_active = True
                         db.session.add(admin)
                         logger.info("Bootstrapped initial production admin user '%s'", adm_user)
-                    else:
+                    elif not admin.check_password(adm_pass):
                         admin.set_password(adm_pass)
-                        admin.is_active = True
-                        logger.info("Synchronized production admin user '%s' password from environment", adm_user)
+                        logger.info("Rotated production credentials for '%s'", adm_user)
 
                 ana_user = app.config.get("ANALYST_INITIAL_USERNAME")
                 if ana_user is None:
@@ -228,12 +237,12 @@ def bootstrap_initial_users(app) -> None:
                     if analyst is None:
                         analyst = User(username=ana_user, role="analyst", is_active=True)
                         analyst.set_password(ana_pass)
+                        analyst.is_active = True
                         db.session.add(analyst)
                         logger.info("Bootstrapped initial production analyst user '%s'", ana_user)
-                    else:
+                    elif not analyst.check_password(ana_pass):
                         analyst.set_password(ana_pass)
-                        analyst.is_active = True
-                        logger.info("Synchronized production analyst user '%s' password from environment", ana_user)
+                        logger.info("Rotated production credentials for '%s'", ana_user)
 
                 db.session.commit()
                 db.session.expire_all()

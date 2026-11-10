@@ -4,7 +4,172 @@
 
 > Critical-infrastructure monitoring links only see traffic flowing one way, so anomaly detection must work without being able to query back or rely on labelled attack traffic.
 
-TrafficShield is a production-oriented network anomaly detection system that learns normal traffic behaviour from unlabeled or predominantly-benign flow data, then identifies unusual activity without requiring attack labels during training.
+TrafficShield is an enterprise-grade, hybrid ML-based network anomaly detection platform designed for unidirectional optical taps and data diodes protecting critical infrastructure. It couples a frozen supervised classifier (XGBoost) with an independent, unlabelled-calibrated anomaly detector (Isolation Forest) to provide robust detection of both known attack signatures and novel zero-day structural anomalies without requiring bidirectional flow context.
+
+---
+
+## Key System Highlights
+
+- **Hybrid ML Detection Engine:** Fuses frozen supervised XGBoost ($\tau = 0.50$) with unsupervised Isolation Forest ($\tau = 0.727896$) into a 4-tier transparent taxonomy (`DUAL_CONFIRMED`, `SUPERVISED_ONLY_ALERT`, `UNSUPERVISED_NOVELTY`, `NORMAL_TRAFFIC`).
+- **Strict 13-Feature Unidirectional Policy:** Zero reverse-flow features (`dbytes`, `dload`, `dttl`, `ackdat`, etc.) or bidirectional session states. Operates purely on causal, forward-observable packet and timing metrics.
+- **Fail-Closed Cryptographic Anti-Tamper:** Every model and preprocessor artifact is validated against pre-computed SHA-256 digests prior to deserialization (`ProductionInferenceService`).
+- **Passive Live Capture & Replay:** Integrates native Npcap/WinPcap packet capture, bounded flow reconstruction (10,000 active flow LRU, 15s inactivity timeout), and zero raw payload storage.
+- **Enterprise Dark SOC Console:** High-density command center built with React 19, TypeScript, and Tailwind CSS v4 featuring real-time telemetry, alert triage with hybrid evidence, batch flow scoring, and statistical drift tracking.
+
+---
+
+## SOC Console Previews
+
+The TrafficShield SOC Command Center provides deep visibility into network flows, hybrid model scoring, and alert triage without persisting raw traffic payloads:
+
+| **Overview Dashboard** | **Live Anomaly Detection** |
+|:---:|:---:|
+| ![Overview Dashboard](docs/screenshots/02_overview_dashboard.png) | ![Live Detection](docs/screenshots/03_live_detection.png) |
+| *Real-time metrics, active sensor status, and 24h threat distribution* | *Real-time packet stream, live flow reconstruction, and hybrid scores* |
+
+| **Alerts & Incident Triage** | **Model Performance & Evidence** |
+|:---:|:---:|
+| ![Alerts Triage](docs/screenshots/04_alerts_page.png) | ![Model Performance](docs/screenshots/05_model_performance.png) |
+| *4-tier classification filtering and dual-model attribution drawer* | *ROC/PR curves, confusion matrices, and feature importance waterfall* |
+
+*Additional authentic screenshots available in [`docs/screenshots/`](docs/screenshots/): [Login Screen](docs/screenshots/01_login_page.png), [Traffic Batch Inspector](docs/screenshots/06_traffic_analysis.png), and [Statistical Drift Monitoring](docs/screenshots/07_monitoring.png).*
+
+---
+
+## Hybrid ML Detection Architecture
+
+In critical infrastructure networks (such as power grids, nuclear facilities, and defense telecommunications), unidirectional optical taps and data diodes enforce hardware-level physical isolation. TrafficShield solves the resulting observability challenge through an asymmetric dual-detector design:
+
+```
+Unidirectional Packet Stream (Optical Tap / PCAP)
+                      │
+                      ▼
+         Unidirectional Flow Engine
+         (Strict 5-tuple, 13 Causal Forward Features)
+                      │
+         ┌────────────┴────────────┐
+         ▼                         ▼
+ Supervised XGBoost       Isolation Forest
+ (Frozen Signature)       (Unsupervised Novelty)
+   P(Attack) >= 0.50?        Score >= 0.727896?
+         │                         │
+         └────────────┬────────────┘
+                      ▼
+           Hybrid Decision Matrix
+                      │
+   ┌──────────────────┼──────────────────┐
+   ▼                  ▼                  ▼
+DUAL_CONFIRMED   SUPERVISED_ONLY   UNSUPERVISED_NOVELTY
+(Both detectors  (Known attack     (Novel zero-day
+ agree on threat) signature)       anomaly deviation)
+```
+
+### The 4-Tier Classification Taxonomy
+
+| Classification | Supervised (XGBoost) | Unsupervised (Isolation Forest) | Severity | Operational Interpretation |
+|---|:---:|:---:|:---:|---|
+| **`DUAL_CONFIRMED`** | $\ge 0.50$ | $\ge 0.727896$ | **CRITICAL** / **HIGH** | High-confidence alert. Flow matches known malicious signature *and* exhibits significant structural deviation from benign baseline. Prioritized for immediate SOC triage. |
+| **`SUPERVISED_ONLY_ALERT`** | $\ge 0.50$ | $< 0.727896$ | **HIGH** / **MEDIUM** | Known attack pattern (e.g. volumetric scan, exploit) whose overall packet structure mimics normal baseline distribution. |
+| **`UNSUPERVISED_NOVELTY`** | $< 0.50$ | $\ge 0.727896$ | **MEDIUM** | Zero-day or anomalous behaviour. Structural outlier with no matching supervised signature. Flagged for threat hunting. |
+| **`NORMAL_TRAFFIC`** | $< 0.50$ | $< 0.727896$ | **INFO** | Benign baseline flow. Passed without incident generation. |
+
+---
+
+## 13 Unidirectional Feature Schema
+
+Under unidirectional monitoring, only packets flowing from source to destination are visible. TrafficShield strictly forbids reverse-direction features (`dbytes`, `dpkts`, `dload`, `dttl`, `ackdat`, etc.) to prevent feature leakage and pipeline failures.
+
+The production model evaluates exactly 13 forward features in deterministic order:
+
+| # | Feature Name | Type | Description | Directionality |
+|---|---|---|---|---|
+| 1 | `duration_seconds` | Float | Flow duration in seconds ($L_{\text{time}} - S_{\text{time}}$) | Forward observable |
+| 2 | `fwd_bytes` | Integer | Total bytes transferred in forward direction | Forward observable |
+| 3 | `sttl` | Integer | Source IP Time-To-Live header value | Forward observable |
+| 4 | `sload` | Float | Source bits per second during flow lifetime | Forward observable |
+| 5 | `fwd_packets` | Integer | Total packet count in forward direction | Forward observable |
+| 6 | `swin` | Integer | Source TCP advertising window size | Forward observable |
+| 7 | `smeansz` | Float | Mean packet size transmitted by source | Forward observable |
+| 8 | `sjit` | Float | Source inter-arrival jitter (RFC 3550 EMA) | Forward observable |
+| 9 | `sintpkt` | Float | Source mean inter-packet arrival time | Forward observable |
+| 10 | `is_sm_ips_ports` | Boolean | Binary flag: source IP/port equals destination IP/port | Forward observable |
+| 11 | `packet_rate` | Float | Forward packets per second ($\text{pkts} / \text{dur}$) | Derived causal rate |
+| 12 | `byte_rate` | Float | Forward bytes per second ($\text{bytes} / \text{dur}$) | Derived causal rate |
+| 13 | `bytes_per_packet` | Float | Mean bytes per forward packet ($\text{bytes} / \text{pkts}$) | Derived causal rate |
+
+---
+
+## Production Model Artifacts & Cryptographic Verification
+
+All production artifacts are tracked with strict SHA-256 digests. Deserialization fails closed if any file size or checksum does not match:
+
+| Artifact Path | Size (Bytes) | SHA-256 Checksum | Status |
+|---|:---:|---|:---:|
+| `artifacts/models/production_detector.joblib` | 246,095 | `c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495` | **FROZEN** (XGBoost) |
+| `artifacts/models/production_detector.json` | 426 | `3553f1a47c1c2fd67b031cadb42400246997778f8dcf42026e2ebfb882ba73b1` | **FROZEN** (Metadata) |
+| `artifacts/models/production_preprocessor.joblib` | 2,525 | `effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653` | **FROZEN** (Scaler) |
+| `artifacts/models/production_iforest.joblib` | 733,311 | `d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e` | **VERIFIED** (IForest) |
+| `artifacts/models/production_iforest.json` | 2,587 | `5daf8b0dab1c4c3a66e4cb2c38b10c406f6c1861572d27a08155c8541bf4cb94` | **VERIFIED** (Metadata) |
+
+---
+
+## Production Hybrid Prediction APIs
+
+TrafficShield exposes RESTful endpoints for real-time and batch scoring:
+
+### 1. Single Flow Prediction: `POST /api/v1/predict/single`
+**Request Payload:**
+```json
+{
+  "features": {
+    "duration_seconds": 0.05,
+    "fwd_bytes": 1024,
+    "sttl": 64,
+    "sload": 163840.0,
+    "fwd_packets": 8,
+    "swin": 65535,
+    "smeansz": 128.0,
+    "sjit": 12.5,
+    "sintpkt": 7.14,
+    "is_sm_ips_ports": 0,
+    "packet_rate": 160.0,
+    "byte_rate": 20480.0,
+    "bytes_per_packet": 128.0
+  }
+}
+```
+
+**Response Payload:**
+```json
+{
+  "success": true,
+  "data": {
+    "supervised": {
+      "is_anomaly": true,
+      "anomaly_score": 0.8942,
+      "confidence": 0.8942,
+      "threshold": 0.50
+    },
+    "unsupervised": {
+      "is_anomaly": true,
+      "anomaly_score": 0.7812,
+      "confidence": 0.8250,
+      "threshold": 0.727896
+    },
+    "hybrid_classification": "DUAL_CONFIRMED",
+    "is_anomaly": true,
+    "severity": "CRITICAL"
+  }
+}
+```
+
+### 2. Batch Flow Prediction: `POST /api/v1/predict/batch`
+Accepts a JSON array of up to 5,000 flow feature objects and returns vectorized inference results with summary statistics.
+
+### 3. Engine Information: `GET /api/v1/predict/info`
+Returns active model parameters, artifact SHA-256 fingerprints, feature schemas, and operational calibration thresholds.
+
+---
 
 ---
 
@@ -48,7 +213,7 @@ TrafficShield is a production-oriented network anomaly detection system that lea
 ---
 
 > [!TIP]
-> For a step-by-step evaluator walkthrough and Windows setup guide, see [docs/demo/quick_start_windows.md](file:///d:/projects/trafficshield/docs/demo/quick_start_windows.md) and the [5-to-7 minute demonstration script](file:///d:/projects/trafficshield/docs/demo/evaluator_demo_script.md).
+> For a step-by-step evaluator walkthrough and Windows setup guide, see [docs/demo_guide.md](docs/demo_guide.md) and the technical presentation in [docs/presentation/](docs/presentation/).
 
 ---
 

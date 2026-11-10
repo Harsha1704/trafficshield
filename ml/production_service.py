@@ -34,6 +34,7 @@ logger = logging.getLogger("production_service")
 # Authoritative frozen artifact checksums verified in M9
 EXPECTED_DETECTOR_SHA256 = "c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495"
 EXPECTED_PREPROCESSOR_SHA256 = "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653"
+EXPECTED_IFOREST_SHA256 = "d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e"
 
 REQUIRED_BASE_FEATURES = [
     "duration_seconds",
@@ -50,31 +51,42 @@ REQUIRED_BASE_FEATURES = [
 
 
 class ProductionInferenceService:
-    """Thread-safe production scoring and explanation service."""
+    """Thread-safe production scoring and explanation service supporting hybrid detection."""
 
     def __init__(
         self,
         model_path: str | Path | None = None,
         preprocessor_path: str | Path | None = None,
+        iforest_path: str | Path | None = None,
         threshold: float = 0.5,
+        iforest_threshold: float | None = None,
         verify_checksums: bool = True,
     ) -> None:
         def_model = Path("artifacts/models/production_detector.joblib")
         def_prep = Path("artifacts/models/production_preprocessor.joblib")
+        def_iforest = Path("artifacts/models/production_iforest.joblib")
+
         self.model_path = Path(model_path) if model_path else (def_model if def_model.exists() else None)
         self.preprocessor_path = Path(preprocessor_path) if preprocessor_path else (def_prep if def_prep.exists() else None)
+        self.iforest_path = Path(iforest_path) if iforest_path else (def_iforest if def_iforest.exists() else None)
         self.threshold = threshold
+        self.iforest_threshold = iforest_threshold
         self.verify_checksums = verify_checksums
 
         self.model: Any = None
         self.preprocessor: Any = None
+        self.iforest: Any = None
+        self.iforest_manifest: dict[str, Any] = {}
         self.feature_names: list[str] = []
         self.model_name: str = "ProductionFlowClassifier"
+        self.iforest_name: str = "IsolationForestDetector"
         self.version: str = "1.0.0"
         self.model_sha256: str | None = None
         self.preprocessor_sha256: str | None = None
+        self.iforest_sha256: str | None = None
+        self.hybrid_enabled: bool = False
 
-        if self.model_path and self.model_path.exists():
+        if self.model_path or self.preprocessor_path or self.iforest_path:
             self.load_artifacts()
 
     @staticmethod
@@ -88,11 +100,13 @@ class ProductionInferenceService:
 
     def load_artifacts(self) -> None:
         """
-        Load and verify serialized model and preprocessor artifacts.
-        Enforces cryptographic SHA-256 integrity check against known frozen hashes.
+        Load and verify serialized model, isolation forest, and preprocessor artifacts.
+        Enforces cryptographic SHA-256 integrity checks against authoritative frozen hashes.
         Fails fast if artifacts are missing, corrupt, or tampered with.
         """
-        if self.model_path and self.model_path.exists():
+        if self.model_path:
+            if not self.model_path.exists():
+                raise FileNotFoundError(f"Model artifact not found: {self.model_path}")
             actual_model_hash = self.compute_sha256(self.model_path)
             self.model_sha256 = actual_model_hash
             if self.verify_checksums and actual_model_hash != EXPECTED_DETECTOR_SHA256:
@@ -104,7 +118,9 @@ class ProductionInferenceService:
             self.model = joblib.load(self.model_path)
             self.model_name = getattr(self.model, "__class__", type(self.model)).__name__
 
-        if self.preprocessor_path and self.preprocessor_path.exists():
+        if self.preprocessor_path:
+            if not self.preprocessor_path.exists():
+                raise FileNotFoundError(f"Preprocessor artifact not found: {self.preprocessor_path}")
             actual_prep_hash = self.compute_sha256(self.preprocessor_path)
             self.preprocessor_sha256 = actual_prep_hash
             if self.verify_checksums and actual_prep_hash != EXPECTED_PREPROCESSOR_SHA256:
@@ -116,6 +132,44 @@ class ProductionInferenceService:
             self.preprocessor = joblib.load(self.preprocessor_path)
             if hasattr(self.preprocessor, "feature_names_in_"):
                 self.feature_names = list(self.preprocessor.feature_names_in_)
+
+        if self.iforest_path:
+            if not self.iforest_path.exists():
+                raise FileNotFoundError(f"Isolation Forest artifact not found: {self.iforest_path}")
+            actual_iforest_hash = self.compute_sha256(self.iforest_path)
+            self.iforest_sha256 = actual_iforest_hash
+            if self.verify_checksums and actual_iforest_hash != EXPECTED_IFOREST_SHA256:
+                raise RuntimeError(
+                    f"Isolation Forest artifact SHA-256 integrity verification failed! "
+                    f"Expected: {EXPECTED_IFOREST_SHA256}, got: {actual_iforest_hash}. "
+                    f"Refusing to load untrusted or modified artifact."
+                )
+
+            # Read companion manifest to determine threshold and provenance
+            manifest_path = self.iforest_path.with_suffix(".json")
+            if manifest_path.exists():
+                try:
+                    import json
+                    self.iforest_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                except Exception as exc:
+                    logger.warning("Could not read iforest companion manifest: %s", exc)
+
+            if self.iforest_threshold is None:
+                if "threshold" in self.iforest_manifest and self.iforest_manifest["threshold"] is not None:
+                    self.iforest_threshold = float(self.iforest_manifest["threshold"])
+                elif (
+                    "threshold_config" in self.iforest_manifest
+                    and "calibrated_threshold" in self.iforest_manifest["threshold_config"]
+                ):
+                    self.iforest_threshold = float(self.iforest_manifest["threshold_config"]["calibrated_threshold"])
+                else:
+                    self.iforest_threshold = 0.727896
+
+            self.iforest = joblib.load(self.iforest_path)
+            if hasattr(self.iforest, "threshold_"):
+                self.iforest.threshold_ = self.iforest_threshold
+            self.iforest_name = getattr(self.iforest, "__class__", type(self.iforest)).__name__
+            self.hybrid_enabled = True
 
     def validate_and_prepare_input(self, raw_record: dict[str, Any]) -> pd.DataFrame:
         """
@@ -152,7 +206,12 @@ class ProductionInferenceService:
         return df
 
     def predict_single(self, flow_data: dict[str, Any]) -> dict[str, Any]:
-        """Score single flow observation and provide evidence-backed explanation."""
+        """Score single flow observation and provide evidence-backed explanation with hybrid detection."""
+        if self.model is None or (not hasattr(self.model, "predict_proba") and not hasattr(self.model, "score_samples")):
+            raise RuntimeError(
+                "Production detector model is uninitialized or artifact failed to load. Refusing to perform inference."
+            )
+
         request_id = str(uuid.uuid4())
         df_flow = self.validate_and_prepare_input(flow_data)
 
@@ -161,7 +220,7 @@ class ProductionInferenceService:
         else:
             x_input = df_flow
 
-        # Compute continuous anomaly score in [0.0, 1.0]
+        # 1. Supervised XGBoost Inference (attack probability in [0.0, 1.0])
         if hasattr(self.model, "predict_proba"):
             score = float(self.model.predict_proba(x_input)[:, 1][0])
         elif hasattr(self.model, "score_samples"):
@@ -170,9 +229,31 @@ class ProductionInferenceService:
         else:
             score = 0.0
 
-        is_anom = int(score >= self.threshold)
+        is_supervised_anomaly = bool(score >= self.threshold)
 
-        # Risk level categorization
+        # 2. Unsupervised Isolation Forest Inference (continuous anomaly score)
+        if self.iforest is not None and hasattr(self.iforest, "score_samples"):
+            raw_if_score = float(self.iforest.score_samples(x_input)[0])
+            if_thresh = self.iforest_threshold if self.iforest_threshold is not None else 0.727896
+            is_unsupervised_anomaly = bool(raw_if_score >= if_thresh)
+            iforest_available = True
+        else:
+            raw_if_score = 0.0
+            if_thresh = self.iforest_threshold if self.iforest_threshold is not None else 0.727896
+            is_unsupervised_anomaly = False
+            iforest_available = False
+
+        # 3. Transparent Hybrid Classification
+        if is_supervised_anomaly and is_unsupervised_anomaly:
+            hybrid_classification = "DUAL_CONFIRMED"
+        elif is_supervised_anomaly and not is_unsupervised_anomaly:
+            hybrid_classification = "SUPERVISED_ONLY_ALERT"
+        elif not is_supervised_anomaly and is_unsupervised_anomaly:
+            hybrid_classification = "UNSUPERVISED_NOVELTY"
+        else:
+            hybrid_classification = "NORMAL_TRAFFIC"
+
+        # Risk level categorization based on supervised probability
         if score >= 0.85:
             risk = "CRITICAL"
         elif score >= 0.65:
@@ -187,18 +268,38 @@ class ProductionInferenceService:
 
         return {
             "request_id": request_id,
-            "is_anomaly": bool(is_anom),
+            "is_anomaly": is_supervised_anomaly,
             "anomaly_score": round(score, 6),
             "decision_threshold": round(self.threshold, 6),
             "risk_level": risk,
             "model_name": self.model_name,
             "top_contributing_features": attributions,
+            "supervised": {
+                "probability": round(score, 6),
+                "threshold": round(self.threshold, 6),
+                "is_anomaly": is_supervised_anomaly,
+                "decision": "ANOMALY" if is_supervised_anomaly else "NORMAL",
+            },
+            "unsupervised": {
+                "anomaly_score": round(raw_if_score, 6),
+                "threshold": round(if_thresh, 6),
+                "is_anomaly": is_unsupervised_anomaly,
+                "decision": "ANOMALY" if is_unsupervised_anomaly else "NORMAL",
+                "detector_name": self.iforest_name,
+                "available": iforest_available,
+            },
+            "hybrid_classification": hybrid_classification,
         }
 
     def predict_batch(self, batch_records: list[dict[str, Any]]) -> dict[str, Any]:
-        """Score a collection of flow observations with summary analytics."""
+        """Score a collection of flow observations with summary analytics and hybrid metrics."""
         if not batch_records:
             raise ValueError("Batch record list is empty.")
+
+        if self.model is None or (not hasattr(self.model, "predict_proba") and not hasattr(self.model, "score_samples")):
+            raise RuntimeError(
+                "Production detector model is uninitialized or artifact failed to load. Refusing to perform inference."
+            )
 
         results = []
         for rec in batch_records:
@@ -207,6 +308,13 @@ class ProductionInferenceService:
         scores = [r["anomaly_score"] for r in results]
         anom_count = sum(1 for r in results if r["is_anomaly"])
 
+        hybrid_counts = {
+            "DUAL_CONFIRMED": sum(1 for r in results if r.get("hybrid_classification") == "DUAL_CONFIRMED"),
+            "SUPERVISED_ONLY_ALERT": sum(1 for r in results if r.get("hybrid_classification") == "SUPERVISED_ONLY_ALERT"),
+            "UNSUPERVISED_NOVELTY": sum(1 for r in results if r.get("hybrid_classification") == "UNSUPERVISED_NOVELTY"),
+            "NORMAL_TRAFFIC": sum(1 for r in results if r.get("hybrid_classification") == "NORMAL_TRAFFIC"),
+        }
+
         return {
             "total_records": len(batch_records),
             "anomalies_detected": anom_count,
@@ -214,6 +322,7 @@ class ProductionInferenceService:
             "mean_anomaly_score": round(float(np.mean(scores)), 4),
             "max_anomaly_score": round(float(np.max(scores)), 4),
             "predictions": results,
+            "hybrid_classification_counts": hybrid_counts,
         }
 
     def _compute_feature_attributions(self, df_flow: pd.DataFrame) -> list[dict[str, Any]]:
@@ -257,9 +366,10 @@ class ProductionInferenceService:
         return attributions[:4]
 
     def get_info(self) -> dict[str, Any]:
-        """Return operational model metadata and deployment configuration."""
+        """Return operational model metadata, deployment configuration, and hybrid architecture info."""
+        if_thresh = self.iforest_threshold if self.iforest_threshold is not None else 0.727896
         return {
-            "service": "TrafficShield Production Anomaly Scoring API",
+            "service": "TrafficShield Production Hybrid Anomaly Scoring API",
             "model_name": self.model_name,
             "model_version": self.version,
             "decision_threshold": self.threshold,
@@ -268,10 +378,45 @@ class ProductionInferenceService:
             "engineered_features": ["packet_rate", "byte_rate", "bytes_per_packet"],
             "model_loaded": self.model is not None,
             "preprocessor_loaded": self.preprocessor is not None,
+            "hybrid_enabled": bool(self.model is not None and self.iforest is not None),
+            "supervised_model": {
+                "name": self.model_name,
+                "type": "Supervised XGBoost Flow Classifier",
+                "version": self.version,
+                "decision_threshold": self.threshold,
+                "loaded": self.model is not None,
+                "sha256": self.model_sha256 or EXPECTED_DETECTOR_SHA256,
+            },
+            "unsupervised_model": {
+                "name": self.iforest_name,
+                "type": "Unsupervised Isolation Forest Detector",
+                "version": "1.0.0",
+                "decision_threshold": round(if_thresh, 6),
+                "loaded": self.iforest is not None,
+                "sha256": self.iforest_sha256 or EXPECTED_IFOREST_SHA256,
+                "score_direction": "Inverted (higher score indicates greater anomalousness)",
+            },
+            "hybrid_classification_classes": [
+                "DUAL_CONFIRMED",
+                "SUPERVISED_ONLY_ALERT",
+                "UNSUPERVISED_NOVELTY",
+                "NORMAL_TRAFFIC",
+            ],
+            "hybrid_classification_rules": {
+                "DUAL_CONFIRMED": "Both supervised XGBoost and unsupervised Isolation Forest detect anomaly.",
+                "SUPERVISED_ONLY_ALERT": "Supervised XGBoost alerts while Isolation Forest evaluates within normal baseline.",
+                "UNSUPERVISED_NOVELTY": "Isolation Forest flags statistical novelty while supervised XGBoost evaluates normal.",
+                "NORMAL_TRAFFIC": "Both detectors evaluate flow within normal operating baseline.",
+            },
             "artifact_integrity": {
-                "verified": bool(self.model is not None and self.preprocessor is not None),
+                "verified": bool(
+                    self.model is not None
+                    and self.preprocessor is not None
+                    and (self.iforest is not None or not self.hybrid_enabled)
+                ),
                 "model_sha256": self.model_sha256 or EXPECTED_DETECTOR_SHA256,
                 "preprocessor_sha256": self.preprocessor_sha256 or EXPECTED_PREPROCESSOR_SHA256,
+                "iforest_sha256": self.iforest_sha256 or EXPECTED_IFOREST_SHA256,
             },
             "verified_benchmark": {
                 "evaluation_dataset": "UNSW-NB15",

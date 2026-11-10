@@ -1,0 +1,134 @@
+{
+  "dataset": "UNSW-NB15 Day 1 Held-Out Test Split",
+  "total_test_flows": 19951,
+  "ground_truth_benign": 14093,
+  "ground_truth_attacks": 5858,
+  "supervised_xgboost": {
+    "total_samples": 19951,
+    "tn": 13845,
+    "fp": 248,
+    "fn": 130,
+    "tp": 5728,
+    "accuracy": 0.981054,
+    "precision": 0.958501,
+    "recall": 0.977808,
+    "specificity": 0.982403,
+    "fpr": 0.017597,
+    "f1_score": 0.968058,
+    "roc_auc": 0.998711,
+    "pr_auc": 0.996661,
+    "latency_us_per_flow": 2.06
+  },
+  "unsupervised_isolation_forest": {
+    "total_samples": 19951,
+    "tn": 14092,
+    "fp": 1,
+    "fn": 5775,
+    "tp": 83,
+    "accuracy": 0.710491,
+    "precision": 0.988095,
+    "recall": 0.014169,
+    "specificity": 0.999929,
+    "fpr": 7.1e-05,
+    "f1_score": 0.027937,
+    "roc_auc": 0.933305,
+    "pr_auc": 0.84044,
+    "latency_us_per_flow": 4.16
+  },
+  "hybrid_classification_breakdown": {
+    "DUAL_CONFIRMED": {
+      "total_count": 83,
+      "pct_of_test_split": 0.42,
+      "ground_truth_attacks": 83,
+      "ground_truth_benign": 0,
+      "attack_precision": 1.0
+    },
+    "SUPERVISED_ONLY_ALERT": {
+      "total_count": 5893,
+      "pct_of_test_split": 29.54,
+      "ground_truth_attacks": 5645,
+      "ground_truth_benign": 248,
+      "attack_precision": 0.9579
+    },
+    "UNSUPERVISED_NOVELTY": {
+      "total_count": 1,
+      "pct_of_test_split": 0.01,
+      "ground_truth_attacks": 0,
+      "ground_truth_benign": 1,
+      "attack_precision": 0.0
+    },
+    "NORMAL_TRAFFIC": {
+      "total_count": 13974,
+      "pct_of_test_split": 70.04,
+      "ground_truth_attacks": 130,
+      "ground_truth_benign": 13844,
+      "attack_precision": 0.0093
+    }
+  },
+  "day2_temporal_holdout": {
+    "dataset": "UNSW-NB15 Day 2 Cross-File Temporal Holdout (20,000 flows, 24 days later)",
+    "total_flows": 20000,
+    "ground_truth_benign": 14906,
+    "ground_truth_attacks": 5094,
+    "supervised_xgboost": {
+      "total_samples": 20000,
+      "tn": 14384,
+      "fp": 522,
+      "fn": 83,
+      "tp": 5011,
+      "accuracy": 0.96975,
+      "precision": 0.905657,
+      "recall": 0.983706,
+      "specificity": 0.964981,
+      "fpr": 0.035019,
+      "f1_score": 0.94307,
+      "roc_auc": 0.997197,
+      "pr_auc": 0.990407
+    },
+    "unsupervised_isolation_forest": {
+      "total_samples": 20000,
+      "tn": 14904,
+      "fp": 2,
+      "fn": 5016,
+      "tp": 78,
+      "accuracy": 0.7491,
+      "precision": 0.975,
+      "recall": 0.015312,
+      "specificity": 0.999866,
+      "fpr": 0.000134,
+      "f1_score": 0.030151,
+      "roc_auc": 0.820577,
+      "pr_auc": 0.638544
+    },
+    "hybrid_classification_breakdown": {
+      "DUAL_CONFIRMED": {
+        "total_count": 80,
+        "pct_of_holdout": 0.4,
+        "ground_truth_attacks": 78,
+        "ground_truth_benign": 2,
+        "attack_precision": 0.975
+      },
+      "SUPERVISED_ONLY_ALERT": {
+        "total_count": 5453,
+        "pct_of_holdout": 27.27,
+        "ground_truth_attacks": 4933,
+        "ground_truth_benign": 520,
+        "attack_precision": 0.9046
+      },
+      "UNSUPERVISED_NOVELTY": {
+        "total_count": 0,
+        "pct_of_holdout": 0.0,
+        "ground_truth_attacks": 0,
+        "ground_truth_benign": 0,
+        "attack_precision": 0.0
+      },
+      "NORMAL_TRAFFIC": {
+        "total_count": 14467,
+        "pct_of_holdout": 72.34,
+        "ground_truth_attacks": 83,
+        "ground_truth_benign": 14384,
+        "attack_precision": 0.0057
+      }
+    }
+  }
+}

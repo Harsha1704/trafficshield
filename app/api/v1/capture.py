@@ -26,7 +26,7 @@ from typing import Any
 from flask import Blueprint, current_app, request
 from werkzeug.utils import secure_filename
 
-from app.utils.auth import require_role
+from app.utils.auth import get_current_user_from_request, require_role
 from app.utils.response import error_response, success_response
 from ingestion.capture.live_source import enumerate_network_interfaces, is_capture_driver_available
 from streaming.manager import RealTimeDetectionManager
@@ -41,6 +41,18 @@ def get_capture_status() -> Any:
     """Retrieve operational status, metrics, and recent detection events."""
     manager = RealTimeDetectionManager.get_instance()
     status = manager.get_status()
+
+    # RBAC check: only authenticated analyst and admin roles receive sensitive event stream with IPs
+    user = get_current_user_from_request()
+    auth_enabled = current_app.config.get("AUTH_ENABLED", True)
+    is_authorized = (not auth_enabled) or (user is not None and user.role in ("analyst", "admin"))
+
+    if not is_authorized:
+        # Redact sensitive event stream containing raw IP addresses and flow coordinates
+        safe_status = dict(status)
+        safe_status["recent_events"] = []
+        return success_response(data=safe_status, status_code=200)
+
     return success_response(data=status, status_code=200)
 
 
@@ -57,6 +69,28 @@ def get_interfaces() -> Any:
     """Enumerate host network interfaces and kernel packet filter availability."""
     interfaces = enumerate_network_interfaces()
     driver_ok, driver_msg = is_capture_driver_available()
+
+    user = get_current_user_from_request()
+    auth_enabled = current_app.config.get("AUTH_ENABLED", True)
+    is_authorized = (not auth_enabled) or (user is not None and user.role in ("analyst", "admin"))
+
+    if not is_authorized:
+        # Redact IP addresses and MAC addresses for unauthenticated/unauthorized callers
+        safe_interfaces = []
+        for iface in interfaces:
+            s_iface = dict(iface)
+            s_iface["ipv4_addresses"] = ["[REDACTED]"]
+            s_iface["mac_address"] = "[REDACTED]"
+            safe_interfaces.append(s_iface)
+        return success_response(
+            data={
+                "driver_available": driver_ok,
+                "driver_status": driver_msg,
+                "interfaces": safe_interfaces,
+            },
+            status_code=200,
+        )
+
     return success_response(
         data={
             "driver_available": driver_ok,
@@ -68,6 +102,7 @@ def get_interfaces() -> Any:
 
 
 @capture_bp.route("/sample-pcaps", methods=["GET"])
+@require_role("analyst", "admin")
 def list_sample_pcaps() -> Any:
     """List available local authorized PCAP files available for immediate replay."""
     candidates: list[dict[str, Any]] = []
@@ -133,12 +168,14 @@ def start_replay() -> Any:
     except FileNotFoundError as fnf:
         return error_response(message=str(fnf), status_code=404, error_code="FILE_NOT_FOUND")
     except ValueError as ve:
-        return error_response(message=str(ve), status_code=400, error_code="INVALID_PCAP")
+        err_msg = str(ve)
+        err_code = "PATH_TRAVERSAL_DETECTED" if "outside authorized" in err_msg else "INVALID_PCAP"
+        return error_response(message=err_msg, status_code=400, error_code=err_code)
     except RuntimeError as re:
         return error_response(message=str(re), status_code=409, error_code="SESSION_CONFLICT")
     except Exception as exc:
         logger.error("Failed to start PCAP replay: %s", exc, exc_info=True)
-        return error_response(message=str(exc), status_code=500, error_code="REPLAY_START_FAILED")
+        return error_response(message="Failed to start PCAP replay.", status_code=500, error_code="REPLAY_START_FAILED")
 
 
 @capture_bp.route("/start-live", methods=["POST"])

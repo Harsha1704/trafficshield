@@ -20,22 +20,24 @@ from app.utils.logging import configure_logging
 from config.settings import BaseAppSettings, get_settings, get_testing_settings
 
 
-def create_app(env: str | None = None) -> Flask:
+def create_app(env: str | BaseAppSettings | None = None) -> Flask:
     """
     Application factory.
 
     Parameters
     ----------
-    env : str, optional
-        Environment name: 'development', 'testing', or 'production'.
-        If omitted, reads from FLASK_ENV / APP_ENV environment variable,
-        defaulting to 'development'.
+    env : str | BaseAppSettings, optional
+        Environment name ('development', 'testing', 'production') or a
+        pre-configured BaseAppSettings instance. If omitted, reads from
+        FLASK_ENV / APP_ENV environment variable, defaulting to 'development'.
     """
     app = Flask(__name__, instance_relative_config=False)
 
     # ─── Load settings ────────────────────────────────────────────────────────
     settings: BaseAppSettings
-    if env == "testing":
+    if isinstance(env, BaseAppSettings):
+        settings = env
+    elif env == "testing":
         settings = get_testing_settings()
     else:
         settings = get_settings(env)
@@ -55,6 +57,7 @@ def create_app(env: str | None = None) -> Flask:
     )
 
     # ─── Extensions ───────────────────────────────────────────────────────────
+    _register_sqlite_pragmas()
     db.init_app(app)
     migrate.init_app(app, db)
     cors.init_app(
@@ -204,3 +207,44 @@ def _safe_db_uri(uri: str) -> str:
     except Exception:
         pass
     return uri
+
+
+def set_sqlite_pragmas(dbapi_connection, connection_record=None) -> None:
+    """
+    Configure SQLite connection reliability pragmas.
+    Strictly isolated to sqlite3.Connection instances; never executed on PostgreSQL/other DBs.
+    """
+    import sqlite3
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        try:
+            cursor.execute("PRAGMA busy_timeout=5000")
+            cursor.execute("PRAGMA database_list")
+            db_list = cursor.fetchall()
+            # If database is file-backed (file path is non-empty string), enable WAL mode and NORMAL synchronous
+            is_file_db = any(len(row) >= 3 and bool(row[2]) for row in db_list)
+            if is_file_db:
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA synchronous=NORMAL")
+        except Exception as exc:
+            logging.getLogger("app.database").warning("Failed to configure SQLite reliability pragmas: %s", exc)
+        finally:
+            cursor.close()
+
+
+_SQLITE_PRAGMA_LISTENER_REGISTERED = False
+
+
+def _register_sqlite_pragmas() -> None:
+    """Register SQLite connection reliability listener once for SQLAlchemy engines."""
+    global _SQLITE_PRAGMA_LISTENER_REGISTERED
+    if _SQLITE_PRAGMA_LISTENER_REGISTERED:
+        return
+
+    from sqlalchemy import event
+    from sqlalchemy.engine import Engine
+
+    event.listen(Engine, "connect", set_sqlite_pragmas)
+    _SQLITE_PRAGMA_LISTENER_REGISTERED = True
+
+
