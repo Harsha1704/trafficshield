@@ -5,6 +5,27 @@
 
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type AlertStatus = 'NEW' | 'INVESTIGATING' | 'RESOLVED' | 'FALSE_POSITIVE';
+export type HybridClassification =
+  | 'DUAL_CONFIRMED'
+  | 'SUPERVISED_ONLY_ALERT'
+  | 'UNSUPERVISED_NOVELTY'
+  | 'NORMAL_TRAFFIC';
+
+export interface SupervisedPrediction {
+  probability: number;
+  threshold: number;
+  is_anomaly: boolean;
+  decision: 'ANOMALY' | 'NORMAL';
+}
+
+export interface UnsupervisedPrediction {
+  anomaly_score: number;
+  threshold: number;
+  is_anomaly: boolean;
+  decision: 'ANOMALY' | 'NORMAL';
+  detector_name: string;
+  available: boolean;
+}
 
 export interface TopContributingFeature {
   feature: string;
@@ -35,6 +56,9 @@ export interface SinglePredictResponse {
   risk_level: RiskLevel;
   model_name: string;
   top_contributing_features: TopContributingFeature[];
+  supervised?: SupervisedPrediction;
+  unsupervised?: UnsupervisedPrediction;
+  hybrid_classification?: HybridClassification;
 }
 
 export interface BatchPredictResponse {
@@ -44,6 +68,7 @@ export interface BatchPredictResponse {
   mean_anomaly_score: number;
   max_anomaly_score: number;
   predictions: SinglePredictResponse[];
+  hybrid_classification_counts?: Record<HybridClassification, number>;
 }
 
 export interface BenchmarkSplitMetrics {
@@ -82,6 +107,26 @@ export interface ModelInfoResponse {
   engineered_features: string[];
   model_loaded: boolean;
   preprocessor_loaded: boolean;
+  hybrid_enabled?: boolean;
+  supervised_model?: {
+    name: string;
+    type: string;
+    version: string;
+    decision_threshold: number;
+    loaded: boolean;
+    sha256: string;
+  };
+  unsupervised_model?: {
+    name: string;
+    type: string;
+    version: string;
+    decision_threshold: number;
+    loaded: boolean;
+    sha256: string;
+    score_direction?: string;
+  };
+  hybrid_classification_classes?: string[];
+  hybrid_classification_rules?: Record<string, string>;
   verified_benchmark?: VerifiedBenchmarkInfo;
 }
 
@@ -100,13 +145,18 @@ export interface SecurityAlert {
   acknowledged_at: string | null;
   created_at: string;
   updated_at: string;
-  input_features: Record<string, number>;
+  input_features: Record<string, any>;
   top_contributing_features: TopContributingFeature[];
   protocol?: string | null;
   src_port?: number | null;
   dst_port?: number | null;
+  src_ip?: string | null;
+  dst_ip?: string | null;
   is_demo?: boolean;
   source?: string;
+  hybrid_classification?: HybridClassification | null;
+  supervised?: SupervisedPrediction | null;
+  unsupervised?: UnsupervisedPrediction | null;
 }
 
 export interface AlertStats {
@@ -352,6 +402,12 @@ export interface StreamingEventRecord {
   model_version: string;
   top_features: TopContributingFeature[];
   is_provisional: boolean;
+  supervised_score?: number;
+  supervised_decision?: string;
+  unsupervised_score?: number;
+  unsupervised_threshold?: number;
+  unsupervised_decision?: string;
+  hybrid_classification?: HybridClassification;
 }
 
 export interface IntervalTelemetryItem {

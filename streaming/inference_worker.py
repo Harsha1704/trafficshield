@@ -254,7 +254,18 @@ class StreamingInferenceWorker:
         risk_level = res.get("risk_level", "LOW")
         top_features = res.get("top_contributing_features", [])
 
-        if is_anomaly:
+        # Extract hybrid classification metadata
+        supervised_info = res.get("supervised", {})
+        unsupervised_info = res.get("unsupervised", {})
+        hybrid_classification = res.get(
+            "hybrid_classification",
+            "SUPERVISED_ONLY_ALERT" if is_anomaly else "NORMAL_TRAFFIC",
+        )
+
+        # Detect anomaly if either supervised or hybrid novelty flags the flow
+        is_hybrid_anomaly = is_anomaly or (hybrid_classification != "NORMAL_TRAFFIC")
+
+        if is_hybrid_anomaly:
             self.anomalies_detected += 1
 
         self.inference_latencies_ms.append(t_infer)
@@ -283,19 +294,30 @@ class StreamingInferenceWorker:
             "model_version": self.service.version,
             "top_features": top_features,
             "is_provisional": False,
+            "supervised_score": round(supervised_info.get("probability", anomaly_score), 4),
+            "supervised_decision": supervised_info.get("decision", "ANOMALY" if is_anomaly else "NORMAL"),
+            "unsupervised_score": round(unsupervised_info.get("anomaly_score", 0.0), 4),
+            "unsupervised_threshold": round(unsupervised_info.get("threshold", 0.727896), 4),
+            "unsupervised_decision": unsupervised_info.get("decision", "NORMAL"),
+            "hybrid_classification": hybrid_classification,
         }
 
         self.recent_events.append(event_record)
 
         # Reconcile alert persistence lifecycle
-        if is_anomaly:
+        if is_hybrid_anomaly:
             if self.app:
-                self._persist_alert(flow, event_record)
+                self._persist_alert(flow, event_record, res)
             else:
                 self.alerts_unpersisted_no_app += 1
 
-    def _persist_alert(self, flow: dict[str, Any], event_record: dict[str, Any]) -> None:
-        """Deduplicate and insert SecurityAlert record in SQLite/PostgreSQL."""
+    def _persist_alert(
+        self,
+        flow: dict[str, Any],
+        event_record: dict[str, Any],
+        res: dict[str, Any] | None = None,
+    ) -> None:
+        """Deduplicate and insert SecurityAlert record in SQLite/PostgreSQL with hybrid evidence."""
         dedup_key = f"{flow.get('src_ip')}:{flow.get('dst_ip')}:{flow.get('dst_port')}:{flow.get('protocol')}"
         now = time.time()
         last_seen = self._dedup_cache.get(dedup_key, 0.0)
@@ -312,6 +334,53 @@ class StreamingInferenceWorker:
 
         try:
             with self.app.app_context():
+                dur = float(flow.get("duration_seconds", 0.0) or 0.0)
+                pkts = float(flow.get("fwd_packets", 0.0) or 0.0)
+                bytes_ = float(flow.get("fwd_bytes", 0.0) or 0.0)
+                p_rate = flow.get("packet_rate")
+                if p_rate is None:
+                    p_rate = (pkts / dur) if dur > 0 else 0.0
+                b_rate = flow.get("byte_rate")
+                if b_rate is None:
+                    b_rate = (bytes_ / dur) if dur > 0 else 0.0
+                bpp = flow.get("bytes_per_packet")
+                if bpp is None:
+                    bpp = (bytes_ / pkts) if pkts > 0 else 0.0
+
+                input_feat = {
+                    # 10 Base Features
+                    "duration_seconds": flow.get("duration_seconds"),
+                    "fwd_bytes": flow.get("fwd_bytes"),
+                    "sttl": flow.get("sttl"),
+                    "sload": flow.get("sload"),
+                    "fwd_packets": flow.get("fwd_packets"),
+                    "swin": flow.get("swin"),
+                    "smeansz": flow.get("smeansz"),
+                    "sjit": flow.get("sjit"),
+                    "sintpkt": flow.get("sintpkt"),
+                    "is_sm_ips_ports": flow.get("is_sm_ips_ports"),
+                    # 3 Causal Rate Features (Inference Scored)
+                    "packet_rate": round(float(p_rate), 4) if isinstance(p_rate, (int, float)) else p_rate,
+                    "byte_rate": round(float(b_rate), 4) if isinstance(b_rate, (int, float)) else b_rate,
+                    "bytes_per_packet": round(float(bpp), 4) if isinstance(bpp, (int, float)) else bpp,
+                    # Flow Lifecycle Timestamps
+                    "flow_start_ts": flow.get("first_timestamp"),
+                    "flow_end_ts": flow.get("last_timestamp"),
+                    # Underscore-prefixed network coordinates (prevents UI feature grid collisions)
+                    "_network_coordinates": {
+                        "src_ip": flow.get("src_ip"),
+                        "dst_ip": flow.get("dst_ip"),
+                        "flow_id": flow.get("flow_id"),
+                    },
+                }
+                if res:
+                    input_feat["_hybrid_evidence"] = {
+                        "hybrid_classification": event_record.get("hybrid_classification"),
+                        "supervised": res.get("supervised"),
+                        "unsupervised": res.get("unsupervised"),
+                    }
+
+                classification = event_record.get("hybrid_classification", "ALERT")
                 alert = SecurityAlert(
                     request_id=event_record["event_id"],
                     timestamp=_utcnow(),
@@ -322,22 +391,8 @@ class StreamingInferenceWorker:
                     model_name=self.service.model_name,
                     model_version=self.service.version,
                     status="NEW",
-                    analyst_notes=f"Real-time streaming detection from {self.source_provenance}.",
-                    input_features={
-                        k: flow.get(k)
-                        for k in [
-                            "duration_seconds",
-                            "fwd_bytes",
-                            "sttl",
-                            "sload",
-                            "fwd_packets",
-                            "swin",
-                            "smeansz",
-                            "sjit",
-                            "sintpkt",
-                            "is_sm_ips_ports",
-                        ]
-                    },
+                    analyst_notes=f"Real-time streaming detection [{classification}] from {self.source_provenance}.",
+                    input_features=input_feat,
                     top_contributing_features=event_record.get("top_features"),
                     protocol=flow.get("protocol"),
                     src_port=flow.get("src_port"),

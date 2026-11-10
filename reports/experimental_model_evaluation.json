@@ -1,0 +1,96 @@
+{
+  "experiment_name": "TrafficShield B.Tech Fast-Track Model Improvement Study",
+  "dataset": "UNSW-NB15 Day 1 Chronological Partition",
+  "test_sample_size": 19951,
+  "benign_samples": 14093,
+  "attack_samples": 5858,
+  "baseline_production_xgboost": {
+    "accuracy": 0.981054,
+    "precision": 0.958501,
+    "recall": 0.977808,
+    "f1_score": 0.968058,
+    "roc_auc": 0.998711,
+    "pr_auc": 0.996661,
+    "confusion_matrix": [
+      [
+        13845,
+        248
+      ],
+      [
+        130,
+        5728
+      ]
+    ],
+    "false_positive_rate": 0.017597,
+    "threshold": 0.5
+  },
+  "strategy_1_validation_calibrated_xgboost": {
+    "accuracy": 0.985715,
+    "precision": 0.953606,
+    "recall": 1.0,
+    "f1_score": 0.976252,
+    "roc_auc": 0.998711,
+    "pr_auc": 0.996661,
+    "confusion_matrix": [
+      [
+        13808,
+        285
+      ],
+      [
+        0,
+        5858
+      ]
+    ],
+    "false_positive_rate": 0.020223,
+    "threshold": 0.15
+  },
+  "strategy_2_class_balanced_tuned_xgboost": {
+    "accuracy": 0.984061,
+    "precision": 0.955592,
+    "recall": 0.991806,
+    "f1_score": 0.973362,
+    "roc_auc": 0.997328,
+    "pr_auc": 0.988441,
+    "confusion_matrix": [
+      [
+        13823,
+        270
+      ],
+      [
+        48,
+        5810
+      ]
+    ],
+    "false_positive_rate": 0.019158,
+    "threshold": 0.66,
+    "scale_pos_weight": 12.22,
+    "training_time_seconds": 23.32
+  },
+  "comparison_table": {
+    "Accuracy": {
+      "Baseline (tau=0.50)": "98.11%",
+      "Strategy 1 (tau=0.20)": "98.57%",
+      "Strategy 2 (Tuned+Balanced)": "98.41%"
+    },
+    "Attack Recall": {
+      "Baseline (tau=0.50)": "97.78%",
+      "Strategy 1 (tau=0.20)": "100.00%",
+      "Strategy 2 (Tuned+Balanced)": "99.18%"
+    },
+    "F1-Score": {
+      "Baseline (tau=0.50)": "96.81%",
+      "Strategy 1 (tau=0.20)": "97.63%",
+      "Strategy 2 (Tuned+Balanced)": "97.34%"
+    },
+    "False Positives": {
+      "Baseline (tau=0.50)": 248,
+      "Strategy 1 (tau=0.20)": 285,
+      "Strategy 2 (Tuned+Balanced)": 270
+    },
+    "False Negatives (Missed Attacks)": {
+      "Baseline (tau=0.50)": 130,
+      "Strategy 1 (tau=0.20)": 0,
+      "Strategy 2 (Tuned+Balanced)": 48
+    }
+  }
+}

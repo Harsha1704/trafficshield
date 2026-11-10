@@ -1,0 +1,85 @@
+{
+  "format_version": "1.0",
+  "detector_type": "IsolationForestDetector",
+  "feature_policy_version": "1.0",
+  "artifact_file": "production_iforest.joblib",
+  "size_bytes": 733311,
+  "sha256": "d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e",
+  "created_at_utc": "2026-11-02T15:46:12.620779+00:00",
+  "feature_names_in": [
+    "duration_seconds",
+    "fwd_bytes",
+    "sttl",
+    "sload",
+    "fwd_packets",
+    "swin",
+    "smeansz",
+    "sjit",
+    "sintpkt",
+    "packet_rate",
+    "byte_rate",
+    "bytes_per_packet",
+    "is_sm_ips_ports"
+  ],
+  "n_features_in": 13,
+  "threshold": 0.7278956397776036,
+  "threshold_config": {
+    "method": "empirical_quantile_on_benign_calibration",
+    "quantile": 0.99,
+    "calibration_sample_count": 14153,
+    "calibration_min_score": 0.333875,
+    "calibration_max_score": 0.766424,
+    "calibration_mean_score": 0.390076,
+    "calibrated_threshold": 0.727896
+  },
+  "preprocessor_artifact_ref": "artifacts/models/production_preprocessor.joblib",
+  "parameters": {
+    "n_estimators": 100,
+    "max_samples": "auto",
+    "contamination": "auto",
+    "max_features": 1.0,
+    "random_state": 42,
+    "n_jobs": -1,
+    "threshold": null
+  },
+  "library_versions": {
+    "sklearn": "1.9.1",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "joblib": "1.6.0"
+  },
+  "extra_metadata": {
+    "model_role": "unsupervised_anomaly_detector",
+    "dataset": "UNSW-NB15",
+    "training_split": "Day1_Chronological_Train_Benign_Only",
+    "training_sample_count": 46221,
+    "training_total_train_partition": 50004,
+    "training_duration_seconds": 0.419,
+    "score_direction": "higher_is_more_anomalous (anomaly_score = -raw_score)",
+    "preprocessor_sha256": "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653",
+    "features": [
+      "duration_seconds",
+      "fwd_bytes",
+      "sttl",
+      "sload",
+      "fwd_packets",
+      "swin",
+      "smeansz",
+      "sjit",
+      "sintpkt",
+      "packet_rate",
+      "byte_rate",
+      "bytes_per_packet",
+      "is_sm_ips_ports"
+    ],
+    "system_environment": {
+      "os": "Windows-11-10.0.26300-SP0",
+      "python_version": "3.14.8",
+      "scikit_learn_version": "1.9.1"
+    },
+    "scientific_disclosures": {
+      "interpretation": "Statistical novelty / out-of-distribution deviation indicator; does not represent confirmed malicious exploit.",
+      "unsupervised_guarantee": "No test labels or evaluation outcomes used during training or threshold calibration."
+    }
+  }
+}

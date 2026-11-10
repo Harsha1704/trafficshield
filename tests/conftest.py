@@ -24,9 +24,22 @@ if "sklearn.linear_model._sag_fast" not in sys.modules:
         _mock_sag.sag64 = lambda *args, **kwargs: None  # type: ignore[attr-defined]
         sys.modules["sklearn.linear_model._sag_fast"] = _mock_sag
 
+if "scipy.stats._qmvnt_cy" not in sys.modules:
+    try:
+        import scipy.stats._qmvnt_cy  # noqa: F401
+    except (ImportError, OSError):
+        _mock_qmvnt = types.ModuleType("scipy.stats._qmvnt_cy")
+        _mock_qmvnt._qmvn_inner = lambda *args, **kwargs: (0.0, 0.0)
+        _mock_qmvnt._qmvt_inner = lambda *args, **kwargs: (0.0, 0.0)
+        sys.modules["scipy.stats._qmvnt_cy"] = _mock_qmvnt
+
 # Force testing environment BEFORE app import so settings are correct
 os.environ.setdefault("FLASK_ENV", "testing")
 os.environ.setdefault("APP_ENV", "testing")
+
+# Isolate test session from ambient production/staging database environment
+if not os.environ.get("USE_EXTERNAL_DB_FOR_TESTS"):
+    os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 
 @pytest.fixture(scope="session")

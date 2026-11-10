@@ -19,11 +19,11 @@ import type { SinglePredictRequest, SinglePredictResponse } from '../types/api';
 const PRESETS: Record<string, { label: string; description: string; data: SinglePredictRequest }> = {
   normal_https: {
     label: 'Normal HTTPS Client Session',
-    description: 'Standard 443 TCP session with normal local TTL (64) and low byte rate.',
+    description: 'Standard 443 TCP session with internal host TTL (31) and low byte rate.',
     data: {
       duration_seconds: 1.45,
       fwd_bytes: 4800,
-      sttl: 64,
+      sttl: 31,
       sload: 26482.7,
       fwd_packets: 18,
       swin: 255,
@@ -355,7 +355,7 @@ export const FlowInspectorPage: React.FC<{
               <Info className="w-3.5 h-3.5" /> Rate features automatically derived on backend.
             </span>
             <Button onClick={handleInspect} loading={scoring} icon={<Play className="w-4 h-4" />}>
-              Score Observation
+              Analyze Flow
             </Button>
           </div>
         </Card>
@@ -408,6 +408,9 @@ export const FlowInspectorPage: React.FC<{
                   {result.is_anomaly ? 'ANOMALOUS FLOW DETECTED' : 'NORMAL BENIGN FLOW'}
                 </div>
                 <div className="mt-2 flex items-center justify-center gap-2">
+                  <Badge variant={result.hybrid_classification === 'DUAL_CONFIRMED' ? 'rose' : (result.hybrid_classification === 'NORMAL_TRAFFIC' ? 'emerald' : 'cyan')}>
+                    {result.hybrid_classification || (result.is_anomaly ? 'ANOMALY' : 'NORMAL_TRAFFIC')}
+                  </Badge>
                   <SeverityBadge severity={result.risk_level} />
                   <span className="text-xs text-slate-400">Score: {result.anomaly_score.toFixed(4)}</span>
                 </div>
@@ -469,7 +472,7 @@ export const FlowInspectorPage: React.FC<{
                   loading={persisting}
                   icon={<Save className="w-3.5 h-3.5" />}
                 >
-                  Save as Alert
+                  Save as Security Alert
                 </Button>
               </div>
             </div>

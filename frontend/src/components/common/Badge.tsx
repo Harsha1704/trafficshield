@@ -63,3 +63,37 @@ export const StatusBadge: React.FC<{ status: AlertStatus | string }> = ({ status
     </span>
   );
 };
+
+export const HybridBadge: React.FC<{ classification?: string | null; className?: string }> = ({
+  classification,
+  className = '',
+}) => {
+  if (!classification) return null;
+  const cls = classification.toUpperCase();
+
+  let variantClass = 'bg-slate-900/80 text-slate-400 border-slate-800';
+  let label = cls;
+
+  if (cls === 'DUAL_CONFIRMED') {
+    variantClass = 'bg-rose-950/70 text-rose-300 border-rose-600/60 shadow-sm shadow-rose-950/50';
+    label = 'DUAL CONFIRMED';
+  } else if (cls === 'SUPERVISED_ONLY_ALERT') {
+    variantClass = 'bg-amber-950/70 text-amber-300 border-amber-600/60';
+    label = 'SUPERVISED ALERT';
+  } else if (cls === 'UNSUPERVISED_NOVELTY') {
+    variantClass = 'bg-purple-950/70 text-purple-300 border-purple-600/60';
+    label = 'UNSUPERVISED NOVELTY';
+  } else if (cls === 'NORMAL_TRAFFIC') {
+    variantClass = 'bg-emerald-950/70 text-emerald-300 border-emerald-800/60';
+    label = 'NORMAL TRAFFIC';
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border font-mono tracking-tight whitespace-nowrap ${variantClass} ${className}`}
+      title={`Hybrid Classification: ${cls}`}
+    >
+      {label}
+    </span>
+  );
+};

@@ -43,6 +43,69 @@ def _utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+def get_approved_pcap_roots() -> list[Path]:
+    """Return canonical absolute paths of authorized directories for PCAP replay."""
+    from config.settings import PROJECT_ROOT
+
+    roots = [
+        (PROJECT_ROOT / "data" / "captures").resolve(),
+        (PROJECT_ROOT / "tests" / "fixtures").resolve(),
+        (PROJECT_ROOT / "datasets" / "samples").resolve(),
+    ]
+    import os
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        import tempfile
+        roots.append(Path(tempfile.gettempdir()).resolve())
+    else:
+        try:
+            from flask import current_app
+            if current_app:
+                if current_app.config.get("TESTING", False):
+                    import tempfile
+                    roots.append(Path(tempfile.gettempdir()).resolve())
+                cfg_roots = current_app.config.get("ALLOWED_PCAP_ROOTS")
+                if cfg_roots:
+                    for r in cfg_roots:
+                        roots.append(Path(r).resolve())
+        except Exception:
+            pass
+    return roots
+
+
+def validate_pcap_path(
+    candidate: str | Path,
+    approved_roots: list[Path] | None = None,
+) -> Path:
+    """
+    Validate and return canonical Path if within approved replay roots.
+    Rejects directory traversal, symlink escapes, missing files, and directories.
+    """
+    if approved_roots is None:
+        approved_roots = get_approved_pcap_roots()
+
+    raw_path = Path(candidate)
+    try:
+        resolved_path = raw_path.resolve()
+    except Exception as exc:
+        raise ValueError(f"Invalid PCAP file path: {exc}") from exc
+
+    # Traversal & containment check: resolved path must be relative to at least one approved root
+    is_contained = any(resolved_path.is_relative_to(root) for root in approved_roots)
+    if not is_contained:
+        raise ValueError(
+            "Access denied: PCAP file path is outside authorized replay directories."
+        )
+
+    if not resolved_path.exists():
+        raise FileNotFoundError(f"PCAP capture file not found: {resolved_path.name}")
+
+    if not resolved_path.is_file():
+        raise ValueError(f"Path is not a regular file: {resolved_path.name}")
+
+    return resolved_path
+
+
+
 class RealTimeDetectionManager:
     """
     Central supervisor for the real-time detection pipeline.
@@ -348,16 +411,19 @@ class RealTimeDetectionManager:
         speed_multiplier: float = 1.0,
         app: Any = None,
         max_packets: int | None = None,
+        approved_roots: list[Path] | None = None,
     ) -> dict[str, Any]:
         """Initiate packet replay from a validated PCAP/PCAPNG capture file."""
         with self._manager_lock:
             if self.state in (WorkerState.RUNNING, WorkerState.STARTING):
                 raise RuntimeError("A capture or replay session is already active. Stop it first.")
 
+            # Validate path containment and existence before starting replay
+            pcap_file = validate_pcap_path(pcap_path, approved_roots=approved_roots)
+
             self.state = WorkerState.STARTING
             self.error_message = None
             self.capture_mode = CaptureSourceType.PCAP_REPLAY
-            pcap_file = Path(pcap_path)
             self.selected_target = pcap_file.name
             self.start_time = _utcnow()
             self._stop_event.clear()

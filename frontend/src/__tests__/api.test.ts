@@ -4,8 +4,7 @@ import {
   getApiBaseUrl,
   getDefaultApiBaseUrl,
   setApiBaseUrl,
-  ApiClientError,
-  PRODUCTION_API_BASE,
+  DEFAULT_API_BASE,
   LOCAL_DEV_API_BASE,
 } from '../services/api';
 
@@ -24,18 +23,19 @@ describe('TrafficShield Centralized API Client', () => {
     Object.assign(import.meta.env, originalEnv);
   });
 
-  it('resolves local development fallback when VITE_API_URL is unset and not in production', () => {
+  it('resolves localhost API base URL when VITE_API_URL is unset in development mode', () => {
     (import.meta.env as any).PROD = false;
     (import.meta.env as any).MODE = 'development';
+    expect(getDefaultApiBaseUrl()).toBe(DEFAULT_API_BASE);
     expect(getDefaultApiBaseUrl()).toBe(LOCAL_DEV_API_BASE);
     expect(getApiBaseUrl()).toBe('http://localhost:5000/api/v1');
   });
 
-  it('resolves production API base URL when PROD is true and VITE_API_URL is unset', () => {
+  it('resolves localhost API base URL when VITE_API_URL is unset in production build mode', () => {
     (import.meta.env as any).PROD = true;
     (import.meta.env as any).MODE = 'production';
-    expect(getDefaultApiBaseUrl()).toBe(PRODUCTION_API_BASE);
-    expect(getApiBaseUrl()).toBe('https://trafficshield-staging-backend.onrender.com/api/v1');
+    expect(getDefaultApiBaseUrl()).toBe(DEFAULT_API_BASE);
+    expect(getApiBaseUrl()).toBe('http://localhost:5000/api/v1');
   });
 
   it('prioritizes explicit VITE_API_URL over default in both development and production', () => {
@@ -47,16 +47,6 @@ describe('TrafficShield Centralized API Client', () => {
   it('allows overriding API base URL via persistent storage', () => {
     setApiBaseUrl('http://192.168.1.100:8000/api/v1');
     expect(getApiBaseUrl()).toBe('http://192.168.1.100:8000/api/v1');
-  });
-
-  it('cleanses and ignores stale localhost overrides in production mode', () => {
-    (import.meta.env as any).PROD = true;
-    (import.meta.env as any).MODE = 'production';
-    localStorage.setItem('trafficshield_api_url', 'http://localhost:5000/api/v1');
-
-    // Should purge localhost from localStorage and fallback to production staging URL
-    expect(getApiBaseUrl()).toBe(PRODUCTION_API_BASE);
-    expect(localStorage.getItem('trafficshield_api_url')).toBeNull();
   });
 
   it('throws ApiClientError with structured error details on failure', async () => {

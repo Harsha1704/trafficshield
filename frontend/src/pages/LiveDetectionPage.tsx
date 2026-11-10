@@ -31,7 +31,7 @@ import {
 } from 'recharts';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
-import { SeverityBadge, Badge } from '../components/common/Badge';
+import { SeverityBadge, Badge, HybridBadge } from '../components/common/Badge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { api, ApiClientError } from '../services/api';
 import type {
@@ -1054,16 +1054,29 @@ export const LiveDetectionPage: React.FC = () => {
 
       {/* Live Streaming Scored Events Table */}
       <Card className="border border-slate-800 bg-[#090d16]">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-800/80 gap-2">
           <div>
-            <h2 className="text-base font-bold text-white">Streaming Detections Feed</h2>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <span>Hybrid Streaming Detections Feed</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/60">
+                HYBRID ML ACTIVE
+              </span>
+            </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Sub-second scored unidirectional flows evaluated against decision threshold (0.50). Detections represent statistical pattern anomalies requiring investigation, not verified attacks.
+              Dual-detector evaluation: Supervised XGBoost (τ=0.50) &amp; Unsupervised Isolation Forest (τ=0.728). Detections represent statistical pattern anomalies requiring investigation, not verified attacks.
             </p>
           </div>
-          <span className="text-xs font-mono text-slate-400">
-            Showing {status?.recent_events?.length ?? 0} recent flows
-          </span>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 text-[11px]">
+              XGBoost: <span className="text-cyan-300 font-bold">τ=0.50</span>
+            </span>
+            <span className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 text-[11px]">
+              IForest: <span className="text-purple-300 font-bold">τ=0.728</span>
+            </span>
+            <span className="text-xs font-mono text-slate-400">
+              ({status?.recent_events?.length ?? 0} flows)
+            </span>
+          </div>
         </div>
 
         {status?.recent_events && status.recent_events.length > 0 ? (
@@ -1073,8 +1086,9 @@ export const LiveDetectionPage: React.FC = () => {
                 <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
                   <th className="py-2.5 px-3">Timestamp</th>
                   <th className="py-2.5 px-3">Flow 5-Tuple</th>
-                  <th className="py-2.5 px-3">Score</th>
-                  <th className="py-2.5 px-3">Verdict</th>
+                  <th className="py-2.5 px-3">XGBoost Prob</th>
+                  <th className="py-2.5 px-3">IForest Score</th>
+                  <th className="py-2.5 px-3">Hybrid Classification</th>
                   <th className="py-2.5 px-3">Risk Level</th>
                   <th className="py-2.5 px-3">Latency</th>
                   <th className="py-2.5 px-3">Source</th>
@@ -1084,51 +1098,86 @@ export const LiveDetectionPage: React.FC = () => {
                 {status.recent_events
                   .slice()
                   .reverse()
-                  .map((ev: StreamingEventRecord) => (
-                    <tr
-                      key={ev.event_id}
-                      className={`hover:bg-slate-800/30 transition-colors ${
-                        ev.is_anomaly ? 'bg-rose-950/15' : ''
-                      }`}
-                    >
-                      <td className="py-2 px-3 text-slate-300 whitespace-nowrap">
-                        {ev.timestamp.substring(11, 19)}
-                      </td>
-                      <td className="py-2 px-3 text-slate-200">
-                        <span className="text-cyan-300">{ev.src_ip}:{ev.src_port}</span>
-                        <span className="text-slate-500 mx-1">&rarr;</span>
-                        <span className="text-indigo-300">{ev.dst_ip}:{ev.dst_port}</span>
-                        <span className="ml-1.5 px-1 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">
-                          {ev.protocol}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3 font-semibold text-white">
-                        {ev.anomaly_score.toFixed(4)}
-                      </td>
-                      <td className="py-2 px-3">
-                        {ev.is_anomaly ? (
-                          <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
-                            ANOMALY
+                  .map((ev: StreamingEventRecord) => {
+                    const xgbProb = ev.supervised_score != null ? ev.supervised_score : ev.anomaly_score;
+                    const ifScore = ev.unsupervised_score;
+                    const isDual = ev.hybrid_classification === 'DUAL_CONFIRMED';
+                    const isNovelty = ev.hybrid_classification === 'UNSUPERVISED_NOVELTY';
+                    const isSupOnly = ev.hybrid_classification === 'SUPERVISED_ONLY_ALERT';
+
+                    return (
+                      <tr
+                        key={ev.event_id}
+                        className={`hover:bg-slate-800/30 transition-colors ${
+                          isDual
+                            ? 'bg-rose-950/20'
+                            : isNovelty
+                            ? 'bg-purple-950/20'
+                            : isSupOnly
+                            ? 'bg-amber-950/15'
+                            : ''
+                        }`}
+                      >
+                        <td className="py-2 px-3 text-slate-300 whitespace-nowrap">
+                          {ev.timestamp.substring(11, 19)}
+                        </td>
+                        <td className="py-2 px-3 text-slate-200">
+                          <span className="text-cyan-300">{ev.src_ip}:{ev.src_port}</span>
+                          <span className="text-slate-500 mx-1">&rarr;</span>
+                          <span className="text-indigo-300">{ev.dst_ip}:{ev.dst_port}</span>
+                          <span className="ml-1.5 px-1 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px]">
+                            {ev.protocol}
                           </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                            BENIGN
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className={`font-semibold ${xgbProb >= 0.5 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                            {(xgbProb * 100).toFixed(1)}%
                           </span>
-                        )}
-                      </td>
-                      <td className="py-2 px-3">
-                        <SeverityBadge severity={ev.risk_level} />
-                      </td>
-                      <td className="py-2 px-3 text-slate-400 whitespace-nowrap">
-                        {ev.inference_latency_ms} ms
-                      </td>
-                      <td className="py-2 px-3 text-[11px] text-slate-400">
-                        <span className="px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700">
-                          {ev.source_provenance}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                          <span className="text-[10px] text-slate-500 ml-1">
+                            ({xgbProb >= 0.5 ? 'ANOMALY' : 'NORMAL'})
+                          </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          {ifScore != null ? (
+                            <span>
+                              <span className={`font-semibold ${ifScore >= (ev.unsupervised_threshold ?? 0.727896) ? 'text-purple-400' : 'text-slate-300'}`}>
+                                {ifScore.toFixed(4)}
+                              </span>
+                              <span className="text-[10px] text-slate-500 ml-1">
+                                ({ifScore >= (ev.unsupervised_threshold ?? 0.727896) ? 'NOVEL' : 'NORMAL'})
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 text-[11px]">N/A</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          {ev.hybrid_classification ? (
+                            <HybridBadge classification={ev.hybrid_classification} />
+                          ) : ev.is_anomaly ? (
+                            <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30 text-[11px]">
+                              ANOMALY
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 text-[11px]">
+                              BENIGN
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          <SeverityBadge severity={ev.risk_level} />
+                        </td>
+                        <td className="py-2 px-3 text-slate-400 whitespace-nowrap">
+                          {ev.inference_latency_ms} ms
+                        </td>
+                        <td className="py-2 px-3 text-[11px] text-slate-400">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700">
+                            {ev.source_provenance}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

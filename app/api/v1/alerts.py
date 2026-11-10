@@ -258,6 +258,14 @@ def create_alerts() -> Any:
         if notes and len(notes) > 2000:
             return error_response("analyst_notes exceeds maximum length of 2,000 characters", 400, "NOTES_TOO_LONG")
 
+        input_feats = dict(r.get("input_features", {})) if isinstance(r.get("input_features"), dict) else {}
+        if "hybrid_classification" in r or "supervised" in r or "unsupervised" in r:
+            input_feats["_hybrid_evidence"] = {
+                "hybrid_classification": r.get("hybrid_classification"),
+                "supervised": r.get("supervised"),
+                "unsupervised": r.get("unsupervised"),
+            }
+
         alert = SecurityAlert(
             request_id=r.get("request_id"),
             timestamp=datetime.now(UTC),
@@ -269,7 +277,7 @@ def create_alerts() -> Any:
             model_version=str(r.get("model_version", "1.0.0"))[:32],
             status=r.get("status", "NEW") if r.get("status") in VALID_STATUSES else "NEW",
             analyst_notes=notes,
-            input_features=r.get("input_features", {}),
+            input_features=input_feats,
             top_contributing_features=r.get("top_contributing_features", []),
             protocol=str(r.get("protocol", "TCP"))[:16] if r.get("protocol") else None,
             src_port=r.get("src_port"),

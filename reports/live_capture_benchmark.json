@@ -1,0 +1,861 @@
+{
+  "timestamp_utc": "2026-11-02T17:31:22Z",
+  "validation_metadata": {
+    "mode": "REAL_PASSIVE_LIVE_CAPTURE",
+    "interface_monitored": "Wi-Fi",
+    "ip_bpf_filter": "ip",
+    "capture_duration_seconds": 9.6,
+    "drain_duration_seconds": 5.34,
+    "driver_status": "Npcap/WinPcap driver is installed and active."
+  },
+  "artifact_integrity": {
+    "all_matched": true,
+    "artifacts": {
+      "production_detector.joblib": {
+        "exists": true,
+        "actual_hash": "c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495",
+        "expected_hash": "c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495",
+        "match": true,
+        "size_bytes": 246095
+      },
+      "production_detector.json": {
+        "exists": true,
+        "actual_hash": "3553f1a47c1c2fd67b031cadb42400246997778f8dcf42026e2ebfb882ba73b1",
+        "expected_hash": "3553f1a47c1c2fd67b031cadb42400246997778f8dcf42026e2ebfb882ba73b1",
+        "match": true,
+        "size_bytes": 426
+      },
+      "production_preprocessor.joblib": {
+        "exists": true,
+        "actual_hash": "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653",
+        "expected_hash": "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653",
+        "match": true,
+        "size_bytes": 2525
+      },
+      "production_iforest.joblib": {
+        "exists": true,
+        "actual_hash": "d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e",
+        "expected_hash": "d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e",
+        "match": true,
+        "size_bytes": 733311
+      },
+      "production_iforest.json": {
+        "exists": true,
+        "actual_hash": "5daf8b0dab1c4c3a66e4cb2c38b10c406f6c1861572d27a08155c8541bf4cb94",
+        "expected_hash": "5daf8b0dab1c4c3a66e4cb2c38b10c406f6c1861572d27a08155c8541bf4cb94",
+        "match": true,
+        "size_bytes": 2587
+      }
+    }
+  },
+  "synthetic_preflight": {
+    "flows_tested": 4,
+    "all_cases_passed": true,
+    "test_results": [
+      {
+        "case": "Forward TCP flow with FIN termination",
+        "features_valid": true,
+        "scored_successfully": true,
+        "classification": "SUPERVISED_ONLY_ALERT"
+      },
+      {
+        "case": "Reverse connection strictly partitioned into independent flow",
+        "reverse_unmixed": true,
+        "scored_successfully": true
+      },
+      {
+        "case": "Single-packet UDP flow with duration=0.0 rate safety",
+        "rates_zero_guarded": true,
+        "scored_successfully": true,
+        "classification": "SUPERVISED_ONLY_ALERT"
+      },
+      {
+        "case": "Incompatible STTL rejected safely",
+        "rejected_correctly": true
+      }
+    ]
+  },
+  "packet_telemetry": {
+    "packets_observed": 572,
+    "bytes_observed": 123321,
+    "packets_dropped": 0,
+    "malformed_packets": 0,
+    "truncated_packets": 0,
+    "unsupported_packets": 0
+  },
+  "flow_reconstruction_telemetry": {
+    "flows_constructed": 331,
+    "flows_enqueued": 331,
+    "flows_valid": 331,
+    "flows_incompatible_rejected": 0,
+    "incompatible_reasons": []
+  },
+  "hybrid_inference_telemetry": {
+    "flows_scored": 331,
+    "anomalies_detected": 131,
+    "alerts_persisted": 130,
+    "alerts_deduplicated": 1,
+    "validation_errors": 0,
+    "inference_failures": 0,
+    "hybrid_classification_distribution": {
+      "SUPERVISED_ONLY_ALERT": 131,
+      "NORMAL_TRAFFIC": 200
+    }
+  },
+  "latency_profile_ms": {
+    "count": 331,
+    "mean_ms": 19.192,
+    "p50_ms": 15.688,
+    "p95_ms": 32.981,
+    "p99_ms": 41.71
+  },
+  "memory_profile_mb": {
+    "start_mb": 0.0,
+    "end_mb": 0.0,
+    "delta_mb": 0.0
+  },
+  "database_persistence": {
+    "alerts_in_db": 130,
+    "sample_alerts": [
+      {
+        "id": "edcfc74d-19fc-41f1-bec6-b95d5d9f062c",
+        "request_id": "3b53a267-4522-489a-a472-9710cd9ec073",
+        "timestamp": "2026-11-02T17:31:15.255885",
+        "is_anomaly": true,
+        "anomaly_score": 0.6797,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.259645",
+        "updated_at": "2026-11-02T17:31:15.259650",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 447,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 447.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.679694,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.554747,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.679694,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.554747,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "d3ae4a5d-b708-47b6-bea4-143d586ce3f5",
+        "request_id": "441ea135-5800-411c-bc40-5cee36edc9bb",
+        "timestamp": "2026-11-02T17:31:15.291728",
+        "is_anomaly": true,
+        "anomaly_score": 0.6953,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.292477",
+        "updated_at": "2026-11-02T17:31:15.292480",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 72,
+          "sttl": 128,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 72.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.695265,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.436344,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 128.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 57621,
+        "dst_port": 57621,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.695265,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.436344,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "9f2b413a-dc21-4fe9-9481-2b5afc899b3e",
+        "request_id": "f786cb5c-a02e-416b-b185-7a626af205ac",
+        "timestamp": "2026-11-02T17:31:15.333561",
+        "is_anomaly": true,
+        "anomaly_score": 0.6797,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.334009",
+        "updated_at": "2026-11-02T17:31:15.334010",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 420,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 420.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.679694,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.554747,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.679694,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.554747,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "bc901abe-42d0-49c9-9c2a-41fcbe4a8f16",
+        "request_id": "eb96300e-2580-431d-a5b7-3e84cf3001e5",
+        "timestamp": "2026-11-02T17:31:15.362414",
+        "is_anomaly": true,
+        "anomaly_score": 0.6563,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.363505",
+        "updated_at": "2026-11-02T17:31:15.363511",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 457,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 457.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.656256,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.557217,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.656256,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.557217,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "37feda28-4430-42ee-8e89-1e4b55bee777",
+        "request_id": "e6e09c69-d655-4aae-bb43-e43f273d5c1a",
+        "timestamp": "2026-11-02T17:31:15.393358",
+        "is_anomaly": true,
+        "anomaly_score": 0.746,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.393933",
+        "updated_at": "2026-11-02T17:31:15.393935",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 105,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 105.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.746046,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.47659,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.746046,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.47659,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "a40ae321-b6ea-48fa-8fc9-4c8f07dd968d",
+        "request_id": "e593ee85-a50a-410d-b8d1-7cebe61b2fb6",
+        "timestamp": "2026-11-02T17:31:15.828779",
+        "is_anomaly": true,
+        "anomaly_score": 0.746,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:15.829738",
+        "updated_at": "2026-11-02T17:31:15.829740",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 105,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 105.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.746046,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.47659,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.746046,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.47659,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "484ef508-f69a-49dd-8d2f-880c6d2eb009",
+        "request_id": "abd1829f-880a-42e6-890a-e8b18971d894",
+        "timestamp": "2026-11-02T17:31:16.268219",
+        "is_anomaly": true,
+        "anomaly_score": 0.708,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:16.268664",
+        "updated_at": "2026-11-02T17:31:16.268666",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 78,
+          "sttl": 64,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 78.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.708019,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.414221,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [],
+        "protocol": "UDP",
+        "src_port": 137,
+        "dst_port": 137,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.708019,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.414221,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "88d474f1-c905-4613-aad9-f3139216df71",
+        "request_id": "ed529246-4b6e-414d-9fb3-4fcda5112459",
+        "timestamp": "2026-11-02T17:31:16.355692",
+        "is_anomaly": true,
+        "anomaly_score": 0.746,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:16.356203",
+        "updated_at": "2026-11-02T17:31:16.356205",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 105,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 105.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.746046,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.47659,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.746046,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.47659,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "9615e015-7c2b-48d9-ae95-f4a95a9dd290",
+        "request_id": "ebb18449-01f6-4647-a64a-dc81269ebb89",
+        "timestamp": "2026-11-02T17:31:16.380071",
+        "is_anomaly": true,
+        "anomaly_score": 0.9802,
+        "decision_threshold": 0.5,
+        "risk_level": "CRITICAL",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:16.380721",
+        "updated_at": "2026-11-02T17:31:16.380723",
+        "input_features": {
+          "duration_seconds": 2e-06,
+          "fwd_bytes": 156,
+          "sttl": 64,
+          "sload": 327155712.0,
+          "fwd_packets": 2,
+          "swin": 0,
+          "smeansz": 78.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0019,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.980165,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.684013,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sload",
+            "value": 327155712.0,
+            "contribution": "high",
+            "reason": "Source traffic load exceeds volumetric threshold."
+          },
+          {
+            "feature": "byte_rate",
+            "value": 78000000.0,
+            "contribution": "medium",
+            "reason": "Forward byte transmission rate elevated."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 137,
+        "dst_port": 137,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.980165,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.684013,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      },
+      {
+        "id": "384395d7-5b12-48b6-8bc8-8163da88e1c9",
+        "request_id": "c4c981ee-e8a8-4543-818e-c34ad8d87d37",
+        "timestamp": "2026-11-02T17:31:16.472234",
+        "is_anomaly": true,
+        "anomaly_score": 0.6563,
+        "decision_threshold": 0.5,
+        "risk_level": "HIGH",
+        "model_name": "XGBClassifier",
+        "model_version": "1.0.0",
+        "status": "NEW",
+        "analyst_notes": "Real-time streaming detection [SUPERVISED_ONLY_ALERT] from LIVE_CAPTURE.",
+        "acknowledged_at": null,
+        "created_at": "2026-11-02T17:31:16.473274",
+        "updated_at": "2026-11-02T17:31:16.473278",
+        "input_features": {
+          "duration_seconds": 0.0,
+          "fwd_bytes": 474,
+          "sttl": 255,
+          "sload": 0.0,
+          "fwd_packets": 1,
+          "swin": 0,
+          "smeansz": 474.0,
+          "sjit": 0.0,
+          "sintpkt": 0.0,
+          "is_sm_ips_ports": 0,
+          "_hybrid_evidence": {
+            "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+            "supervised": {
+              "probability": 0.656256,
+              "threshold": 0.5,
+              "is_anomaly": true,
+              "decision": "ANOMALY"
+            },
+            "unsupervised": {
+              "anomaly_score": 0.562086,
+              "threshold": 0.727896,
+              "is_anomaly": false,
+              "decision": "NORMAL",
+              "detector_name": "IsolationForestDetector",
+              "available": true
+            }
+          }
+        },
+        "top_contributing_features": [
+          {
+            "feature": "sttl",
+            "value": 255.0,
+            "contribution": "high",
+            "reason": "Source TTL significantly elevated above standard local hop baseline."
+          }
+        ],
+        "protocol": "UDP",
+        "src_port": 5353,
+        "dst_port": 5353,
+        "is_demo": false,
+        "source": "LIVE_CAPTURE",
+        "hybrid_classification": "SUPERVISED_ONLY_ALERT",
+        "supervised": {
+          "probability": 0.656256,
+          "threshold": 0.5,
+          "is_anomaly": true,
+          "decision": "ANOMALY"
+        },
+        "unsupervised": {
+          "anomaly_score": 0.562086,
+          "threshold": 0.727896,
+          "is_anomaly": false,
+          "decision": "NORMAL",
+          "detector_name": "IsolationForestDetector",
+          "available": true
+        }
+      }
+    ]
+  },
+  "validation_verdict": {
+    "driver_functional": true,
+    "artifact_integrity_preserved": true,
+    "live_packets_captured": true,
+    "flows_successfully_reconstructed": true,
+    "hybrid_scoring_completed": true,
+    "zero_leakage_enforced": true,
+    "clean_stop_drain_completed": true,
+    "verdict": "PASS"
+  }
+}

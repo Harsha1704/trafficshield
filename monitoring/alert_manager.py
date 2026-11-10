@@ -41,6 +41,7 @@ class MonitoringAlertManager:
         self,
         drift_results: list[FeatureDriftResult],
         is_demo: bool = False,
+        auto_commit: bool = True,
     ) -> list[MonitoringAlert]:
         """
         Create or update debounced monitoring alerts for features exhibiting WARNING or CRITICAL drift.
@@ -74,6 +75,7 @@ class MonitoringAlertManager:
                 summary=summary,
                 details=r.to_dict(),
                 is_demo=is_demo,
+                auto_commit=auto_commit,
             )
             alerts_generated.append(alert)
 
@@ -83,6 +85,7 @@ class MonitoringAlertManager:
         self,
         score_drift: FeatureDriftResult,
         is_demo: bool = False,
+        auto_commit: bool = True,
     ) -> MonitoringAlert | None:
         """Create or update alert if continuous anomaly score distribution drifts."""
         if score_drift.status not in (DriftStatus.WARNING, DriftStatus.CRITICAL):
@@ -113,6 +116,7 @@ class MonitoringAlertManager:
             summary=summary,
             details=score_drift.to_dict(),
             is_demo=is_demo,
+            auto_commit=auto_commit,
         )
 
     def process_anomaly_rate_spike(
@@ -121,6 +125,7 @@ class MonitoringAlertManager:
         baseline_rate: float,
         flow_count: int,
         is_demo: bool = False,
+        auto_commit: bool = True,
     ) -> MonitoringAlert | None:
         """Alert if the batch anomaly percentage exceeds 2x baseline rate."""
         if flow_count < 20:
@@ -142,6 +147,7 @@ class MonitoringAlertManager:
                 summary=summary,
                 details={"current_rate": current_rate, "baseline_rate": baseline_rate, "flow_count": flow_count},
                 is_demo=is_demo,
+                auto_commit=auto_commit,
             )
         return None
 
@@ -151,6 +157,7 @@ class MonitoringAlertManager:
         threshold_ms: float = 250.0,
         flow_count: int = 1,
         is_demo: bool = False,
+        auto_commit: bool = True,
     ) -> MonitoringAlert | None:
         """Alert if inference latency breaches operational SLA."""
         if latency_ms > threshold_ms:
@@ -166,6 +173,7 @@ class MonitoringAlertManager:
                 summary=summary,
                 details={"latency_ms": latency_ms, "threshold_ms": threshold_ms},
                 is_demo=is_demo,
+                auto_commit=auto_commit,
             )
         return None
 
@@ -181,6 +189,7 @@ class MonitoringAlertManager:
         summary: str,
         details: dict[str, Any] | None = None,
         is_demo: bool = False,
+        auto_commit: bool = True,
     ) -> MonitoringAlert:
         """
         Deduplicate and debounce: If an ACTIVE or ACKNOWLEDGED alert matching
@@ -208,7 +217,13 @@ class MonitoringAlertManager:
             existing.sample_size = sample_size
             existing.timestamp = now
             existing.details = details
-            db.session.commit()
+            if auto_commit:
+                try:
+                    db.session.commit()
+                except Exception as exc:
+                    db.session.rollback()
+                    logger.error("Failed to commit debounced monitoring alert: %s", exc)
+                    raise
             return cast(MonitoringAlert, existing)
 
         # Create new alert
@@ -227,27 +242,43 @@ class MonitoringAlertManager:
             is_demo=is_demo,
         )
         db.session.add(alert)
-        db.session.commit()
+        if auto_commit:
+            try:
+                db.session.commit()
+            except Exception as exc:
+                db.session.rollback()
+                logger.error("Failed to commit new monitoring alert: %s", exc)
+                raise
         return alert
 
     @staticmethod
     def acknowledge(alert_id: str) -> MonitoringAlert | None:
         """Acknowledge an active monitoring alert."""
-        alert = db.session.get(MonitoringAlert, alert_id)
-        if not alert:
-            return None
-        alert.status = MonitoringAlertStatus.ACKNOWLEDGED.value
-        alert.acknowledged_at = _utcnow()
-        db.session.commit()
-        return alert
+        try:
+            alert = db.session.get(MonitoringAlert, alert_id)
+            if not alert:
+                return None
+            alert.status = MonitoringAlertStatus.ACKNOWLEDGED.value
+            alert.acknowledged_at = _utcnow()
+            db.session.commit()
+            return alert
+        except Exception as exc:
+            db.session.rollback()
+            logger.error("Failed to acknowledge monitoring alert %s: %s", alert_id, exc)
+            raise
 
     @staticmethod
     def resolve(alert_id: str) -> MonitoringAlert | None:
         """Resolve a monitoring alert."""
-        alert = db.session.get(MonitoringAlert, alert_id)
-        if not alert:
-            return None
-        alert.status = MonitoringAlertStatus.RESOLVED.value
-        alert.resolved_at = _utcnow()
-        db.session.commit()
-        return alert
+        try:
+            alert = db.session.get(MonitoringAlert, alert_id)
+            if not alert:
+                return None
+            alert.status = MonitoringAlertStatus.RESOLVED.value
+            alert.resolved_at = _utcnow()
+            db.session.commit()
+            return alert
+        except Exception as exc:
+            db.session.rollback()
+            logger.error("Failed to resolve monitoring alert %s: %s", alert_id, exc)
+            raise

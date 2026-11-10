@@ -8,9 +8,8 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const isDev = import.meta.env.DEV;
-  const [username, setUsername] = useState<string>(isDev ? 'analyst' : '');
-  const [password, setPassword] = useState<string>(isDev ? 'AnalystPass123!' : '');
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,15 +39,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  const handleFillAnalyst = () => {
+  const handleSelectAnalyst = () => {
     setUsername('analyst');
-    setPassword('AnalystPass123!');
+    setPassword('');
     setError(null);
   };
 
-  const handleFillAdmin = () => {
+  const handleSelectAdmin = () => {
     setUsername('admin');
-    setPassword('AdminPass123!');
+    setPassword('');
     setError(null);
   };
 
@@ -149,43 +148,41 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          {/* Quick-fill credentials for evaluators (development mode only) */}
-          {isDev && (
-            <div className="mt-6 pt-5 border-t border-slate-800/80">
-              <span className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2.5">
-                Demonstration & Evaluation Accounts (Dev Mode):
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleFillAnalyst}
-                  className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/60 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-200 group-hover:text-cyan-400">
-                    <span>Analyst</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-800/60 text-emerald-400">
-                      ANALYST
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-400 mt-1">analyst</div>
-                </button>
+          {/* Quick role selection helper */}
+          <div className="mt-6 pt-5 border-t border-slate-800/80">
+            <span className="block text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2.5">
+              Select Role Identifier:
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleSelectAnalyst}
+                className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/60 text-left transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-200 group-hover:text-cyan-400">
+                  <span>Analyst</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-800/60 text-emerald-400">
+                    ANALYST
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-slate-400 mt-1">analyst</div>
+              </button>
 
-                <button
-                  type="button"
-                  onClick={handleFillAdmin}
-                  className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-indigo-500/60 text-left transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-200 group-hover:text-indigo-400">
-                    <span>Administrator</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-800/60 text-indigo-400">
-                      ADMIN
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-slate-400 mt-1">admin</div>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleSelectAdmin}
+                className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-indigo-500/60 text-left transition-colors cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-xs font-semibold text-slate-200 group-hover:text-indigo-400">
+                  <span>Administrator</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-800/60 text-indigo-400">
+                    ADMIN
+                  </span>
+                </div>
+                <div className="text-[11px] font-mono text-slate-400 mt-1">admin</div>
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer info */}

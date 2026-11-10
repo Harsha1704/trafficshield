@@ -1,0 +1,153 @@
+{
+  "timestamp_utc": "2026-11-05T14:27:53Z",
+  "environment": {
+    "python_version": "3.14.8",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count_logical": 16,
+    "sklearn_version": "1.9.1",
+    "xgboost_version": "3.4.1",
+    "numpy_version": "2.5.4",
+    "pandas_version": "3.0.6"
+  },
+  "artifact_hashes": {
+    "production_detector.joblib": "c43bb5cabd848f930eb7a977b730e401bd8204d6dd63170d1d2f2df2e4d27495",
+    "production_detector.json": "3553f1a47c1c2fd67b031cadb42400246997778f8dcf42026e2ebfb882ba73b1",
+    "production_iforest.joblib": "d9fe41016c51f8484b57c80bb2f0ec41186c66add9bae71f822d0a85c13a350e",
+    "production_iforest.json": "5daf8b0dab1c4c3a66e4cb2c38b10c406f6c1861572d27a08155c8541bf4cb94",
+    "production_preprocessor.joblib": "effe96e1977ce9687eb602a953f34f70a42ee1881bf678f59c40b99a1eecc653"
+  },
+  "thresholds": {
+    "xgboost": 0.5,
+    "isolation_forest": 0.7278956397776036
+  },
+  "component_decomposition_500": {
+    "preprocessing": {
+      "count": 500,
+      "min_ms": 3.5624,
+      "mean_ms": 4.4944,
+      "median_p50_ms": 4.4551,
+      "p90_ms": 5.0005,
+      "p95_ms": 5.1931,
+      "p99_ms": 5.9354,
+      "max_ms": 8.8332,
+      "stdev_ms": 0.5118,
+      "error_count": 0
+    },
+    "xgboost": {
+      "count": 500,
+      "min_ms": 1.1167,
+      "mean_ms": 1.4094,
+      "median_p50_ms": 1.3463,
+      "p90_ms": 1.675,
+      "p95_ms": 1.8248,
+      "p99_ms": 2.3113,
+      "max_ms": 4.9135,
+      "stdev_ms": 0.2713,
+      "error_count": 0
+    },
+    "isolation_forest": {
+      "count": 500,
+      "min_ms": 5.8912,
+      "mean_ms": 7.0474,
+      "median_p50_ms": 6.9932,
+      "p90_ms": 7.5868,
+      "p95_ms": 7.9857,
+      "p99_ms": 9.5265,
+      "max_ms": 13.0432,
+      "stdev_ms": 0.6812,
+      "error_count": 0
+    },
+    "feature_attribution": {
+      "count": 500,
+      "min_ms": 0.1288,
+      "mean_ms": 0.1828,
+      "median_p50_ms": 0.1742,
+      "p90_ms": 0.2218,
+      "p95_ms": 0.2564,
+      "p99_ms": 0.3335,
+      "max_ms": 0.5766,
+      "stdev_ms": 0.0422,
+      "error_count": 0
+    },
+    "hybrid_decision_logic": {
+      "count": 500,
+      "min_ms": 0.0003,
+      "mean_ms": 0.0006,
+      "median_p50_ms": 0.0005,
+      "p90_ms": 0.0007,
+      "p95_ms": 0.0007,
+      "p99_ms": 0.0011,
+      "max_ms": 0.0198,
+      "stdev_ms": 0.0009,
+      "error_count": 0
+    }
+  },
+  "supervised_vs_hybrid_500": {
+    "supervised_only_pipeline": {
+      "count": 500,
+      "min_ms": 4.762,
+      "mean_ms": 5.8146,
+      "median_p50_ms": 5.7955,
+      "p90_ms": 6.3224,
+      "p95_ms": 6.5458,
+      "p99_ms": 6.9194,
+      "max_ms": 8.9175,
+      "stdev_ms": 0.4561,
+      "error_count": 0
+    },
+    "hybrid_pure_model_pipeline": {
+      "count": 500,
+      "min_ms": 10.8132,
+      "mean_ms": 12.82,
+      "median_p50_ms": 12.7809,
+      "p90_ms": 13.6826,
+      "p95_ms": 13.9129,
+      "p99_ms": 14.9988,
+      "max_ms": 21.5805,
+      "stdev_ms": 0.9048,
+      "error_count": 0
+    }
+  },
+  "primary_single_flow_service_1000": {
+    "count": 1000,
+    "min_ms": 11.7232,
+    "mean_ms": 15.6037,
+    "median_p50_ms": 14.183,
+    "p90_ms": 19.5603,
+    "p95_ms": 24.2219,
+    "p99_ms": 30.3585,
+    "max_ms": 122.1517,
+    "stdev_ms": 5.0763,
+    "error_count": 0
+  },
+  "http_api_test_client_200": {
+    "count": 200,
+    "min_ms": 13.4261,
+    "mean_ms": 15.4148,
+    "median_p50_ms": 15.3099,
+    "p90_ms": 16.9096,
+    "p95_ms": 17.3276,
+    "p99_ms": 17.6607,
+    "max_ms": 18.0225,
+    "stdev_ms": 1.0243,
+    "error_count": 0
+  },
+  "legacy_workflow10_loop_50": {
+    "stats": {
+      "count": 50,
+      "min_ms": 13.108,
+      "mean_ms": 15.0686,
+      "median_p50_ms": 15.0976,
+      "p90_ms": 16.1351,
+      "p95_ms": 16.1975,
+      "p99_ms": 16.325,
+      "max_ms": 16.3491,
+      "stdev_ms": 0.8423,
+      "error_count": 0
+    },
+    "sla_threshold_ms": 35.0,
+    "sla_p95_threshold_ms": 70.0,
+    "sla_passed": true
+  }
+}
