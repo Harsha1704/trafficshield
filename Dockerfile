@@ -52,6 +52,8 @@ COPY monitoring/ monitoring/
 # Runtime packages imported by the capture and streaming API blueprints
 COPY ingestion/ ingestion/
 COPY streaming/ streaming/
+# Alembic migrations used to initialize the production PostgreSQL schema
+COPY migrations/ migrations/
 COPY artifacts/ artifacts/
 COPY run.py gunicorn_conf.py ./
 
@@ -69,7 +71,7 @@ EXPOSE 10000
 
 # Container liveness health check via lightweight health probe
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:10000/api/v1/health || exit 1
+    CMD curl -f http://localhost:10000/api/v1/ready || exit 1
 
 # Start production WSGI server
-CMD ["gunicorn", "-c", "gunicorn_conf.py", "run:app"]
+CMD ["sh", "-c", "flask --app run db upgrade && exec gunicorn -c gunicorn_conf.py run:app"]
