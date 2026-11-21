@@ -49,6 +49,9 @@ COPY config/ config/
 COPY features/ features/
 COPY ml/ ml/
 COPY monitoring/ monitoring/
+# Runtime packages imported by the capture and streaming API blueprints
+COPY ingestion/ ingestion/
+COPY streaming/ streaming/
 COPY artifacts/ artifacts/
 COPY run.py gunicorn_conf.py ./
 
