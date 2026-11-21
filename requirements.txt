@@ -16,7 +16,8 @@ pydantic-settings>=2.7.0,<3.0
 # ─── Database ─────────────────────────────────────────────────────────────────
 SQLAlchemy>=2.0.36,<3.0
 alembic>=1.14.0,<2.0
-psycopg2-binary>=2.9.10,<3.0      # PostgreSQL driver
+psycopg2-binary>=2.9.10,<3.0      # PostgreSQL driver (legacy psycopg2 URLs)
+psycopg[binary]>=3.2.0,<4.0       # PostgreSQL driver required by postgresql+psycopg URLs
 
 # ─── Background Jobs ──────────────────────────────────────────────────────────
 celery>=5.4.0,<6.0
