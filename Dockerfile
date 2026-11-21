@@ -47,10 +47,18 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 COPY app/ app/
 COPY config/ config/
 COPY features/ features/
+COPY preprocessing/ preprocessing/
 COPY ml/ ml/
 COPY monitoring/ monitoring/
-# Runtime packages imported by the capture and streaming API blueprints
+COPY detection/ detection/
+COPY drift/ drift/
+COPY evaluation/ evaluation/
+COPY explainability/ explainability/
+COPY flow_engine/ flow_engine/
+COPY incidents/ incidents/
 COPY ingestion/ ingestion/
+COPY jobs/ jobs/
+COPY risk/ risk/
 COPY streaming/ streaming/
 # Alembic migrations used to initialize the production PostgreSQL schema
 COPY migrations/ migrations/
