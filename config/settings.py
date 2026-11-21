@@ -118,6 +118,10 @@ class BaseAppSettings(BaseSettings):
             "SESSION_COOKIE_SAMESITE": self.session_cookie_samesite,
             "AUTH_ENABLED": self.auth_enabled,
             "AUTH_TOKEN_EXPIRY_HOURS": self.auth_token_expiry_hours,
+            "ADMIN_INITIAL_USERNAME": self.admin_initial_username,
+            "ADMIN_INITIAL_PASSWORD": self.admin_initial_password,
+            "ANALYST_INITIAL_USERNAME": self.analyst_initial_username,
+            "ANALYST_INITIAL_PASSWORD": self.analyst_initial_password,
         }
 
 
