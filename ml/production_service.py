@@ -62,9 +62,10 @@ class ProductionInferenceService:
         iforest_threshold: float | None = None,
         verify_checksums: bool = True,
     ) -> None:
-        def_model = Path("artifacts/models/production_detector.joblib")
-        def_prep = Path("artifacts/models/production_preprocessor.joblib")
-        def_iforest = Path("artifacts/models/production_iforest.joblib")
+        from config.settings import PROJECT_ROOT
+        def_model = PROJECT_ROOT / "artifacts" / "models" / "production_detector.joblib"
+        def_prep = PROJECT_ROOT / "artifacts" / "models" / "production_preprocessor.joblib"
+        def_iforest = PROJECT_ROOT / "artifacts" / "models" / "production_iforest.joblib"
 
         self.model_path = Path(model_path) if model_path else (def_model if def_model.exists() else None)
         self.preprocessor_path = Path(preprocessor_path) if preprocessor_path else (def_prep if def_prep.exists() else None)

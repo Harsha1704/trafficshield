@@ -375,8 +375,9 @@ class ModelEvaluationService:
         model_dir: Path | None = None,
         reports_dir: Path | None = None,
     ) -> None:
-        self.model_dir = model_dir or Path("artifacts/models")
-        self.reports_dir = reports_dir or Path("reports")
+        from config.settings import PROJECT_ROOT
+        self.model_dir = model_dir or (PROJECT_ROOT / "artifacts" / "models")
+        self.reports_dir = reports_dir or (PROJECT_ROOT / "reports")
 
     def get_evaluation_report(self) -> dict[str, Any]:
         """

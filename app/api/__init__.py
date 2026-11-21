@@ -45,4 +45,4 @@ def _register_error_handlers(app: Flask) -> None:
     def internal_error(e):
         import logging
         logging.getLogger(__name__).exception("Unhandled server error")
-        return error_response("Internal server error", 500, "INTERNAL_ERROR")
+        return error_response(str(e) or "Internal server error", 500, "INTERNAL_ERROR", details=str(e))

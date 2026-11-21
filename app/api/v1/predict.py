@@ -34,9 +34,10 @@ def get_inference_service() -> ProductionInferenceService:
     """Lazily initialize or return production inference service singleton."""
     global _SERVICE_INSTANCE
     if _SERVICE_INSTANCE is None:
-        model_path = Path("artifacts/models/production_detector.joblib")
-        prep_path = Path("artifacts/models/production_preprocessor.joblib")
-        iforest_path = Path("artifacts/models/production_iforest.joblib")
+        from config.settings import PROJECT_ROOT
+        model_path = PROJECT_ROOT / "artifacts" / "models" / "production_detector.joblib"
+        prep_path = PROJECT_ROOT / "artifacts" / "models" / "production_preprocessor.joblib"
+        iforest_path = PROJECT_ROOT / "artifacts" / "models" / "production_iforest.joblib"
         _SERVICE_INSTANCE = ProductionInferenceService(
             model_path=model_path,
             preprocessor_path=prep_path,
@@ -71,9 +72,8 @@ def predict_single() -> Any:
             error_code="EMPTY_PAYLOAD",
         )
 
-    service = get_inference_service()
-
     try:
+        service = get_inference_service()
         result = service.predict_single(flow_data)
         return success_response(data=result, status_code=200)
 
@@ -94,9 +94,18 @@ def predict_single() -> Any:
     except RuntimeError as re:
         logger.error("Inference runtime error: %s", re)
         return error_response(
-            message="Inference engine is unavailable or uninitialized.",
+            message=f"Inference engine error: {re}",
             status_code=503,
             error_code="INFERENCE_ENGINE_UNAVAILABLE",
+            details=str(re),
+        )
+    except Exception as exc:
+        logger.error("Prediction unexpected error: %s", exc, exc_info=True)
+        return error_response(
+            message=f"Prediction internal error: {exc}",
+            status_code=500,
+            error_code="INTERNAL_PREDICTION_ERROR",
+            details=str(exc),
         )
     except Exception as exc:
         logger.error("Inference internal error: %s", exc, exc_info=True)
@@ -204,9 +213,18 @@ def predict_batch() -> Any:
 @predict_bp.route("/predict/info", methods=["GET"])
 def model_info() -> Any:
     """Return deployed model architecture, version, threshold, and feature metadata."""
-    service = get_inference_service()
-    info = service.get_info()
-    return success_response(data=info, status_code=200)
+    try:
+        service = get_inference_service()
+        info = service.get_info()
+        return success_response(data=info, status_code=200)
+    except Exception as exc:
+        logger.error("Model info error: %s", exc, exc_info=True)
+        return error_response(
+            message=f"Model info error: {exc}",
+            status_code=500,
+            error_code="MODEL_INFO_ERROR",
+            details=str(exc),
+        )
 
 
 @predict_bp.route("/model/evaluation", methods=["GET"])

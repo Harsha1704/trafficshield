@@ -56,6 +56,7 @@ COPY streaming/ streaming/
 COPY migrations/ migrations/
 COPY bootstrap_production_users.py ./
 COPY artifacts/ artifacts/
+COPY reports/ reports/
 COPY run.py gunicorn_conf.py ./
 
 # Copy built frontend assets into static web root
