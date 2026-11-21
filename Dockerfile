@@ -66,7 +66,7 @@ EXPOSE 10000
 
 # Container liveness health check via lightweight health probe
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD-SHELL curl -f http://localhost:${PORT}/api/v1/health || exit 1
+    CMD curl -f http://localhost:10000/api/v1/health || exit 1
 
 # Start production WSGI server
 CMD ["gunicorn", "-c", "gunicorn_conf.py", "run:app"]
