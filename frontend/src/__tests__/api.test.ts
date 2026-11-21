@@ -6,6 +6,7 @@ import {
   setApiBaseUrl,
   DEFAULT_API_BASE,
   LOCAL_DEV_API_BASE,
+  PRODUCTION_API_BASE,
 } from '../services/api';
 
 describe('TrafficShield Centralized API Client', () => {
@@ -31,11 +32,11 @@ describe('TrafficShield Centralized API Client', () => {
     expect(getApiBaseUrl()).toBe('http://localhost:5000/api/v1');
   });
 
-  it('resolves localhost API base URL when VITE_API_URL is unset in production build mode', () => {
+  it('resolves production API base URL when VITE_API_URL is unset in production build mode', () => {
     (import.meta.env as any).PROD = true;
     (import.meta.env as any).MODE = 'production';
-    expect(getDefaultApiBaseUrl()).toBe(DEFAULT_API_BASE);
-    expect(getApiBaseUrl()).toBe('http://localhost:5000/api/v1');
+    expect(getDefaultApiBaseUrl()).toBe(PRODUCTION_API_BASE);
+    expect(getApiBaseUrl()).toBe(PRODUCTION_API_BASE);
   });
 
   it('prioritizes explicit VITE_API_URL over default in both development and production', () => {

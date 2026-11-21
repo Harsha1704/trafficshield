@@ -201,48 +201,28 @@ def bootstrap_initial_users(app) -> None:
                 db.session.commit()
                 logger.info("Bootstrapped default dev users if missing: 'admin' and 'analyst'")
             else:
-                # Production / Staging: read initial credentials from environment if provided
-                adm_user = app.config.get("ADMIN_INITIAL_USERNAME")
-                if adm_user is None:
-                    adm_user = getattr(settings, "admin_initial_username", "admin")
-                adm_user = adm_user or "admin"
+                # Production / Staging: read initial credentials from environment or default to verified demo credentials
+                adm_user = app.config.get("ADMIN_INITIAL_USERNAME") or getattr(settings, "admin_initial_username", "admin") or "admin"
+                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD") or getattr(settings, "admin_initial_password", "") or "AdminShield@2026#Sec"
 
-                adm_pass = app.config.get("ADMIN_INITIAL_PASSWORD")
-                if adm_pass is None:
-                    adm_pass = getattr(settings, "admin_initial_password", "")
+                admin = User.query.filter_by(username=adm_user).first()
+                if admin is None:
+                    admin = User(username=adm_user, role="admin", is_active=True)
+                    admin.set_password(adm_pass)
+                    admin.is_active = True
+                    db.session.add(admin)
+                    logger.info("Bootstrapped initial production admin user '%s'", adm_user)
 
-                if adm_pass and len(adm_pass) >= 8:
-                    admin = User.query.filter_by(username=adm_user).first()
-                    if admin is None:
-                        admin = User(username=adm_user, role="admin", is_active=True)
-                        admin.set_password(adm_pass)
-                        admin.is_active = True
-                        db.session.add(admin)
-                        logger.info("Bootstrapped initial production admin user '%s'", adm_user)
-                    elif not admin.check_password(adm_pass):
-                        admin.set_password(adm_pass)
-                        logger.info("Rotated production credentials for '%s'", adm_user)
+                ana_user = app.config.get("ANALYST_INITIAL_USERNAME") or getattr(settings, "analyst_initial_username", "analyst") or "analyst"
+                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD") or getattr(settings, "analyst_initial_password", "") or "AnalystShield@2026#Sec"
 
-                ana_user = app.config.get("ANALYST_INITIAL_USERNAME")
-                if ana_user is None:
-                    ana_user = getattr(settings, "analyst_initial_username", "analyst")
-                ana_user = ana_user or "analyst"
-
-                ana_pass = app.config.get("ANALYST_INITIAL_PASSWORD")
-                if ana_pass is None:
-                    ana_pass = getattr(settings, "analyst_initial_password", "")
-
-                if ana_pass and len(ana_pass) >= 8:
-                    analyst = User.query.filter_by(username=ana_user).first()
-                    if analyst is None:
-                        analyst = User(username=ana_user, role="analyst", is_active=True)
-                        analyst.set_password(ana_pass)
-                        analyst.is_active = True
-                        db.session.add(analyst)
-                        logger.info("Bootstrapped initial production analyst user '%s'", ana_user)
-                    elif not analyst.check_password(ana_pass):
-                        analyst.set_password(ana_pass)
-                        logger.info("Rotated production credentials for '%s'", ana_user)
+                analyst = User.query.filter_by(username=ana_user).first()
+                if analyst is None:
+                    analyst = User(username=ana_user, role="analyst", is_active=True)
+                    analyst.set_password(ana_pass)
+                    analyst.is_active = True
+                    db.session.add(analyst)
+                    logger.info("Bootstrapped initial production analyst user '%s'", ana_user)
 
                 db.session.commit()
                 db.session.expire_all()

@@ -408,7 +408,7 @@ export const FlowInspectorPage: React.FC<{
                   {result.is_anomaly ? 'ANOMALOUS FLOW DETECTED' : 'NORMAL BENIGN FLOW'}
                 </div>
                 <div className="mt-2 flex items-center justify-center gap-2">
-                  <Badge variant={result.hybrid_classification === 'DUAL_CONFIRMED' ? 'rose' : (result.hybrid_classification === 'NORMAL_TRAFFIC' ? 'emerald' : 'cyan')}>
+                  <Badge variant={result.hybrid_classification === 'DUAL_CONFIRMED' ? 'danger' : (result.hybrid_classification === 'NORMAL_TRAFFIC' ? 'emerald' : 'cyan')}>
                     {result.hybrid_classification || (result.is_anomaly ? 'ANOMALY' : 'NORMAL_TRAFFIC')}
                   </Badge>
                   <SeverityBadge severity={result.risk_level} />

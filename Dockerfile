@@ -21,7 +21,7 @@ FROM python:3.12-slim AS production-runtime
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
-    PORT=5000 \
+    PORT=10000 \
     FLASK_ENV=production \
     APP_ENV=production
 

@@ -22,21 +22,34 @@ import type {
   SinglePredictResponse,
 } from '../types/api';
 
-export const DEFAULT_API_BASE = 'http://localhost:5000/api/v1';
-export const LOCAL_DEV_API_BASE = DEFAULT_API_BASE;
+export const PRODUCTION_API_BASE = 'https://trafficshield-api.onrender.com/api/v1';
+export const LOCAL_DEV_API_BASE = 'http://localhost:5000/api/v1';
+export const DEFAULT_API_BASE = LOCAL_DEV_API_BASE;
 
 export function getDefaultApiBaseUrl(): string {
   if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== '') {
     return import.meta.env.VITE_API_URL.trim();
   }
-  return DEFAULT_API_BASE;
+  // When running deployed on Vercel or any non-localhost host
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return PRODUCTION_API_BASE;
+  }
+  if (import.meta.env.PROD || import.meta.env.MODE === 'production') {
+    return PRODUCTION_API_BASE;
+  }
+  return LOCAL_DEV_API_BASE;
 }
 
 export function getApiBaseUrl(): string {
   try {
     const custom = localStorage.getItem('trafficshield_api_url');
     if (custom && custom.trim() !== '') {
-      return custom.trim();
+      const isExternal = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      if ((isExternal || import.meta.env.PROD) && (custom.includes('localhost') || custom.includes('127.0.0.1') || custom.includes('trafficshield-staging-backend'))) {
+        localStorage.removeItem('trafficshield_api_url');
+      } else {
+        return custom.trim();
+      }
     }
   } catch {
     // Ignore storage access errors

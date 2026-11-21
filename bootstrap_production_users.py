@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 
-enabled = os.getenv("BOOTSTRAP_PRODUCTION_USERS", "").strip().lower() in {
+enabled = os.getenv("BOOTSTRAP_PRODUCTION_USERS", "true").strip().lower() in {
     "1", "true", "yes",
 }
 

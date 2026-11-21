@@ -9,16 +9,16 @@ import multiprocessing
 import os
 
 # Network binding
-port = os.getenv("PORT", "5000")
+port = os.getenv("PORT", "10000")
 bind = os.getenv("GUNICORN_BIND", f"0.0.0.0:{port}")
 backlog = 2048
 
 # Concurrency & Worker Model
-# In production, recommend (2 * CPU_CORES) + 1 workers
-default_workers = max(2, (multiprocessing.cpu_count() * 2) + 1)
-workers = int(os.getenv("GUNICORN_WORKERS", default_workers))
+# For cloud container runtimes (e.g. Render 512MB RAM free tier), limit default workers to prevent OOM
+default_workers = int(os.getenv("GUNICORN_WORKERS", "2"))
+workers = default_workers
 worker_class = os.getenv("GUNICORN_WORKER_CLASS", "gthread")
-threads = int(os.getenv("GUNICORN_THREADS", "4"))
+threads = int(os.getenv("GUNICORN_THREADS", "2"))
 worker_connections = 1000
 timeout = int(os.getenv("GUNICORN_TIMEOUT", "60"))
 keepalive = int(os.getenv("GUNICORN_KEEPALIVE", "5"))
