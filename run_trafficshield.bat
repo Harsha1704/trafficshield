@@ -109,8 +109,8 @@ echo   API Health:    http://127.0.0.1:5000/api/v1/health
 echo   Frontend UI:   http://localhost:5173/
 echo.
 echo   Default development login credentials:
-echo     Username: admin       Password: AdminPass123^^!
-echo     Username: analyst     Password: AnalystPass123^^!
+echo     Username: admin       Password: AdminShield@2026#Sec
+echo     Username: analyst     Password: AnalystShield@2026#Sec
 echo ============================================================================
 echo.
 echo Opening TrafficShield in your default browser...

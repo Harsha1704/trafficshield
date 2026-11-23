@@ -292,8 +292,51 @@ class ProductionInferenceService:
             "hybrid_classification": hybrid_classification,
         }
 
+    def validate_and_prepare_batch(self, batch_records: list[dict[str, Any]]) -> pd.DataFrame:
+        """
+        Validate batch records against feature policy and schema in vectorized form.
+        Derives causal rates across the entire batch with high throughput.
+        """
+        if not batch_records:
+            raise ValueError("Batch record list is empty.")
+
+        # Policy audit on features present in batch
+        first_cols = list(batch_records[0].keys())
+        audit = audit_columns(first_cols)
+        if not audit.is_clean:
+            errors = []
+            if audit.forbidden_violations:
+                errors.append(f"Forbidden reverse-dependent columns rejected: {audit.forbidden_violations}")
+            if audit.label_violations:
+                errors.append(f"Target labels cannot be prediction features: {audit.label_violations}")
+            raise PolicyViolationError("; ".join(errors))
+
+        missing = [f for f in REQUIRED_BASE_FEATURES if f not in batch_records[0]]
+        if missing:
+            raise ValueError(f"Missing required forward observable features: {missing}")
+
+        try:
+            data = {f: [float(r[f]) for r in batch_records] for f in REQUIRED_BASE_FEATURES}
+        except KeyError as ke:
+            raise ValueError(f"Record in batch missing required feature: {ke}")
+        except (ValueError, TypeError) as te:
+            raise ValueError(f"Invalid non-numeric value in feature record: {te}")
+
+        df = pd.DataFrame(data)
+
+        dur = df["duration_seconds"].to_numpy()
+        pkts = df["fwd_packets"].to_numpy()
+        bytes_ = df["fwd_bytes"].to_numpy()
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            df["packet_rate"] = np.where(dur > 0, pkts / dur, 0.0)
+            df["byte_rate"] = np.where(dur > 0, bytes_ / dur, 0.0)
+            df["bytes_per_packet"] = np.where(pkts > 0, bytes_ / pkts, 0.0)
+
+        return df
+
     def predict_batch(self, batch_records: list[dict[str, Any]]) -> dict[str, Any]:
-        """Score a collection of flow observations with summary analytics and hybrid metrics."""
+        """Score a collection of flow observations with summary analytics and hybrid metrics using vectorized processing."""
         if not batch_records:
             raise ValueError("Batch record list is empty.")
 
@@ -302,26 +345,151 @@ class ProductionInferenceService:
                 "Production detector model is uninitialized or artifact failed to load. Refusing to perform inference."
             )
 
+        # 1. Vectorized validation and input preparation
+        df_batch = self.validate_and_prepare_batch(batch_records)
+
+        # 2. Vectorized preprocessing pipeline
+        if self.preprocessor is not None:
+            x_batch = self.preprocessor.transform_df(df_batch)
+        else:
+            x_batch = df_batch
+
+        # 3. Vectorized Supervised XGBoost Inference
+        if hasattr(self.model, "predict_proba"):
+            scores = self.model.predict_proba(x_batch)[:, 1]
+        elif hasattr(self.model, "score_samples"):
+            raw_s = self.model.score_samples(x_batch)
+            scores = np.clip(raw_s, 0.0, 1.0)
+        else:
+            scores = np.zeros(len(batch_records), dtype=float)
+
+        sup_anoms = scores >= self.threshold
+
+        # 4. Vectorized Unsupervised Isolation Forest Inference
+        if_thresh = self.iforest_threshold if self.iforest_threshold is not None else 0.727896
+        if self.iforest is not None and hasattr(self.iforest, "score_samples"):
+            raw_if_scores = self.iforest.score_samples(x_batch)
+            unsup_anoms = raw_if_scores >= if_thresh
+            iforest_available = True
+        else:
+            raw_if_scores = np.zeros(len(batch_records), dtype=float)
+            unsup_anoms = np.zeros(len(batch_records), dtype=bool)
+            iforest_available = False
+
+        # 5. Fast array-based feature attribution and result assembly
+        sttl_arr = df_batch["sttl"].to_numpy()
+        sload_arr = df_batch["sload"].to_numpy()
+        byte_rate_arr = df_batch["byte_rate"].to_numpy()
+        bytes_per_pkt_arr = df_batch["bytes_per_packet"].to_numpy()
+
         results = []
-        for rec in batch_records:
-            results.append(self.predict_single(rec))
-
-        scores = [r["anomaly_score"] for r in results]
-        anom_count = sum(1 for r in results if r["is_anomaly"])
-
         hybrid_counts = {
-            "DUAL_CONFIRMED": sum(1 for r in results if r.get("hybrid_classification") == "DUAL_CONFIRMED"),
-            "SUPERVISED_ONLY_ALERT": sum(1 for r in results if r.get("hybrid_classification") == "SUPERVISED_ONLY_ALERT"),
-            "UNSUPERVISED_NOVELTY": sum(1 for r in results if r.get("hybrid_classification") == "UNSUPERVISED_NOVELTY"),
-            "NORMAL_TRAFFIC": sum(1 for r in results if r.get("hybrid_classification") == "NORMAL_TRAFFIC"),
+            "DUAL_CONFIRMED": 0,
+            "SUPERVISED_ONLY_ALERT": 0,
+            "UNSUPERVISED_NOVELTY": 0,
+            "NORMAL_TRAFFIC": 0,
         }
+
+        for i in range(len(batch_records)):
+            s = float(scores[i])
+            is_sup = bool(sup_anoms[i])
+            is_unsup = bool(unsup_anoms[i])
+            raw_if = float(raw_if_scores[i])
+
+            if is_sup and is_unsup:
+                hybrid_cls = "DUAL_CONFIRMED"
+            elif is_sup and not is_unsup:
+                hybrid_cls = "SUPERVISED_ONLY_ALERT"
+            elif not is_sup and is_unsup:
+                hybrid_cls = "UNSUPERVISED_NOVELTY"
+            else:
+                hybrid_cls = "NORMAL_TRAFFIC"
+            hybrid_counts[hybrid_cls] += 1
+
+            if s >= 0.85:
+                risk = "CRITICAL"
+            elif s >= 0.65:
+                risk = "HIGH"
+            elif s >= 0.50:
+                risk = "MEDIUM"
+            else:
+                risk = "LOW"
+
+            attributions = []
+            st = float(sttl_arr[i])
+            sl = float(sload_arr[i])
+            br = float(byte_rate_arr[i])
+            bp = float(bytes_per_pkt_arr[i])
+
+            if st > 64:
+                attributions.append({
+                    "feature": "sttl",
+                    "value": st,
+                    "contribution": "high",
+                    "reason": "Source TTL significantly elevated above standard local hop baseline.",
+                })
+            if sl > 1_000_000:
+                attributions.append({
+                    "feature": "sload",
+                    "value": sl,
+                    "contribution": "high",
+                    "reason": "Source traffic load exceeds volumetric threshold.",
+                })
+            if br > 500_000:
+                attributions.append({
+                    "feature": "byte_rate",
+                    "value": round(br, 2),
+                    "contribution": "medium",
+                    "reason": "Forward byte transmission rate elevated.",
+                })
+            if bp > 1200 or bp < 40:
+                attributions.append({
+                    "feature": "bytes_per_packet",
+                    "value": round(bp, 2),
+                    "contribution": "medium",
+                    "reason": "Abnormal mean packet sizing detected.",
+                })
+
+            results.append({
+                "request_id": str(uuid.uuid4()),
+                "anomaly_score": round(s, 6),
+                "is_anomaly": is_sup,
+                "risk_level": risk,
+                "decision_threshold": round(self.threshold, 6),
+                "model_name": self.model_name,
+                "top_contributing_features": attributions[:4],
+                "features_analyzed": len(df_batch.columns),
+                "supervised": {
+                    "probability": round(s, 6),
+                    "threshold": round(self.threshold, 6),
+                    "is_anomaly": is_sup,
+                    "decision": "ANOMALY" if is_sup else "NORMAL",
+                },
+                "unsupervised": {
+                    "anomaly_score": round(raw_if, 6),
+                    "threshold": round(if_thresh, 6),
+                    "is_anomaly": is_unsup,
+                    "decision": "ANOMALY" if is_unsup else "NORMAL",
+                    "detector_name": self.iforest_name,
+                    "available": iforest_available,
+                },
+                "supervised_probability": round(s, 6),
+                "unsupervised_anomaly_score": round(raw_if, 6),
+                "iforest_threshold": round(if_thresh, 6),
+                "is_unsupervised_anomaly": is_unsup,
+                "hybrid_classification": hybrid_cls,
+                "hybrid_enabled": self.hybrid_enabled,
+            })
+
+        all_scores = [r["anomaly_score"] for r in results]
+        anom_count = sum(1 for r in results if r["is_anomaly"])
 
         return {
             "total_records": len(batch_records),
             "anomalies_detected": anom_count,
             "anomaly_percentage": round((anom_count / len(batch_records)) * 100.0, 2),
-            "mean_anomaly_score": round(float(np.mean(scores)), 4),
-            "max_anomaly_score": round(float(np.max(scores)), 4),
+            "mean_anomaly_score": round(float(np.mean(all_scores)), 4) if all_scores else 0.0,
+            "max_anomaly_score": round(float(np.max(all_scores)), 4) if all_scores else 0.0,
             "predictions": results,
             "hybrid_classification_counts": hybrid_counts,
         }
