@@ -180,7 +180,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({
       <Card
         title="Durable Security Alerts & Incident Store"
         subtitle={`Showing ${alerts.length} of ${totalAlerts} persisted security events`}
-        badge={<Badge variant="indigo">SQLITE PERSISTENT</Badge>}
+        badge={<Badge variant="indigo">PERSISTENT ACID STORE</Badge>}
       >
         {loading ? (
           <LoadingSpinner message="Querying persistent alert log..." />

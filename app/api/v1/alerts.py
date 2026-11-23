@@ -136,13 +136,21 @@ def alert_stats() -> Any:
     mean_score = round(float(sum(all_scores) / len(all_scores)), 4) if all_scores else 0.0
     max_score = round(float(max(all_scores)), 4) if all_scores else 0.0
 
+    db_uri = str(current_app.config.get("SQLALCHEMY_DATABASE_URI", ""))
+    if "postgres" in db_uri:
+        storage_backend = "PostgreSQL Managed Cluster (trafficshield_db)"
+    elif ":memory:" in db_uri:
+        storage_backend = "SQLite In-Memory (Test)"
+    else:
+        storage_backend = "SQLite persistent (trafficshield_dev.db)"
+
     return success_response(
         data={
             "total_records": total_alerts,
             "production_records": production_count,
             "demo_records": demo_count,
             "data_mode": data_mode,
-            "storage_backend": "SQLite persistent (trafficshield_dev.db)",
+            "storage_backend": storage_backend,
             "total_anomalies": total_anomalies,
             "anomaly_rate": round((total_anomalies / total_alerts * 100), 2) if total_alerts else 0.0,
             "mean_anomaly_score": mean_score,
@@ -311,7 +319,8 @@ def seed_demo_alerts() -> Any:
         or os.getenv("ENV", "").lower() == "production"
         or current_app.config.get("ENV", "").lower() == "production"
     )
-    if is_prod:
+    allow_seed = os.getenv("ALLOW_DEMO_SEEDING", "false").lower() in ("true", "1", "yes")
+    if is_prod and not allow_seed:
         return error_response(
             message="Demo alert seeding is strictly disabled in production mode.",
             status_code=403,
@@ -325,164 +334,9 @@ def seed_demo_alerts() -> Any:
             data={"existing_count": SecurityAlert.query.count()},
         )
 
-    demo_flows = [
-        {
-            "request_id": "demo-req-001",
-            "anomaly_score": 0.9642,
-            "is_anomaly": True,
-            "risk_level": "CRITICAL",
-            "status": "NEW",
-            "protocol": "TCP",
-            "src_port": 49152,
-            "dst_port": 80,
-            "analyst_notes": "High volume SYN flood pattern with abnormal TTL and high byte rate.",
-            "input_features": {
-                "duration_seconds": 0.0012,
-                "fwd_bytes": 142000,
-                "sttl": 254,
-                "sload": 946666666.0,
-                "fwd_packets": 240,
-                "swin": 255,
-                "smeansz": 591.6,
-                "sjit": 12.4,
-                "sintpkt": 0.005,
-                "is_sm_ips_ports": 0,
-            },
-            "top_contributing_features": [
-                {"feature": "sttl", "value": 254, "contribution": "high", "reason": "Source TTL significantly elevated above standard local hop baseline."},
-                {"feature": "sload", "value": 946666666.0, "contribution": "high", "reason": "Source traffic load exceeds volumetric threshold."},
-            ],
-        },
-        {
-            "request_id": "demo-req-002",
-            "anomaly_score": 0.8814,
-            "is_anomaly": True,
-            "risk_level": "CRITICAL",
-            "status": "INVESTIGATING",
-            "protocol": "UDP",
-            "src_port": 53210,
-            "dst_port": 53,
-            "analyst_notes": "Amplification probe detected on DNS endpoint.",
-            "input_features": {
-                "duration_seconds": 0.05,
-                "fwd_bytes": 85000,
-                "sttl": 254,
-                "sload": 13600000.0,
-                "fwd_packets": 80,
-                "swin": 0,
-                "smeansz": 1062.5,
-                "sjit": 45.1,
-                "sintpkt": 0.625,
-                "is_sm_ips_ports": 0,
-            },
-            "top_contributing_features": [
-                {"feature": "sttl", "value": 254, "contribution": "high", "reason": "Source TTL significantly elevated above standard local hop baseline."},
-                {"feature": "sload", "value": 13600000.0, "contribution": "high", "reason": "Source traffic load exceeds volumetric threshold."},
-            ],
-        },
-        {
-            "request_id": "demo-req-003",
-            "anomaly_score": 0.7245,
-            "is_anomaly": True,
-            "risk_level": "HIGH",
-            "status": "NEW",
-            "protocol": "TCP",
-            "src_port": 50123,
-            "dst_port": 443,
-            "analyst_notes": "Anomalous TLS handshake packet sizing.",
-            "input_features": {
-                "duration_seconds": 1.25,
-                "fwd_bytes": 48200,
-                "sttl": 64,
-                "sload": 308480.0,
-                "fwd_packets": 35,
-                "swin": 255,
-                "smeansz": 1377.1,
-                "sjit": 18.2,
-                "sintpkt": 35.7,
-                "is_sm_ips_ports": 0,
-            },
-            "top_contributing_features": [
-                {"feature": "bytes_per_packet", "value": 1377.1, "contribution": "medium", "reason": "Abnormal mean packet sizing detected."},
-            ],
-        },
-        {
-            "request_id": "demo-req-004",
-            "anomaly_score": 0.5420,
-            "is_anomaly": True,
-            "risk_level": "MEDIUM",
-            "status": "RESOLVED",
-            "protocol": "TCP",
-            "src_port": 51442,
-            "dst_port": 22,
-            "analyst_notes": "Internal automated backup SSH session. Confirmed benign by sysadmin.",
-            "input_features": {
-                "duration_seconds": 5.4,
-                "fwd_bytes": 12500,
-                "sttl": 64,
-                "sload": 18518.5,
-                "fwd_packets": 22,
-                "swin": 255,
-                "smeansz": 568.1,
-                "sjit": 5.1,
-                "sintpkt": 245.4,
-                "is_sm_ips_ports": 0,
-            },
-            "top_contributing_features": [
-                {"feature": "byte_rate", "value": 2314.8, "contribution": "medium", "reason": "Forward byte transmission rate elevated."},
-            ],
-        },
-        {
-            "request_id": "demo-req-005",
-            "anomaly_score": 0.1240,
-            "is_anomaly": False,
-            "risk_level": "LOW",
-            "status": "RESOLVED",
-            "protocol": "TCP",
-            "src_port": 42100,
-            "dst_port": 443,
-            "analyst_notes": "Standard HTTPS client session.",
-            "input_features": {
-                "duration_seconds": 0.42,
-                "fwd_bytes": 1820,
-                "sttl": 64,
-                "sload": 34666.6,
-                "fwd_packets": 12,
-                "swin": 255,
-                "smeansz": 151.6,
-                "sjit": 2.2,
-                "sintpkt": 35.0,
-                "is_sm_ips_ports": 0,
-            },
-            "top_contributing_features": [],
-        },
-    ]
+    from app.utils.seeding import seed_demo_alerts_data
 
-    created = []
-    for d in demo_flows:
-        alert = SecurityAlert(
-            request_id=d["request_id"],
-            timestamp=datetime.now(UTC),
-            is_anomaly=d["is_anomaly"],
-            anomaly_score=d["anomaly_score"],
-            decision_threshold=0.5,
-            risk_level=d["risk_level"],
-            model_name="OptunaTuned_XGBoost",
-            model_version="1.0.0",
-            status=d["status"],
-            analyst_notes=d["analyst_notes"],
-            input_features=d["input_features"],
-            top_contributing_features=d["top_contributing_features"],
-            protocol=d["protocol"],
-            src_port=d["src_port"],
-            dst_port=d["dst_port"],
-            is_demo=True,
-            source="demo_seed",
-        )
-        db.session.add(alert)
-        created.append(alert)
-
-    db.session.commit()
+    created = seed_demo_alerts_data()
     return success_response(
         data=[a.to_dict() for a in created],
         status_code=201,

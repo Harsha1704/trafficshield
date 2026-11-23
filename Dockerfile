@@ -23,7 +23,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     PORT=10000 \
     FLASK_ENV=production \
-    APP_ENV=production
+    APP_ENV=production \
+    ALLOW_DEMO_SEEDING=true
 
 # Install essential runtime system libraries & security updates
 RUN apt-get update && apt-get install -y --no-install-recommends \

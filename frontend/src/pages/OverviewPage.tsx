@@ -125,7 +125,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </span>
           </div>
           <p className="mt-2 text-[11px] text-slate-400 flex items-center gap-1 font-mono">
-            <Clock className="w-3 h-3 text-cyan-400" /> Persistent SQLite storage
+            <Clock className="w-3 h-3 text-cyan-400" /> {stats?.storage_backend || 'PostgreSQL Managed Cluster'}
           </p>
         </Card>
 

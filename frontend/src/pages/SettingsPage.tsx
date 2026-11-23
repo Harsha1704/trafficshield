@@ -132,12 +132,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       {/* Database Management Card */}
       <Card
         title="Persistent SOC Storage Management"
-        subtitle="Manage SQLite incident storage and demonstration data"
+        subtitle="Manage persistent incident storage and demonstration data"
       >
         <div className="space-y-4 max-w-xl">
           <p className="text-xs text-slate-400">
-            TrafficShield persists security alerts, triage status, and analyst notes in an ACID-compliant SQLite
-            database (<code className="text-cyan-300">trafficshield_dev.db</code>).
+            TrafficShield persists security alerts, triage status, and analyst notes in an ACID-compliant
+            database (PostgreSQL 16 on Render production or SQLite in local development).
           </p>
 
           <div className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
           <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
             <span className="text-slate-400 block mb-1">Backend Framework</span>
-            <span className="text-slate-200 font-bold">Python 3.14 + Flask 3.x</span>
+            <span className="text-slate-200 font-bold">Python 3.12+ / Flask 3.x</span>
           </div>
           <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
             <span className="text-slate-400 block mb-1">Frontend Stack</span>
@@ -170,11 +170,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           </div>
           <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
             <span className="text-slate-400 block mb-1">ML Engine</span>
-            <span className="text-emerald-300 font-bold">XGBoost 3.4.1 (Optuna Tuned)</span>
+            <span className="text-emerald-300 font-bold">XGBoost + Isolation Forest</span>
           </div>
           <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800">
             <span className="text-slate-400 block mb-1">Database Store</span>
-            <span className="text-amber-300 font-bold">SQLite 3 (SQLAlchemy)</span>
+            <span className="text-amber-300 font-bold">PostgreSQL 16 / SQLAlchemy</span>
           </div>
         </div>
       </Card>

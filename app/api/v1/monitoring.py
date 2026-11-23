@@ -488,7 +488,8 @@ def seed_demo_monitoring() -> Any:
         or os.getenv("ENV", "").lower() == "production"
         or current_app.config.get("ENV", "").lower() == "production"
     )
-    if is_prod:
+    allow_seed = os.getenv("ALLOW_DEMO_SEEDING", "false").lower() in ("true", "1", "yes")
+    if is_prod and not allow_seed:
         return error_response(
             message="Demo monitoring seeding is strictly disabled in production mode.",
             status_code=403,
@@ -502,72 +503,11 @@ def seed_demo_monitoring() -> Any:
             data={"existing_batch_count": MonitoringBatchMetric.query.count()},
         )
 
-    service = get_monitoring_service()
-    ModelRegistryManager.initialize_registry_if_empty()
+    from app.utils.seeding import seed_demo_monitoring_data
 
-    # Seed 5 sample batch metric points spanning recent hours
-    demo_batches: list[dict[str, Any]] = [
-        {"flows": 250, "anom": 35, "mean": 0.21, "lat": 18.2, "src": "network_tap_A"},
-        {"flows": 400, "anom": 62, "mean": 0.24, "lat": 24.5, "src": "network_tap_A"},
-        {"flows": 300, "anom": 48, "mean": 0.22, "lat": 20.1, "src": "network_tap_B"},
-        {"flows": 650, "anom": 185, "mean": 0.38, "lat": 38.4, "src": "dmz_border"},
-        {"flows": 500, "anom": 140, "mean": 0.32, "lat": 29.8, "src": "dmz_border"},
-    ]
-
-    for i, b in enumerate(demo_batches):
-        preds = []
-        anom_count = int(b["anom"])
-        flow_count = int(b["flows"])
-        lat_ms = float(b["lat"])
-        src_name = str(b["src"])
-
-        for _ in range(anom_count):
-            preds.append({"anomaly_score": round(np.random.uniform(0.65, 0.95), 4), "is_anomaly": True, "risk_level": "CRITICAL" if np.random.rand() > 0.5 else "HIGH"})
-        for _ in range(flow_count - anom_count):
-            preds.append({"anomaly_score": round(np.random.uniform(0.01, 0.45), 4), "is_anomaly": False, "risk_level": "LOW"})
-
-        sample_recs = [
-            {"sttl": 64 if np.random.rand() > 0.3 else 254, "sload": 25000.0, "duration_seconds": 0.5, "fwd_bytes": 1200, "fwd_packets": 10, "swin": 255, "smeansz": 120, "sjit": 10, "sintpkt": 5, "is_sm_ips_ports": 0}
-            for _ in range(flow_count)
-        ]
-        service.record_batch_telemetry(
-            batch_id=f"demo-batch-00{i+1}",
-            records=sample_recs,
-            predictions=preds,
-            latency_ms=lat_ms,
-            source=src_name,
-            is_demo=True,
-        )
-
-    # Seed 2 demonstration monitoring alerts
-    alert_mgr = MonitoringAlertManager()
-    alert_mgr._record_or_debounce_alert(
-        alert_type="FEATURE_DRIFT",
-        severity="WARNING",
-        target_feature="sttl",
-        metric_name="PSI",
-        metric_value=0.184,
-        threshold=0.10,
-        sample_size=650,
-        summary="Feature 'sttl' distribution drift (WARNING): PSI=0.1840 against reference baseline.",
-        details={"feature": "sttl", "metric": "PSI", "value": 0.184},
-        is_demo=True,
-    )
-    alert_mgr._record_or_debounce_alert(
-        alert_type="ANOMALY_RATE_SPIKE",
-        severity="CRITICAL",
-        target_feature="overall_traffic",
-        metric_name="AnomalyRatePercentage",
-        metric_value=58.2,
-        threshold=57.4,
-        sample_size=650,
-        summary="Sudden anomaly rate spike: 58.2% of 650 flows flagged (baseline expected ~28.7%).",
-        details={"current_rate": 58.2, "baseline_rate": 28.7},
-        is_demo=True,
-    )
-
+    result = seed_demo_monitoring_data()
     return success_response(
         message="Seeded 5 demo monitoring batches and 2 demo operational alerts.",
-        data={"seeded_batches": 5, "seeded_alerts": 2},
+        data=result,
         status_code=201,
     )

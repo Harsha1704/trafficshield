@@ -226,28 +226,22 @@ class ProductionSettings(BaseAppSettings):
     def is_production(self) -> bool:
         return True
 
-    @field_validator("secret_key", mode="before")
+    @field_validator("secret_key")
     @classmethod
     def secret_key_must_be_strong(cls, v: str) -> str:
-        if not v or v in ("dev-secret-key-change-in-production", "change-me-in-production-use-secrets-manager") or len(v) < 32:
-            import secrets
-            import logging
-            generated = secrets.token_hex(32)
-            logging.getLogger("config").warning(
-                "Production SECRET_KEY was unset or insecure; automatically generated a secure 64-char key."
+        if v in ("dev-secret-key-change-in-production", "change-me-in-production-use-secrets-manager"):
+            raise ValueError(
+                "SECRET_KEY must be set to a strong random value in production"
             )
-            return generated
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters in production")
         return v
 
     @field_validator("database_url")
     @classmethod
     def db_must_not_be_sqlite(cls, v: str) -> str:
         if v.startswith("sqlite"):
-            import logging
-            logging.getLogger("config").warning(
-                "Production database configured with SQLite. PostgreSQL is recommended for persistence."
-            )
-            return v
+            raise ValueError("Production database must not use SQLite")
         return v
 
     @field_validator("cors_origins")
