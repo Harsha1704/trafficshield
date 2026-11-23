@@ -61,12 +61,27 @@ def is_capture_driver_available() -> tuple[bool, str]:
                 "Download from https://npcap.com and install with WinPcap API-compatible mode."
             )
     elif system in ("Linux", "Darwin"):
-        try:
-            import ctypes
-            ctypes.cdll.LoadLibrary("libpcap.so") or ctypes.cdll.LoadLibrary("libpcap.so.1")
-            return True, "libpcap driver is installed and active."
-        except OSError:
-            return False, "libpcap library (libpcap.so) not found in system library paths."
+        import ctypes
+        import ctypes.util
+
+        # Check standard dynamic linker resolution
+        found_lib = ctypes.util.find_library("pcap")
+        if found_lib:
+            try:
+                ctypes.cdll.LoadLibrary(found_lib)
+                return True, "libpcap driver is installed and active."
+            except OSError:
+                pass
+
+        # Check common shared library file names
+        for lib_name in ("libpcap.so", "libpcap.so.1", "libpcap.so.0.8"):
+            try:
+                ctypes.cdll.LoadLibrary(lib_name)
+                return True, "libpcap driver is installed and active."
+            except OSError:
+                continue
+
+        return False, "libpcap library (libpcap.so) not found in system library paths. Offline PCAP Replay mode is 100% operational without kernel drivers."
     return False, f"Unsupported operating system for live capture: {system}"
 
 

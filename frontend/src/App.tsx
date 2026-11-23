@@ -134,16 +134,16 @@ export function App() {
   );
 
   useEffect(() => {
-    if (currentUser) {
+    if (!authChecking && currentUser) {
       fetchGlobalData();
     }
-  }, [currentUser, fetchGlobalData]);
+  }, [authChecking, currentUser, fetchGlobalData]);
 
   useEffect(() => {
-    if (currentUser && (activeTab === 'alerts' || activeTab === 'overview')) {
+    if (!authChecking && currentUser && (activeTab === 'alerts' || activeTab === 'overview')) {
       fetchAlertsList(currentPage);
     }
-  }, [currentUser, activeTab, currentPage, fetchAlertsList]);
+  }, [authChecking, currentUser, activeTab, currentPage, fetchAlertsList]);
 
   const handleLogout = async () => {
     try {
