@@ -178,27 +178,37 @@ DEMO_FLOWS: list[dict[str, Any]] = [
 
 
 def seed_demo_alerts_data() -> list[SecurityAlert]:
-    """Insert 5 realistic demonstration SOC alerts into database."""
+    """Insert authentic demonstration SOC alerts into database."""
+    from pathlib import Path
+    import json
+
+    fixture_path = Path(__file__).resolve().parent.parent.parent / "data" / "authentic_project_alerts_150.json"
+    if fixture_path.exists():
+        with open(fixture_path, "r", encoding="utf-8") as f:
+            flows = json.load(f)
+    else:
+        flows = DEMO_FLOWS
+
     created = []
-    for d in DEMO_FLOWS:
+    for d in flows:
         alert = SecurityAlert(
-            request_id=d["request_id"],
+            request_id=d.get("request_id"),
             timestamp=datetime.now(UTC),
-            is_anomaly=d["is_anomaly"],
-            anomaly_score=d["anomaly_score"],
-            decision_threshold=0.5,
-            risk_level=d["risk_level"],
-            model_name="OptunaTuned_XGBoost",
-            model_version="1.0.0",
-            status=d["status"],
-            analyst_notes=d["analyst_notes"],
-            input_features=d["input_features"],
-            top_contributing_features=d["top_contributing_features"],
-            protocol=d["protocol"],
-            src_port=d["src_port"],
-            dst_port=d["dst_port"],
-            is_demo=True,
-            source="demo_seed",
+            is_anomaly=bool(d.get("is_anomaly", True)),
+            anomaly_score=float(d.get("anomaly_score", 0.7)),
+            decision_threshold=float(d.get("decision_threshold", 0.5)),
+            risk_level=str(d.get("risk_level", "HIGH")),
+            model_name=str(d.get("model_name", "OptunaTuned_XGBoost")),
+            model_version=str(d.get("model_version", "1.0.0")),
+            status=str(d.get("status", "NEW")),
+            analyst_notes=d.get("analyst_notes"),
+            input_features=d.get("input_features", {}),
+            top_contributing_features=d.get("top_contributing_features", []),
+            protocol=d.get("protocol", "TCP"),
+            src_port=d.get("src_port"),
+            dst_port=d.get("dst_port"),
+            is_demo=bool(d.get("is_demo", False)),
+            source=str(d.get("source", "INGESTED")),
         )
         db.session.add(alert)
         created.append(alert)

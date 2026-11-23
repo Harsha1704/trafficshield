@@ -61,6 +61,7 @@ COPY ingestion/ ingestion/
 COPY jobs/ jobs/
 COPY risk/ risk/
 COPY streaming/ streaming/
+COPY data/ data/
 # Alembic migrations used to initialize the production PostgreSQL schema
 COPY migrations/ migrations/
 COPY bootstrap_production_users.py ./

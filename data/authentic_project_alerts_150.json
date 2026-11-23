@@ -1,0 +1,5336 @@
+[
+  {
+    "request_id": "a4426155-8a71-4bf1-80a4-4631e4246e90",
+    "anomaly_score": 0.978,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 1e-06,
+      "fwd_bytes": 156,
+      "sttl": 64,
+      "sload": 523449139.2,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 78.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0012,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sload",
+        "value": 523449139.2,
+        "contribution": "high",
+        "reason": "Source traffic load exceeds volumetric threshold."
+      },
+      {
+        "feature": "byte_rate",
+        "value": 156000000.0,
+        "contribution": "medium",
+        "reason": "Forward byte transmission rate elevated."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 137,
+    "dst_port": 137,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5fb87516-2331-4d93-b454-d6e45c314309",
+    "anomaly_score": 0.978,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 1e-06,
+      "fwd_bytes": 156,
+      "sttl": 64,
+      "sload": 654311424.0,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 78.0,
+      "sjit": 0.0,
+      "sintpkt": 0.001,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sload",
+        "value": 654311424.0,
+        "contribution": "high",
+        "reason": "Source traffic load exceeds volumetric threshold."
+      },
+      {
+        "feature": "byte_rate",
+        "value": 156000000.0,
+        "contribution": "medium",
+        "reason": "Forward byte transmission rate elevated."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 137,
+    "dst_port": 137,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "53537a8d-4915-4048-aa9c-8c33a92d84dd",
+    "anomaly_score": 0.978,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 1e-06,
+      "fwd_bytes": 156,
+      "sttl": 255,
+      "sload": 654311424.0,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 78.0,
+      "sjit": 0.0,
+      "sintpkt": 0.001,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      },
+      {
+        "feature": "sload",
+        "value": 654311424.0,
+        "contribution": "high",
+        "reason": "Source traffic load exceeds volumetric threshold."
+      },
+      {
+        "feature": "byte_rate",
+        "value": 156000000.0,
+        "contribution": "medium",
+        "reason": "Forward byte transmission rate elevated."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "05014874-f1d0-41e5-a490-d461946b161c",
+    "anomaly_score": 0.9779,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001083,
+      "fwd_bytes": 146,
+      "sttl": 31,
+      "sload": 539242.875,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 73,
+      "sjit": 0,
+      "sintpkt": 0.011,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      },
+      {
+        "contribution": "high",
+        "feature": "sload",
+        "reason": "Source traffic load exceeds volumetric threshold.",
+        "value": 136000000
+      },
+      {
+        "contribution": "medium",
+        "feature": "byte_rate",
+        "reason": "Forward byte transmission rate elevated.",
+        "value": 34000000
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "84dc305f-b8a2-444f-89ae-93684986e77a",
+    "anomaly_score": 0.9777,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001105,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 477828.0313,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.011,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "e0374458-7054-4ae5-aa5b-ff33d6c26c7c",
+    "anomaly_score": 0.9777,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.629429,
+      "fwd_bytes": 564,
+      "sttl": 254,
+      "sload": 6456.645996,
+      "fwd_packets": 10,
+      "swin": 255,
+      "smeansz": 56,
+      "sjit": 5437.992729,
+      "sintpkt": 69.390667,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "3bb7d102-0f03-4fcf-baea-a3c1a9f03cf9",
+    "anomaly_score": 0.9771,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001059,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 498583.5625,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.011,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a4ac2599-7080-4e46-a5cb-2cf86793e012",
+    "anomaly_score": 0.9768,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.287892,
+      "fwd_bytes": 3078,
+      "sttl": 128,
+      "sload": 76978.9032,
+      "fwd_packets": 10,
+      "swin": 252,
+      "smeansz": 307.8,
+      "sjit": 24.4735,
+      "sintpkt": 31.988,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 64893,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "bc7c7ad3-67ae-49a4-ac25-e3d5ca830e9c",
+    "anomaly_score": 0.9762,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 3.283989,
+      "fwd_bytes": 1176,
+      "sttl": 128,
+      "sload": 2644.4388,
+      "fwd_packets": 13,
+      "swin": 0,
+      "smeansz": 90.4615,
+      "sjit": 267.9369,
+      "sintpkt": 273.6657,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 137,
+    "dst_port": 137,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "00476a9c-6165-4567-a160-f0b2e09a44db",
+    "anomaly_score": 0.976,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001135,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 465198.2188,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.011,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "02154247-3a85-45d8-8066-934593fb32b0",
+    "anomaly_score": 0.9759,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 2.965681,
+      "fwd_bytes": 1225,
+      "sttl": 255,
+      "sload": 3004.0624,
+      "fwd_packets": 11,
+      "swin": 0,
+      "smeansz": 111.3636,
+      "sjit": 150.52,
+      "sintpkt": 296.5681,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5200c140-53d6-40cb-a208-f5d4f3064ed8",
+    "anomaly_score": 0.9759,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.291485,
+      "fwd_bytes": 804,
+      "sttl": 62,
+      "sload": 19870.66211,
+      "fwd_packets": 10,
+      "swin": 255,
+      "smeansz": 80,
+      "sjit": 1595.821133,
+      "sintpkt": 32.387222,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      },
+      {
+        "contribution": "high",
+        "feature": "sload",
+        "reason": "Source traffic load exceeds volumetric threshold.",
+        "value": 1805333248
+      },
+      {
+        "contribution": "medium",
+        "feature": "byte_rate",
+        "reason": "Forward byte transmission rate elevated.",
+        "value": 451333333.33
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5b24f771-4e54-4170-bd3f-5d5848350fe2",
+    "anomaly_score": 0.9759,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 50.004341,
+      "fwd_bytes": 384,
+      "sttl": 1,
+      "sload": 51.195557,
+      "fwd_packets": 6,
+      "swin": 0,
+      "smeansz": 64,
+      "sjit": 0,
+      "sintpkt": 10000.869,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "contribution": "high",
+        "feature": "sttl",
+        "reason": "Source TTL significantly elevated above standard local hop baseline.",
+        "value": 254
+      },
+      {
+        "contribution": "high",
+        "feature": "sload",
+        "reason": "Source traffic load exceeds volumetric threshold.",
+        "value": 878400000
+      },
+      {
+        "contribution": "medium",
+        "feature": "byte_rate",
+        "reason": "Forward byte transmission rate elevated.",
+        "value": 219600000
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "e3b2633f-77e5-4e8d-8368-42fde3730b41",
+    "anomaly_score": 0.9753,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001128,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 468085.125,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.017,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "2d18c0c9-1bd6-4ceb-be72-00107e65f2d5",
+    "anomaly_score": 0.9753,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 4.299679,
+      "fwd_bytes": 1254,
+      "sttl": 128,
+      "sload": 2166.5405,
+      "fwd_packets": 14,
+      "swin": 0,
+      "smeansz": 89.5714,
+      "sjit": 225.9688,
+      "sintpkt": 330.7445,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 137,
+    "dst_port": 137,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "6ee38934-f3a5-45af-ad3b-31931c48cf87",
+    "anomaly_score": 0.9753,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001089,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 484848.4688,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.011,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "4168892b-bfde-4456-82c3-33a1ed1ad705",
+    "anomaly_score": 0.9752,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "CRITICAL",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Batch upload flagged flow from UNSW-NB15_1.csv.",
+    "input_features": {
+      "duration_seconds": 0.001111,
+      "fwd_bytes": 132,
+      "sttl": 31,
+      "sload": 475247.5313,
+      "fwd_packets": 2,
+      "swin": 0,
+      "smeansz": 66,
+      "sjit": 0,
+      "sintpkt": 0.017,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "TCP",
+    "src_port": 49152,
+    "dst_port": 80,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "591b7432-5a34-4b35-a4e6-cc8dcf5ae878",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f33639c2-54ac-4d5f-8fd0-88e6091ebd21",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "6716fbb4-c4c3-4ce8-9d88-e9aaff3c3f11",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "11c527b2-7f9f-4bab-b4a3-5b4ac72f3c59",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1f581c8e-c7f3-41f5-84f4-ee5125784d1a",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "3abec2dc-031e-4c56-815d-2d7eec547adc",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ac667208-03c5-4ae7-b83c-9debeb8d4ca4",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "41719146-e606-4397-a05d-afa4097ca63b",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "21282566-6934-4485-8986-ed20d15fc797",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "56116588-369a-49be-9f63-d0b316493201",
+    "anomaly_score": 0.686,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 99,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 99.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a8415484-ab23-403e-acf0-e46c455b9bc3",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 55155,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "33f581a4-f046-4452-ad9d-97e0f9991f7f",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1caf7ea5-f74a-43bb-973a-c3ac349e0507",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47587,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9f0b9eef-2900-4245-8f60-932f7452287d",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47587,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "b251179e-0e4f-4f46-867d-f016dc2cb4a2",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47589,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "daec6f11-996d-413b-ac2d-764d1593da2b",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "e6436567-feaf-48b1-8fd9-d3455796e411",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "fc259017-90fa-49ec-ac21-dd95e3942f9c",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47586,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c6126f3b-5205-40de-9f89-7f0b39ef3b8e",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47592,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "08175022-3d79-42cb-947f-5b077d2b7d07",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47591,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8caff46f-ede5-4103-9dea-9b009c87df47",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47591,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1fc2b25d-3d35-474d-8597-19321bdcf31a",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47592,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "784074ea-4ebe-4804-8776-220a7c4c7061",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 62118,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "686be3b4-b49e-478c-bacb-0b9bdcc49af1",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "01df473a-dc9c-4a2b-8f1a-50a57bb36ea8",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47592,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8c59ce34-85ad-4f2b-aab1-f1fc19479a3e",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47593,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "13c0b0c8-aac1-4e48-8bc7-20546a714252",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47591,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c1b7ed1e-4952-4653-863f-e51d1ed86fb6",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f612c245-dd88-45cd-9785-01d337265213",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47586,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ec7d8ed8-4f61-4129-bc2a-c147b5eb2130",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47590,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "63c33330-253f-46f6-af12-5a8eca3f9afa",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47590,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "863e8480-eadb-4b57-8bb7-5b372caac632",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5de226be-a90f-40aa-9344-f2c8ebbda6bf",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47591,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "4114cc7e-83c1-4e61-af3f-eca644291ae1",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47587,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "182b9f4e-ffe8-4c4f-bafa-8b721ae7b7fc",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "627d70fd-61a1-407a-9e82-9fd7d4c07f65",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47586,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "75fd038b-8eee-4d78-8a2a-c0ba2ff2918e",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47587,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "4fb7ec3e-aa70-43b1-af8b-b6bda72a3156",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47588,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "d2022229-5748-4887-93cc-8794c05931db",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47592,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8b6a0b7d-aca2-4585-83e1-58176540727c",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "fe8cdcd8-522a-44f3-85a1-f7ab843fecc0",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47589,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "855d7967-971b-4faf-8358-cd88973a6ca2",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47592,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f32264c3-36ce-4daf-90b1-a120a7b69e6f",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47591,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8f502298-c873-46f8-89d9-777c5cde5bbe",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47584,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a307de33-1811-4273-b2c8-14c7cd3a901e",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 47584,
+    "dst_port": 47586,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c9b7958a-f427-4bd2-bff9-9cd8f346e306",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "95a0bb93-ac17-4a45-a492-d5129b376c5e",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 252,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55365,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9a14f696-69b7-468f-8baf-a6d390a4a72b",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 252,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55365,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "0174d592-7ad2-48a5-8f67-b37f9c571d1f",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 252,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55365,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c1714bdf-dece-4d17-874e-68e7b0848d73",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 54275,
+    "dst_port": 161,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1f16c9e2-c358-494a-95e2-584da135e6a9",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 252,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55365,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "694f1e0a-03ee-4314-8c61-98e2d0be9c28",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 56683,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "77e3c1be-6d02-4976-b550-1021f2819c77",
+    "anomaly_score": 0.6899,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 69,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 69.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 27036,
+    "dst_port": 27036,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9d407382-d464-4aa8-9af9-7294f19a09c1",
+    "anomaly_score": 0.6926,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.609079,
+      "fwd_bytes": 848,
+      "sttl": 128,
+      "sload": 7425.4173,
+      "fwd_packets": 3,
+      "swin": 0,
+      "smeansz": 282.6667,
+      "sjit": 33.9149,
+      "sintpkt": 304.5396,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 49335,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "e13d1303-a41b-4658-864e-2d04bfd321ba",
+    "anomaly_score": 0.6927,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.10278,
+      "fwd_bytes": 5313,
+      "sttl": 255,
+      "sload": 344620.0276,
+      "fwd_packets": 6,
+      "swin": 0,
+      "smeansz": 885.5,
+      "sjit": 5.1593,
+      "sintpkt": 20.556,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "4d0a8648-df13-4c13-ba52-08a2434992c9",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "0e0f5eb0-fa9a-4738-91a4-4bf2b35d6b93",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 255,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 52571,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "620baf35-fad4-4554-bc94-b1cca95b39ed",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "0143e059-8cdb-44be-ba13-e8c9df686716",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "26053046-ce04-4238-9980-40d6efa7b908",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "75244856-f6c7-4d56-9345-24ad74077256",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "67d89182-c284-4b07-a842-38790e185091",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c1ab2c6d-1b68-4774-95fb-07c85a53e64b",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "cc68b581-e24d-47d7-8295-1995fdba399d",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "648a066f-fb4b-41b9-879f-59d6cb13f2a8",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "02ee4bb2-6ade-4e95-860c-c0236431d8ac",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f4681e03-b5b9-4eb6-9cbe-c760928b92f0",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1ecb694e-9c90-4fc8-bc73-5c1b6e54a456",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9b30b2fe-8acb-440d-a6a1-8858479d0c44",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5dcdb7da-67db-424e-8424-9f3eb2c40a7c",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "2124357e-eeb3-47a2-9634-46ce17bc79ca",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f13669bc-94b7-42d8-b88a-9292a2207002",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 71,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 71.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 54562,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "7a55e1fe-b7e7-4985-bed6-7fdad0d9ee55",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5ba0f0ab-5d72-40bd-9959-87810fbbcbf9",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f1c22977-66f9-4aee-8b50-2e458d2461e1",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a85ce88d-24f3-420b-9757-a25914c9da50",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "88001ede-87e9-4b07-850f-c7d460aad564",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "940ee1cb-8838-41c6-9686-515d137ada72",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "137c30e2-3277-47bd-a8f8-84906e43831f",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "cb06c49e-e5f5-4ab7-848e-bb2280e3a2be",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1d7faa1e-5fde-4f93-8f68-8cd4d210bb07",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c87c3443-007e-40b9-be5d-07bce48a26f8",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "70814112-a5d3-405c-98a0-ec3c9501875a",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "16ec7ed7-d0af-4230-a1e1-77fb94e13fdd",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1012fd5d-c1f9-4707-aaf9-d1297ad10746",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c16c0617-1027-4066-9a8d-819728c34006",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "0aeb2513-0a24-4547-b069-3415f6d02a85",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9729316b-d19f-4e9d-b562-c2dbf1398e47",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "e7510f43-99c4-4bb1-825d-eeba9749b2f0",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "09ee22ab-adf9-43f8-9c6c-400c0dd5155b",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 52154,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "aaf0db3f-a2bf-40c2-a503-0da411eead20",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ae37dbfa-04a7-46e7-88f7-19261b107b90",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 74,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 74.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 58168,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "cd820a95-7efe-4eb2-9f78-0d2d9a9f8aaa",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8ed33c68-0b62-4c9a-8762-1d4f7efc9720",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "6f4a246b-1ff0-4765-855e-beeea16c0649",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "685f1c5c-918c-4029-a470-ebbee4b00526",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "0659bd45-7901-42c0-8e41-03e246b53a8e",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "aa43c241-d84b-4e43-a297-4e77dda5a2fb",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ac9c3b36-d011-4587-93b2-0c210ffc3d33",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 75,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 75.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5225a309-5bc1-4cff-92f3-f36043afcfcb",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "536ed070-5e77-4e3d-ba89-e18986e812fe",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ded75eec-73d0-4dbc-b59a-e82499389215",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 71,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 71.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57554,
+    "dst_port": 53,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "1750d718-16db-4c66-9c32-e49ad28ea236",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "3ec12043-4549-4d3e-a3bb-0dbc58fb2919",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "f467b0a3-1271-4da8-a84b-57108d120555",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "84e9134a-bac2-43fb-af0b-707b1374ab0f",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 71,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 255,
+      "smeansz": 71.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 54280,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9cc61be8-0b92-455b-bb5b-466c978bbe9b",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "2d5209c9-b11e-473b-9c42-b937b9400f1b",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 74,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 74.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "abcaba3e-c2b0-446c-aa91-5ebd32bdee3d",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "7609eb4d-4af8-4707-bcee-4b58b120459d",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "8a14f84d-d4dd-47d1-9f20-be16ef75b800",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 126,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 126.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 53,
+    "dst_port": 62060,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ff34e1d6-ef60-4ed1-a06b-c3828fb25aea",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "7bd5c23c-bafb-4797-8ef3-d2c3f34743cc",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "543dae4c-4ad9-47a1-a489-e96e9be2adda",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5dc7463a-a9c9-485a-80ca-52f87793f9a9",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 71,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 255,
+      "smeansz": 71.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 54280,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "6567aa88-fafe-42e8-bf5f-db3a1627b76a",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ec41c656-c9d6-40f0-a7e0-11924db5894f",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 74,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 74.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "dd35b746-d21a-4cb8-bb7c-19d34eeac050",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "cf5d4c83-b8c7-4e8f-b75f-b95936f7b989",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a1f878ad-04fd-4ee2-af77-d5d31fa3136f",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "5e2502ec-3e61-40ca-918f-d82a9f35abcd",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "7d53578f-caa7-45d6-824e-59a4cfa39adc",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "fdb9f219-0f3c-4a9c-9ace-640caa358fa2",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 64,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "b49937e6-2925-424d-b320-c571100491a5",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 73,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 73.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "98f5b1dc-4b33-49ec-86e1-2dd9c21edeb9",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 71,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 254,
+      "smeansz": 71.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 54280,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9994ebe0-d2ec-4bd9-8dc5-51261a207d95",
+    "anomaly_score": 0.6953,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "HIGH",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 72,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 72.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 57621,
+    "dst_port": 57621,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "fbe14a00-5e04-45d7-809a-47f695cb9b68",
+    "anomaly_score": 0.649,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 497,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 497.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "c4058a99-eb41-403e-bc53-60ffc688e4c9",
+    "anomaly_score": 0.649,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 497,
+      "sttl": 255,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 0,
+      "smeansz": 497.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 255.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "UDP",
+    "src_port": 5353,
+    "dst_port": 5353,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "acff4874-6383-41b7-b1d0-f145d9887db3",
+    "anomaly_score": 0.6456,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.011197,
+      "fwd_bytes": 306,
+      "sttl": 128,
+      "sload": 145752.1533,
+      "fwd_packets": 3,
+      "swin": 255,
+      "smeansz": 102.0,
+      "sjit": 0.6149,
+      "sintpkt": 5.5985,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55551,
+    "dst_port": 443,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "a39af22a-04e0-4804-be7d-6b01159c66c0",
+    "anomaly_score": 0.6456,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.00979,
+      "fwd_bytes": 369,
+      "sttl": 128,
+      "sload": 201017.7111,
+      "fwd_packets": 3,
+      "swin": 255,
+      "smeansz": 123.0,
+      "sjit": 0.6024,
+      "sintpkt": 4.8951,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 49213,
+    "dst_port": 39606,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "7f49c326-71e8-410d-a2c6-e83af36159e9",
+    "anomaly_score": 0.6449,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 52,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 65535,
+      "smeansz": 52.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55540,
+    "dst_port": 7680,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "ec164de2-c141-4762-a93e-1ef8b296e741",
+    "anomaly_score": 0.6449,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 52,
+      "sttl": 128,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 65535,
+      "smeansz": 52.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 128.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 55542,
+    "dst_port": 7680,
+    "is_demo": false,
+    "source": "INGESTED"
+  },
+  {
+    "request_id": "9fefc78a-f89c-4360-83c9-83e24024c205",
+    "anomaly_score": 0.6449,
+    "is_anomaly": true,
+    "decision_threshold": 0.5,
+    "risk_level": "MEDIUM",
+    "model_name": "OptunaTuned_XGBoost",
+    "model_version": "1.0.0",
+    "status": "NEW",
+    "analyst_notes": "Real-time streaming detection from LIVE_CAPTURE.",
+    "input_features": {
+      "duration_seconds": 0.0,
+      "fwd_bytes": 52,
+      "sttl": 118,
+      "sload": 0.0,
+      "fwd_packets": 1,
+      "swin": 1046,
+      "smeansz": 52.0,
+      "sjit": 0.0,
+      "sintpkt": 0.0,
+      "is_sm_ips_ports": 0
+    },
+    "top_contributing_features": [
+      {
+        "feature": "sttl",
+        "value": 118.0,
+        "contribution": "high",
+        "reason": "Source TTL significantly elevated above standard local hop baseline."
+      }
+    ],
+    "protocol": "TCP",
+    "src_port": 443,
+    "dst_port": 62880,
+    "is_demo": false,
+    "source": "INGESTED"
+  }
+]
